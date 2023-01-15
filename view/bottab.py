@@ -1,4 +1,4 @@
-from ttkbootstrap import Button, Frame, Label, OptionMenu, StringVar, Scale
+from ttkbootstrap import Button, Frame, Label, OptionMenu, Scale, StringVar
 
 
 class BotTab(Frame):

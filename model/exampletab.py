@@ -1,16 +1,26 @@
-from ttkbootstrap import Button, Frame, Label, OptionMenu, StringVar, Notebook, Entry
+import logging
+import os
+import threading
+import time
+from tkinter import BOTH, BOTTOM, LEFT, RIGHT, TOP, messagebox
+
+import ccxt
+import pandas as pd
+from dotenv import load_dotenv
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
-import ccxt
-from tkinter import BOTH, RIGHT, LEFT, TOP, BOTTOM, messagebox
-import threading
-import time 
-import pandas as pd
-import logging
-from model.trading import Trading
+from trading import Trading
+from ttkbootstrap import (Button, Entry, Frame, Label, Notebook, OptionMenu,
+                          StringVar, Window)
 
-class Example(Frame):
+# Set the path to the .env file
+dotenv_path = r'.env'
+# Load the environment variables from the .env file located two directories above
+load_dotenv(dotenv_path)
+
+class Example(Window):
     def __init__(self):
+        super().__init__()
         # Create the main window with a tabbed interface
         self.notebook = Notebook(self, width='600')
 
@@ -44,7 +54,11 @@ class Example(Frame):
         self.bot_button = Button(
             self.trade_page, text="create a bot", command=self.get_bot)
         # Create an instance of the exchange using the CCXT library
-        self.exchange = ccxt.binance()
+        self.exchange = getattr(ccxt, "phemex")({'apiKey': os.environ.get('API_KEY_PHE_TEST'),
+                        'secret': os.environ.get('API_SECRET_PHE_TEST'),
+                        'rateLimit': 2000,
+                        'enableRateLimit': True})
+        self.exchange.set_sandbox_mode(True)
         # get the balance of the exchange
         self.balance = self.exchange.fetch_balance()
         # Create a dropdown menu for selecting the exchange
@@ -61,8 +75,8 @@ class Example(Frame):
             self.trade_page, text="Order unit")
         self.order_unit_entry = Entry(self.trade_page)
         # Create a trade button
-        self.trade_button = Button(
-            self.trade_page, text="Trade", command=self.trade)
+        # self.trade_button = Button(
+        #     self.trade_page, text="Trade", command=self.trade)
         # Create a label and entry box for the symbol
         self.symbol_label = Label(self.trade_page, text="Symbol")
         self.symbol_entry = Entry(self.trade_page)
@@ -70,8 +84,8 @@ class Example(Frame):
         self.timeframe_label = Label(self.trade_page, text="Timeframe")
         self.timeframe_entry = Entry(self.trade_page)
         # Create a button for fetching the chart data
-        self.fetch_data_button = Button(
-            self.trade_page, text="Fetch Data", command=self.fetch_data)
+        # self.fetch_data_button = Button(
+        #     self.trade_page, text="Fetch Data", command=self.fetch_data)
         # Create a label and entry box for the amount of time to wait between trades
         self.wait_time_label = Label(
             self.trade_page, text="Wait Time (s)")
@@ -90,11 +104,25 @@ class Example(Frame):
         self.start_bot_button.pack()
         self.stop_bot_button.pack()
         self.bot_status_label.pack()
-
+        
+        
+        self.exchange_menu.pack()
+        self.symbol_label.pack()
+        self.symbol_entry.pack()
+        
+        self.timeframe_label.pack()
+        self.timeframe_entry.pack()
+        
+        self.order_size_label.pack()
+        self.order_size_entry.pack()
+        
+        self.order_unit_label.pack()
+        self.order_unit_entry.pack()
+        
         # Start the charting thread
-        self.chart_thread = threading.Thread(target=self.auto_chart_thread)
-        self.chart_thread.daemon = True
-        self.chart_thread.start()
+        # self.chart_thread = threading.Thread(target=self.auto_chart_thread)
+        # self.chart_thread.daemon = True
+        # self.chart_thread.start()
     
     def start_bot(self):
         """Start the bot."""

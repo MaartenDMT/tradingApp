@@ -1,7 +1,8 @@
 
 
 
-from ttkbootstrap import Button, Entry, Frame, Label, OptionMenu, StringVar, Scale
+from ttkbootstrap import (Button, Entry, Frame, Label, OptionMenu, Scale,
+                          StringVar)
 from ttkbootstrap.constants import *
 
 from util.utils import validate_float
