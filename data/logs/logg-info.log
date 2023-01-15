@@ -1,0 +1,99 @@
+2023-01-15 13:12:28,639 - Models - INFO - machine learning model Logistic Regression selected
+2023-01-15 13:12:35,747 - Models - INFO - the grid search best params are {'C': 0.1, 'max_iter': 50, 'penalty': 'none', 'solver': 'newton-cg'}
+2023-01-15 13:12:35,747 - Models - INFO - the grid search best score is 0.6549999999999999
+2023-01-15 13:12:35,751 - Models - INFO - the Logistic Regression model has been trained evaluated 0.65 and saved selected
+2023-01-15 13:12:41,242 - Models - INFO - machine learning model Random Forest Classifier selected
+2023-01-15 13:13:23,192 - Models - INFO - machine learning model Extra Tree Classifier selected
+2023-01-15 13:13:29,290 - Models - INFO - the grid search best params are {'criterion': 'gini', 'max_depth': 10, 'min_samples_leaf': 1, 'min_samples_split': 2}
+2023-01-15 13:13:29,292 - Models - INFO - the grid search best score is 0.7775000000000001
+2023-01-15 13:13:29,302 - Models - INFO - the Extra Tree Classifier model has been trained evaluated 0.8 and saved selected
+2023-01-15 13:13:53,413 - Models - INFO - machine learning model Gradient Boosting Classifier selected
+2023-01-15 13:14:15,634 - Models - INFO - machine learning model SVC selected
+2023-01-15 13:14:24,233 - Models - INFO - the grid search best params are {'C': 10.0, 'degree': 2, 'gamma': 'auto', 'kernel': 'rbf'}
+2023-01-15 13:14:24,235 - Models - INFO - the grid search best score is 0.7025
+2023-01-15 13:14:24,245 - Models - INFO - the SVC model has been trained evaluated 0.68 and saved selected
+2023-01-15 13:15:03,326 - Models - INFO - machine learning model SVR selected
+2023-01-15 13:15:23,659 - Models - INFO - the grid search best params are {'C': 0.1, 'degree': 2, 'gamma': 'auto', 'kernel': 'linear'}
+2023-01-15 13:15:23,661 - Models - INFO - the grid search best score is 0.0
+2023-01-15 13:15:29,474 - Models - INFO - machine learning model SVR selected
+2023-01-15 13:15:37,686 - Models - INFO - machine learning model Logistic Regression selected
+2023-01-15 13:16:08,171 - Models - INFO - the grid search best params are {'C': 0.1, 'max_iter': 50, 'penalty': 'none', 'solver': 'newton-cg'}
+2023-01-15 13:16:08,173 - Models - INFO - the grid search best score is 0.66
+2023-01-15 13:16:08,190 - Models - INFO - the Logistic Regression model has been trained evaluated 0.65 and saved selected
+2023-01-15 13:34:29,450 - Models - INFO - the grid search best params are {'learning_rate': 0.1, 'loss': 'deviance', 'max_depth': 2, 'n_estimators': 200}
+2023-01-15 13:34:29,452 - Models - INFO - the grid search best score is 0.8925000000000001
+2023-01-15 13:34:29,612 - Models - INFO - the Gradient Boosting Classifier model has been trained evaluated 0.86 and saved selected
+2023-01-15 13:58:00,493 - Models - INFO - the grid search best params are {'criterion': 'entropy', 'max_depth': 10, 'min_samples_leaf': 1, 'min_samples_split': 8, 'n_estimators': 300}
+2023-01-15 13:58:00,494 - Models - INFO - the grid search best score is 0.8775000000000001
+2023-01-15 16:14:10,015 - Models - INFO - Starting auto trading bot with symbol BTC/USDT
+2023-01-15 16:15:50,985 - Models - INFO - machine learning model Linear Regression selected
+2023-01-15 16:15:51,811 - Models - INFO - the grid search best params are {'copy_X': True, 'fit_intercept': True, 'n_jobs': -1}
+2023-01-15 16:15:51,812 - Models - INFO - the grid search best score is 0.0
+2023-01-15 16:16:00,168 - Models - INFO - machine learning model Logistic Regression selected
+2023-01-15 16:16:07,259 - Models - INFO - the grid search best params are {'C': 0.1, 'max_iter': 50, 'penalty': 'none', 'solver': 'newton-cg'}
+2023-01-15 16:16:07,260 - Models - INFO - the grid search best score is 0.6824999999999999
+2023-01-15 16:16:07,266 - Models - INFO - the Logistic Regression model has been trained evaluated 0.76 and saved selected
+2023-01-15 16:16:46,130 - Models - INFO - machine learning model Logistic Regression selected
+2023-01-15 16:16:53,333 - Models - INFO - the grid search best params are {'C': 0.1, 'max_iter': 50, 'penalty': 'none', 'solver': 'newton-cg'}
+2023-01-15 16:16:53,334 - Models - INFO - the grid search best score is 0.6950000000000001
+2023-01-15 16:16:53,336 - Models - INFO - the Logistic Regression model has been trained evaluated 0.68 and saved selected
+2023-01-15 16:17:00,661 - Models - INFO - machine learning model MLPClassifier selected
+2023-01-15 16:17:16,494 - Models - INFO - the grid search best params are {'alpha': 0.1, 'hidden_layer_sizes': (20,)}
+2023-01-15 16:17:16,495 - Models - INFO - the grid search best score is 0.6975
+2023-01-15 16:17:16,515 - Models - INFO - the MLPClassifier model has been trained evaluated 0.73 and saved selected
+2023-01-15 16:17:26,482 - Models - INFO - machine learning model SVC selected
+2023-01-15 16:17:31,474 - Models - INFO - the grid search best params are {'C': 10.0, 'degree': 2, 'gamma': 'auto', 'kernel': 'rbf'}
+2023-01-15 16:17:31,474 - Models - INFO - the grid search best score is 0.7525000000000001
+2023-01-15 16:17:31,485 - Models - INFO - the SVC model has been trained evaluated 0.8 and saved selected
+2023-01-15 16:17:36,488 - Models - INFO - machine learning model SVR selected
+2023-01-15 16:17:55,857 - Models - INFO - the grid search best params are {'C': 0.1, 'degree': 2, 'gamma': 'auto', 'kernel': 'linear'}
+2023-01-15 16:17:55,857 - Models - INFO - the grid search best score is 0.0
+2023-01-15 16:23:32,453 - Models - INFO - machine learning model Linear Regression selected
+2023-01-15 16:23:33,239 - Models - INFO - the grid search best params are {'copy_X': True, 'fit_intercept': True, 'n_jobs': -1}
+2023-01-15 16:23:33,240 - Models - INFO - the grid search best score is 0.0
+2023-01-15 16:24:04,423 - Models - INFO - machine learning model Logistic Regression selected
+2023-01-15 16:24:12,185 - Models - INFO - the grid search best params are {'C': 0.1, 'max_iter': 50, 'penalty': 'none', 'solver': 'newton-cg'}
+2023-01-15 16:24:12,186 - Models - INFO - the grid search best score is 0.7674999999999998
+2023-01-15 16:24:12,190 - Models - INFO - the Logistic Regression model has been trained evaluated 0.68 and saved selected
+2023-01-15 16:24:24,847 - Models - INFO - machine learning model MLPClassifier selected
+2023-01-15 16:24:41,313 - Models - INFO - the grid search best params are {'alpha': 1.0, 'hidden_layer_sizes': (10, 10)}
+2023-01-15 16:24:41,313 - Models - INFO - the grid search best score is 0.7275
+2023-01-15 16:24:41,336 - Models - INFO - the MLPClassifier model has been trained evaluated 0.74 and saved selected
+2023-01-15 16:24:48,781 - Models - INFO - machine learning model Decision Tree Classifier selected
+2023-01-15 16:24:50,948 - Models - INFO - the grid search best params are {'criterion': 'gini', 'max_depth': 10, 'min_samples_leaf': 5, 'min_samples_split': 10}
+2023-01-15 16:24:50,948 - Models - INFO - the grid search best score is 0.8350000000000002
+2023-01-15 16:24:50,955 - Models - INFO - the Decision Tree Classifier model has been trained evaluated 0.8 and saved selected
+2023-01-15 16:24:56,778 - Models - INFO - machine learning model SVC selected
+2023-01-15 16:25:01,230 - Models - INFO - the grid search best params are {'C': 10.0, 'degree': 2, 'gamma': 'auto', 'kernel': 'rbf'}
+2023-01-15 16:25:01,231 - Models - INFO - the grid search best score is 0.79
+2023-01-15 16:25:01,242 - Models - INFO - the SVC model has been trained evaluated 0.77 and saved selected
+2023-01-15 16:25:11,096 - Models - INFO - machine learning model SVR selected
+2023-01-15 16:25:17,240 - Models - INFO - the grid search best params are {'C': 0.1, 'degree': 2, 'gamma': 'auto', 'kernel': 'linear'}
+2023-01-15 16:25:17,241 - Models - INFO - the grid search best score is 0.0
+2023-01-15 16:30:44,223 - Models - INFO - machine learning model Isolation Forest selected
+2023-01-15 16:31:20,492 - Models - INFO - machine learning model Gradient Boosting Classifier selected
+2023-01-15 16:33:00,333 - Models - INFO - machine learning model Extra Tree Classifier selected
+2023-01-15 16:33:05,230 - Models - INFO - the grid search best params are {'criterion': 'gini', 'max_depth': 10, 'min_samples_leaf': 2, 'min_samples_split': 2}
+2023-01-15 16:33:05,261 - Models - INFO - the grid search best score is 0.77
+2023-01-15 16:33:05,277 - Models - INFO - the Extra Tree Classifier model has been trained evaluated 0.79 and saved selected
+2023-01-15 16:34:24,607 - Models - INFO - machine learning model Random Forest Classifier selected
+2023-01-15 16:36:00,189 - Models - INFO - the grid search best params are {'criterion': 'entropy', 'max_depth': 10, 'min_samples_leaf': 1, 'min_samples_split': 2}
+2023-01-15 16:36:00,190 - Models - INFO - the grid search best score is 0.86
+2023-01-15 16:36:00,226 - Models - INFO - the Decision Tree Classifier model has been trained evaluated 0.83 and saved selected
+2023-01-15 16:36:02,666 - Models - INFO - Type: limit 10.0 at 20500.0
+2023-01-15 16:46:47,381 - Models - INFO - the grid search best params are {'learning_rate': 0.01, 'loss': 'deviance', 'max_depth': 4, 'n_estimators': 300}
+2023-01-15 16:46:47,383 - Models - INFO - the grid search best score is 0.8675
+2023-01-15 16:46:47,466 - Models - INFO - the Gradient Boosting Classifier model has been trained evaluated 0.86 and saved selected
+2023-01-15 17:14:50,650 - Models - INFO - the grid search best params are {'criterion': 'gini', 'max_depth': 10, 'min_samples_leaf': 1, 'min_samples_split': 6, 'n_estimators': 50}
+2023-01-15 17:14:50,651 - Models - INFO - the grid search best score is 0.865
+2023-01-15 17:14:50,731 - Models - INFO - the Random Forest Classifier model has been trained evaluated 0.88 and saved selected
+2023-01-15 17:32:04,696 - Models - INFO - Starting auto charting with symbol BTC/USDT
+2023-01-15 17:32:06,862 - Models - INFO - getting data to plot the chart symbol BTC/USDT
+2023-01-15 17:33:07,364 - Models - INFO - getting data to plot the chart symbol BTC/USDT
+2023-01-15 17:34:07,861 - Models - INFO - getting data to plot the chart symbol BTC/USDT
+2023-01-15 17:35:08,365 - Models - INFO - getting data to plot the chart symbol BTC/USDT
+2023-01-15 17:36:08,879 - Models - INFO - getting data to plot the chart symbol BTC/USDT
+2023-01-15 17:36:22,454 - Models - INFO - Stopping auto charting with symbol BTC/USDT
+2023-01-15 22:32:05,370 - Models - INFO - Starting auto charting with symbol BTC/USDT
+2023-01-15 22:32:07,759 - Models - INFO - getting data to plot the chart symbol BTC/USDT
+2023-01-15 22:32:26,571 - Models - INFO - Stopping auto charting with symbol BTC/USDT
