@@ -1,10 +1,7 @@
-
-from tkinter import Frame
-
 from matplotlib import use
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
-from ttkbootstrap import Button
+from ttkbootstrap import Button, Frame
 
 use('TkAgg')
 

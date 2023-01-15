@@ -66,14 +66,16 @@ class AutoBot:
                     try:
                         self.exchange.create_order(symbol=self.symbol, type='limit', side='sell', amount=self.amount, price=current_price)
                         self.logger.info(f'Sold {self.amount} {self.symbol} at {current_price}')
+                        stop_loss_order = self.exchange.create_order(symbol=self.symbol, type='stop_loss', side='sell', amount=self.amount, price=self.stop_loss)
                     except Exception as e:
                         self.logger.error(e)
                 elif current_price < self.mean + self.std:
                     # Place a buy order
                     try:
-                        self.exchange.create_order(symbol=self.symbol, type='limit', side='buy', amount=self.amount, price=current_price)
+                        self.exchange.create_order(symbol=self.symbol, type='limit', side='buy', amount=self.amount, price=current_price) 
                         self.logger.info(f'Buy {self.amount} {self.symbol} at {current_price}')
+                        stop_loss_order = self.exchange.create_order(symbol=self.symbol, type='stop_loss', side='sell', amount=self.amount, price=self.stop_loss)
                     except Exception as e:
                         self.logger.error(e)
                 time.sleep(1_800)
-    
+
