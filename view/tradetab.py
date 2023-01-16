@@ -14,6 +14,7 @@ class TradeTab(Frame):
         super().__init__(parent)
         self._parent = parent
         self._presenter = presenter
+        self.exchange = self._presenter.get_exchange()
         
         # ... GUI elements for the trade page go here ...
         self.type_var = StringVar(self)
@@ -21,7 +22,13 @@ class TradeTab(Frame):
         self.type_menu = OptionMenu(
             self, self.type_var, "market", "limit", "stop")
         
-         # Add sliders for setting the stop loss and take profit levels on the trade page
+        # Create a dropdown menu for selecting the exchange
+        self.exchange_var = StringVar(self)
+        self.exchange_var.set("BTC/USDT")  # default value
+        self.exchange_menu = OptionMenu(self, self.exchange_var,
+                                            *self.exchange.load_markets().keys())
+        
+        # Add sliders for setting the stop loss and take profit levels on the trade page
         self.stoploss_slider = Scale(self, from_=0, to=100, orient='horizontal')
         self.takeprofit_slider = Scale(self, from_=0, to=100, orient='horizontal')
         self.stoploss_slider.config(value=8)

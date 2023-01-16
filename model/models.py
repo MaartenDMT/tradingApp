@@ -66,9 +66,6 @@ class Models:
             
         return exchange
     
-    def get_autobot(self, exchange,symbol,amount, stop_loss,take_profit):
-        autobot = AutoBot(exchange,symbol, amount, stop_loss, take_profit, self.logger )
-        return autobot
     
     
 class LoginModel:
@@ -209,7 +206,7 @@ class BotTabModel:
         return files
         
     def toggle_auto_trade(self)-> bool:
-        self.bot = self.presenter.get_bot()
+        self.bot = self.presenter.get_auto_bot()
         
         # Toggle the automatic trading flag
         self.bot.auto_trade = not self.bot.auto_trade
@@ -222,13 +219,14 @@ class BotTabModel:
             
             # Start the automatic trading thread
             self.auto_trade_thread = threading.Thread(
-                target=self.bot.auto_trade_loop, args=(self.stop_event_trade,))
+                target=self.bot.start_auto_trading, args=(self.stop_event_trade,))
 
 
             # Reset the stop event
             self.stop_event_trade.clear()
 
             # Start the thread
+            self.auto_trade_thread.setDaemon(True)
             self.auto_trade_thread.start()
             
             return True
@@ -245,6 +243,16 @@ class BotTabModel:
             
             return False
             
+    def get_autobot(self, exchange,symbol,amount, stop_loss,take_profit, file, time):
+        
+        ml = MachineLearning(exchange, symbol,self.logger)
+        model = ml.load_model(file)
+
+        # # Make predictions using the scaled test data
+        # y_pred = ml.predict(model)
+        autobot = AutoBot(exchange,symbol, amount, stop_loss, take_profit, model, time, ml,self.logger )
+        self.presenter.save_autobot(autobot)
+        return autobot
             
 class ChartTabModel:
     def __init__(self, logger, presenter):

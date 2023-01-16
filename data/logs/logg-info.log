@@ -97,3 +97,53 @@
 2023-01-15 22:32:05,370 - Models - INFO - Starting auto charting with symbol BTC/USDT
 2023-01-15 22:32:07,759 - Models - INFO - getting data to plot the chart symbol BTC/USDT
 2023-01-15 22:32:26,571 - Models - INFO - Stopping auto charting with symbol BTC/USDT
+2023-01-16 18:41:32,351 - Models - INFO - the grid search best params are {'criterion': 'gini', 'max_depth': 10, 'min_samples_leaf': 3, 'min_samples_split': 5}
+2023-01-16 18:41:32,366 - Models - INFO - the grid search best score is 0.8799999999999999
+2023-01-16 18:41:32,389 - Models - INFO - the Decision Tree Classifier model has been trained evaluated 0.86 and saved selected
+2023-01-16 19:32:44,312 - Models - INFO - the grid search best params are {'criterion': 'gini', 'max_depth': 10, 'min_samples_leaf': 2, 'min_samples_split': 5}
+2023-01-16 19:32:44,313 - Models - INFO - the grid search best score is 0.9099999999999999
+2023-01-16 19:32:44,323 - Models - INFO - the Decision Tree Classifier model has been trained evaluated 0.94 and saved selected
+2023-01-16 19:32:44,325 - Models - INFO - Starting auto trading bot with symbol BTCUSD
+2023-01-16 19:34:47,221 - Models - INFO - the grid search best params are {'criterion': 'entropy', 'max_depth': 10, 'min_samples_leaf': 3, 'min_samples_split': 2}
+2023-01-16 19:34:47,221 - Models - INFO - the grid search best score is 0.925
+2023-01-16 19:34:47,229 - Models - INFO - the Decision Tree Classifier model has been trained evaluated 0.94 and saved selected
+2023-01-16 19:34:47,230 - Models - INFO - Starting auto trading bot with symbol BTCUSD
+2023-01-16 19:41:10,743 - Models - INFO - the grid search best params are {'criterion': 'gini', 'max_depth': 10, 'min_samples_leaf': 1, 'min_samples_split': 5}
+2023-01-16 19:41:10,743 - Models - INFO - the grid search best score is 0.9075000000000001
+2023-01-16 19:41:10,752 - Models - INFO - the Decision Tree Classifier model has been trained evaluated 0.89 and saved selected
+2023-01-16 19:41:10,752 - Models - INFO - Starting auto trading bot with symbol BTCUSD
+2023-01-16 19:46:21,987 - Models - INFO - the grid search best params are {'criterion': 'gini', 'max_depth': 10, 'min_samples_leaf': 2, 'min_samples_split': 2}
+2023-01-16 19:46:21,988 - Models - INFO - the grid search best score is 0.9275
+2023-01-16 19:46:21,995 - Models - INFO - the Decision Tree Classifier model has been trained evaluated 0.94 and saved selected
+2023-01-16 19:46:21,995 - Models - INFO - Starting auto trading bot with symbol BTCUSD
+2023-01-16 19:46:26,258 - Models - ERROR - requires `apiKey`
+2023-01-16 19:51:20,460 - Models - INFO - the grid search best params are {'criterion': 'gini', 'max_depth': 10, 'min_samples_leaf': 3, 'min_samples_split': 5}
+2023-01-16 19:51:20,460 - Models - INFO - the grid search best score is 0.9175000000000001
+2023-01-16 19:51:20,470 - Models - INFO - the Decision Tree Classifier model has been trained evaluated 0.93 and saved selected
+2023-01-16 19:51:20,473 - Models - INFO - Starting auto trading bot with symbol BTCUSD
+2023-01-16 19:51:24,979 - Models - INFO - Bought 50.0 BTCUSD at 21213.7
+2023-01-16 19:51:26,988 - Models - ERROR - phemex {"code":39996,"msg":"ord-type is not supported.Stop_loss","data":null}
+2023-01-16 19:52:31,394 - Models - INFO - Bought 50.0 BTCUSD at 21199.0
+2023-01-16 19:52:33,397 - Models - ERROR - phemex {"code":39996,"msg":"ord-type is not supported.Stop_loss","data":null}
+2023-01-16 19:53:08,801 - Models - INFO - the grid search best params are {'criterion': 'gini', 'max_depth': 10, 'min_samples_leaf': 1, 'min_samples_split': 2}
+2023-01-16 19:53:08,802 - Models - INFO - the grid search best score is 0.9025000000000001
+2023-01-16 19:53:08,808 - Models - INFO - the Decision Tree Classifier model has been trained evaluated 0.91 and saved selected
+2023-01-16 19:53:08,808 - Models - INFO - Starting auto trading bot with symbol BTCUSD
+2023-01-16 19:53:13,394 - Models - INFO - Bought 50.0 BTCUSD at 21209.9
+2023-01-16 19:53:15,403 - Models - ERROR - phemex {"code":39996,"msg":"ord-type is not supported.Stop_loss","data":null}
+2023-01-16 20:56:09,321 - Models - INFO - the grid search best params are {'criterion': 'entropy', 'max_depth': 10, 'min_samples_leaf': 1, 'min_samples_split': 2}
+2023-01-16 20:56:09,322 - Models - INFO - the grid search best score is 0.9400000000000001
+2023-01-16 20:56:09,331 - Models - INFO - the Decision Tree Classifier model has been trained evaluated 0.95 and saved selected
+2023-01-16 20:57:17,150 - Models - INFO - the grid search best params are {'criterion': 'entropy', 'max_depth': 10, 'min_samples_leaf': 2, 'min_samples_split': 2}
+2023-01-16 20:57:17,151 - Models - INFO - the grid search best score is 0.9525
+2023-01-16 20:57:17,161 - Models - INFO - the Decision Tree Classifier model has been trained evaluated 0.92 and saved selected
+2023-01-16 20:57:17,163 - Models - INFO - Starting auto trading bot with symbol BTCUSD
+2023-01-16 20:57:23,816 - Models - INFO - Sold 50.0 BTCUSD at 21350.1
+2023-01-16 20:57:25,825 - Models - ERROR - phemex {"code":39996,"msg":"ord-type is not supported.Stoploss","data":null}
+2023-01-16 21:02:42,889 - Models - INFO - the grid search best params are {'criterion': 'entropy', 'max_depth': 10, 'min_samples_leaf': 4, 'min_samples_split': 10}
+2023-01-16 21:02:42,890 - Models - INFO - the grid search best score is 0.9475
+2023-01-16 21:03:08,430 - Models - INFO - the grid search best params are {'criterion': 'gini', 'max_depth': 10, 'min_samples_leaf': 1, 'min_samples_split': 2}
+2023-01-16 21:03:08,431 - Models - INFO - the grid search best score is 0.9574999999999999
+2023-01-16 21:03:08,437 - Models - INFO - the Decision Tree Classifier model has been trained evaluated 0.99 and saved selected
+2023-01-16 21:03:08,440 - Models - INFO - Starting auto trading bot with symbol BTCUSD
+2023-01-16 21:03:13,148 - Models - INFO - sell order for BTCUSD already exists with id: 75a02874-4547-40ef-b9f2-8ea9a4e23084

@@ -1,81 +1,110 @@
-import json
-import logging
+import threading
 import time
-
-import nest_asyncio
-import pandas as pd
-import requests
-import websockets
-
-nest_asyncio.apply()
 
 
 class AutoBot:
-    def __init__(self,exchange, symbol, amount, stop_loss, take_profit, logger):
+    def __init__(self,exchange, symbol, amount, stop_loss, take_profit, model, time, ml,logger):
+        # Initialize class variables as before
         self.exchange = exchange
         self.symbol = symbol
         self.amount = amount
         self.stop_loss = stop_loss
         self.take_profit = take_profit
+        self.model = model 
+        self.time = time
+        self.ml = ml
+        self.open_orders = {}
         
+        
+        self.auto_trade = False
         # Set up logging
         self.logger = logger
         
-        self.df = self.get_data()
-        
-
+    def getnormal_symbol(self):
+        symbol = self.symbol.replace('/','').lower()
+        return symbol
     
-    def get_data(self):
-        # Retrieve historical data from the Binance API
-        response = requests.get('https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=30m')
-        historicalData = response.json()
-
-        # Convert historical data to a pandas DataFrame
-        df = pd.DataFrame({'date': historicalData[0],
-                        'open': historicalData[1],
-                        'high': historicalData[2],
-                        'low': historicalData[3],
-                        'close': historicalData[4],
-                        'volume': historicalData[5]})
+    def getnormal_count(self):
+        if self.time == "1m":
+            return 60
+        if self.time == "5m":
+            return 300
+        if self.time == "30m":
+            return 1_800
+        if self.time == "1h":
+            return 3_600
+        if self.time == "3h":
+            return 10_800
         
-        df.date = pd.to_datetime(df.date, unit='ms')
-        
-        # Use pandas and NumPy to analyze and manipulate the data
-        self.mean = df['close'].astype(float).mean()
-        self.std = df['close'].astype(float).std()
-        
-        return df
+    def start_auto_trading(self, event):
+        self.auto_trade = event
+        self.thread = threading.Thread(target=self._run_auto_trading)
+        self.thread.setDaemon(True)
+        if self.auto_trade:
+            self.thread.start()
+        else:
+            self.thread.join()
 
-    # Set up WebSocket connection using the websockets library
-    async def receive_data(self):
-        async with websockets.connect('wss://stream.binance.com/ws/btcusdt@kline_30m') as websocket:
-            while True:
-                data = await websocket.recv()
-                data = json.loads(data)
-                candle = data['k']
-                # Convert data to a pandas DataFrame
-
-                self.df = pd.DataFrame({'date': candle['t'],'open': candle['o'], 'high': candle['h'], 'low': candle['l'], 'close': candle['c'], 'volume': candle['v']}, index=[0])
-                self.df.date = pd.to_datetime(self.df.date, unit='ms')
+            
+    def stop_auto_trading(self):
+        self.auto_trade = False
+        self.thread.join()
+       
+        
+    def _run_auto_trading(self):
+        while self.auto_trade:
+            # Get the current price of the asset
+            current_price = self.exchange.fetch_ticker(self.symbol)['last']
+            
+            # Use the model to predict the next price
+            prediction = self.ml.predict(self.model, self.time, self.symbol)
+            print(prediction)
+            
+            # Check if the prediction is above the take profit or below the stop loss
+            if prediction == 0:
                 
-
-                # Use the data to make decisions about when to buy and sell
-                current_price = self.df['close'].astype(float).iloc[0]
-                if current_price > self.mean + self.std:
-                    # Place a sell order
-                    try:
-                        self.exchange.create_order(symbol=self.symbol, type='limit', side='sell', amount=self.amount, price=current_price)
-                        self.logger.info(f'Sold {self.amount} {self.symbol} at {current_price}')
-                        stop_loss_order = self.exchange.create_order(symbol=self.symbol, type='stop_loss', side='sell', amount=self.amount, price=self.stop_loss)
-                    except Exception as e:
-                        self.logger.error(e)
-                elif current_price < self.mean + self.std:
-                    # Place a buy order
-                    try:
-                        self.exchange.create_order(symbol=self.symbol, type='limit', side='buy', amount=self.amount, price=current_price) 
-                        self.logger.info(f'Buy {self.amount} {self.symbol} at {current_price}')
-                        stop_loss_order = self.exchange.create_order(symbol=self.symbol, type='stop_loss', side='sell', amount=self.amount, price=self.stop_loss)
-                    except Exception as e:
-                        self.logger.error(e)
-                time.sleep(1_800)
-
+                open_orders = self.exchange.fetch_open_orders(symbol=self.symbol)
+                for order in open_orders:
+                    if order['side'] == 'sell':
+                        self.logger.info(f'sell order for {self.symbol} already exists with id: {order["id"]}')
+                        if self.check_order_status(order['id']):
+                            self.open_orders.pop(order['id'], None)
+                        else:
+                            return
+                # Place a sell order
+                try:
+                    order = self.exchange.create_order(symbol=self.symbol, type='limit', side='sell', amount=self.amount, price=current_price)
+                    self.logger.info(f'Sold {self.amount} {self.symbol} at {current_price}')
+                    stop_loss_order = self.exchange.create_order(symbol=self.symbol, type='stoploss', side='sell', amount=self.amount, price=current_price / (1 + self.stop_loss / 100))
+                    self.open_orders[order['id']] = {'symbol': self.symbol, 'side': 'sell','amount': self.amount, 'price': current_price}
+                except Exception as e:
+                    self.logger.error(e)
+                    
+            elif prediction == 1:
+                
+                open_orders = self.exchange.fetch_open_orders(symbol=self.symbol)
+                for order in open_orders:
+                    if order['side'] == 'sell':
+                        self.logger.info(f'sell order for {self.symbol} already exists with id: {order["id"]}')
+                        if self.check_order_status(order['id']):
+                            self.open_orders.pop(order['id'], None)
+                        else:
+                            return
+                    
+                # Place a buy order
+                try:
+                    order = self.exchange.create_order(symbol=self.symbol, type='limit', side='buy', amount=self.amount, price=current_price) 
+                    self.logger.info(f'Bought {self.amount} {self.symbol} at {current_price}')
+                    stop_loss_order = self.exchange.create_order(symbol=self.symbol, type='stoploss', side='sell', amount=self.amount, price=current_price * (1 + self.stop_loss / 100) )          
+                    self.open_orders[order['id']] = {'symbol': self.symbol, 'side': 'buy','amount': self.amount, 'price': current_price}
+                except Exception as e:
+                    self.logger.error(e)
+                    
+            time.sleep(self.getnormal_count())
+            
+    def check_order_status(self, order_id):
+        order = self.exchange.fetch_order(order_id, self.symbol)
+        if order['status'] == 'closed' or order['status'] == 'filled':
+            return True
+        else:
+            return False

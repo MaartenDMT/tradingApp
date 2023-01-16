@@ -1,3 +1,4 @@
+from tkinter import Listbox
 import ccxt
 from ttkbootstrap import Button, Entry, Frame, Label, OptionMenu, StringVar
 
@@ -20,6 +21,8 @@ class ExchangeTab(Frame):
             self, text='API Secret:')
         self.api_secret_entry = Entry(self, show='*')
         self.submit_exchange = Button(self, text='Submit', command='')
+        
+        self.history_autobot = Listbox(self)
 
         # self exchange page -------------------------------------------------
 
@@ -29,3 +32,5 @@ class ExchangeTab(Frame):
         self.api_secret_label.grid(row=2, column=0,pady=5)
         self.api_secret_entry.grid(row=2, column=1,pady=5)
         self.submit_exchange.grid(row=3, column=0, columnspan=2,pady=5)
+        
+        self.history_autobot.grid(row=4, column=0, columnspan=2,pady=5, sticky='NSEW')

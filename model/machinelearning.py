@@ -21,14 +21,14 @@ from util.utils import array_min2d
 
 
 class MachineLearning:
-    def __init__(self, exchange, symbol, logger):
+    def __init__(self, exchange, symbol, logger) -> None:
         self.exchange = exchange
         self.symbol = symbol
         self.logger = logger
     
-    def predict(self, model):
+    def predict(self, model, t='1m', symbol='BTC/USDT'):
         # Fetch the current data for the symbol
-        data = self.exchange.fetch_ohlcv(self.symbol, timeframe='1m', limit=1)
+        data = self.exchange.fetch_ohlcv(symbol, timeframe=t, limit=1)
         df = pd.DataFrame(data, columns=['date', 'open', 'high', 'low', 'close', 'volume'])
         df = df[['open', 'high', 'low', 'close', 'volume']].astype(float)
         data = np.array(df)

@@ -9,7 +9,7 @@ import pandas as pd
 from dotenv import load_dotenv
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
-from trading import Trading
+from autobot import AutoBot
 from ttkbootstrap import (Button, Entry, Frame, Label, Notebook, OptionMenu,
                           StringVar, Window)
 
@@ -63,12 +63,12 @@ class Example(Window):
         self.balance = self.exchange.fetch_balance()
         # Create a dropdown menu for selecting the exchange
         self.exchange_var = StringVar(self.exchange_pages)
-        self.exchange_var.set("Binance")  # default value
+        self.exchange_var.set("BTC/USDT")  # default value
         self.exchange_menu = OptionMenu(self.exchange_pages, self.exchange_var,
                                             *self.exchange.load_markets().keys())
-        # Create a label and entry box for the order size
+        # Create a label and entry box for the Amount to be used 
         self.order_size_label = Label(
-            self.trade_page, text="Order size")
+            self.trade_page, text="Amount")
         self.order_size_entry = Entry(self.trade_page)
         # Create a label and entry box for the order unit
         self.order_unit_label = Label(
@@ -160,10 +160,10 @@ class Example(Window):
     def get_bot(self):
         """Get an instance of the bot."""
         if self.bot is None:
-            self.bot = Trading(self)
+            self.bot = AutoBot(self)
         else:
             self.bot.destroy()
-            self.bot = Trading(self)
+            self.bot = AutoBot(self)
             
     # This function is called when the user clicks the Destroy button for a bot
     def destroy_bot(self, bot):
@@ -173,17 +173,19 @@ class Example(Window):
 
     def update_chart(self):
         if self.auto_chart:
-            self.auto_chart = False
-            self.start_autochart_button.config(text="Start Auto Charting")
-            self.bot.subscribe_to_market(self.bot.symbol, self.update_chart)
-        else:
-            self.auto_chart = True
             self.start_autochart_button.config(text="Stop Auto Charting")
-            self.bot.unsubscribe_from_market(
-                self.bot.symbol, self.update_chart)
-            thread = threading.Thread(target=self.chart_bot_price)
-            thread.daemon = True
-            thread.start()
+            while self.auto_chart:
+                # Fetch data from the exchange
+                data = self.exchange.fetch_ohlcv(self.bot.symbol)
+                df = pd.DataFrame(data)
+                df["timestamp"] = pd.to_datetime(df["timestamp"], unit='ms')
+                # Update the chart
+                self.axes.clear()
+                self.axes.plot(df["timestamp"], df["close"])
+                self.canvas.draw()
+                time.sleep(5)
+        else:
+            self.start_autochart_button.config(text="Start Auto Charting")
 
     def plot_data(self, data, type):
         data = pd.DataFrame(data)
@@ -194,32 +196,16 @@ class Example(Window):
         self.axes.set_xlabel('Time')
         self.canvas.draw()
 
-    def chart_bot_price(self):
-        while self.auto_chart:
-            try:
-                # Get the current price from the bot
-                price = self.bot.get_price()
-                # Add the price to the list of prices
-                self.prices.append(price)
-                # Clear the axis
-                self.axes.clear()
-                # Plot the new list of prices
-                self.axes.plot(self.prices)
-                # Draw the canvas
-                self.canvas.draw()
-                # Sleep for 5 seconds
-                time.sleep(5)
-            except Exception as e:
-                logging.error(e)
-                break
-
     def get_bot(self):
+        symbol = self.symbol_entry.get()
+        order_size = float(self.order_size_entry.get())
+        order_unit = float(self.order_unit_entry.get())
         # Get the selected exchange
         exchange = self.selected_exchange.get()
         # Get the selected market
         market = self.selected_market.get()
         # Create a new instance of the bot using the selected exchange and market
-        self.bot = Trading(exchange, market)
+        self.bot = AutoBot(exchange, symbol)
         # Enable the start and stop button
         self.start_bot_button.config(state='normal')
         self.stop_bot_button.config(state='normal')

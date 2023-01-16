@@ -1,5 +1,5 @@
 import os
-from tkinter import messagebox
+from tkinter import END, messagebox
 
 import ccxt
 from ttkbootstrap import Frame
@@ -145,41 +145,47 @@ class Presenter:
         else:
             # Update the status label
             self.bot_tab.auto_trade_button.config(text="Start Auto Trade")
-    
-    def get_bot(self):
-        bot = self._model.tradetab_model.get_trading(self._model.tradetab_model.symbol)
-        return bot
-    
 
     def get_data_ml_files(self) -> list:
         files = self._model.bottab_model.get_data_ml_files()
         return files
     
-    # def get_auto_bot(self):
-    #     exchange = self.get_autobot_exchange()
-    #     symbol = 
-    #     amount = 
-    #     stoploss = 
-    #     takeprofit = 
+    def get_auto_bot(self):
+        self.bot_tab = self.bot_tab_view()
+        exchange = self.get_autobot_exchange()
+        symbol = self.bot_tab.exchange_var.get()
+        amount = float(self.bot_tab.amount_slider.get())
+        stoploss = float(self.bot_tab.loss_slider.get())
+        takeprofit = float(self.bot_tab.profit_slider.get())
+        time = self.bot_tab.time_var.get()
+        file = self.bot_tab.optionmenu_var.get()
         
-    #     autobot = self._model.get_autobot(exchange, symbol, amount,stoploss,takeprofit)
-    #     return autobot
+        
+        autobot = self._model.bottab_model.get_autobot(exchange, symbol, amount,stoploss,takeprofit, file, time)
+        return autobot
     
     def get_autobot_exchange(self):
         exchange_tab =  self.exchange_tab_view()
         exchange_name = exchange_tab.exchange_var.get()
         key = exchange_tab.api_key_entry.get()
         secret = exchange_tab.api_secret_entry.get()
+        l=False
         
-        if key or secret or exchange_name == None:
+        print(exchange_name)
+        
+        if key == "" or secret == "" or exchange_name == "":
             exchange_name = "phemex"
             key = os.environ.get('API_KEY_PHE_TEST')
             secret = os.environ.get('API_SECRET_PHE_TEST')
+            l = True
         
         exchange = getattr(ccxt, exchange_name)({'apiKey': key,
                         'secret': secret,
                         'rateLimit': 2000,
                         'enableRateLimit': True})
+        if l:
+            exchange.set_sandbox_mode(True)
+            
         return exchange
         
     # Chart tab  -------------------------------------------------------------------
@@ -213,6 +219,12 @@ class Presenter:
             self.chart_tab.axes.clear()
             # Update the status label
             self.chart_tab.start_autochart_button.config(text="Start Auto Charting")
+    
+    # Exchange tab --------------------------------------------------------------------------
+    
+    def save_autobot(self, autobot):
+        exchange_tab = self.exchange_tab_view()
+        exchange_tab.history_autobot.insert(END, autobot)
     
     
     # ML tab -------------------------------------------------------------------
