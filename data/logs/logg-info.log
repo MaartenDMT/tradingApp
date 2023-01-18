@@ -147,3 +147,57 @@
 2023-01-16 21:03:08,437 - Models - INFO - the Decision Tree Classifier model has been trained evaluated 0.99 and saved selected
 2023-01-16 21:03:08,440 - Models - INFO - Starting auto trading bot with symbol BTCUSD
 2023-01-16 21:03:13,148 - Models - INFO - sell order for BTCUSD already exists with id: 75a02874-4547-40ef-b9f2-8ea9a4e23084
+2023-01-17 13:25:24,029 - Models - INFO - Starting auto trading bot with symbol BTCUSD
+2023-01-17 13:25:36,433 - Models - INFO - Sold 50.0 BTCUSD at 21318.8
+2023-01-17 13:25:38,443 - Models - ERROR - phemex {"code":39996,"msg":"ord-type is not supported.Stoploss","data":null}
+2023-01-17 13:26:42,855 - Models - INFO - sell order for BTCUSD already exists with id: a00fe39d-4726-4eed-98a0-0bbd66861eb8
+2023-01-17 13:27:55,421 - Models - INFO - Starting auto trading bot with symbol BTCUSD
+2023-01-17 13:28:05,829 - Models - INFO - sell order for BTCUSD already exists with id: a00fe39d-4726-4eed-98a0-0bbd66861eb8
+2023-01-17 15:55:00,670 - Models - INFO - Creating a auto trading bot <model.autobot.AutoBot object at 0x00000173819DFC70>
+2023-01-17 15:55:13,465 - Models - INFO - no bot detected, creating a bot
+2023-01-17 15:58:46,017 - Models - INFO - Creating a auto trading bot <model.autobot.AutoBot object at 0x0000017082F7EC70>
+2023-01-17 16:01:10,797 - Models - INFO - Creating a auto trading bot <model.autobot.AutoBot object at 0x00000297F16AEC70>
+2023-01-17 16:04:59,877 - Models - INFO - Creating a auto trading bot <model.autobot.AutoBot object at 0x00000297F12BAA90>
+2023-01-17 16:07:48,779 - Models - INFO - Creating a auto trading bot Autobot
+2023-01-17 16:11:01,597 - Models - INFO - Creating a auto trading bot Autobot
+2023-01-17 16:13:08,016 - Models - INFO - Creating a auto trading bot Autobot
+2023-01-17 16:13:12,435 - Models - INFO - no bot detected, creating a bot
+2023-01-17 16:13:24,869 - Models - INFO - Sold 50.0 BTCUSD at 21311.0
+2023-01-17 16:13:26,698 - Models - ERROR - phemex {"code":39996,"msg":"ord-type is not supported.Stoploss","data":null}
+2023-01-17 16:14:31,105 - Models - INFO - sell order for BTCUSD already exists with id: 6568390a-3753-4e71-819f-eb0d1ffbe96b
+2023-01-17 16:19:58,838 - Models - INFO - Creating a auto trading bot Autobot
+2023-01-17 16:20:03,051 - Models - INFO - no bot detected, creating a bot
+2023-01-17 16:20:15,499 - Models - INFO - Sold 50.0 BTCUSD at 21354.9
+2023-01-17 16:20:17,495 - Models - ERROR - phemex {"code":39996,"msg":"ord-type is not supported.Stoploss","data":null}
+2023-01-17 16:23:31,886 - Models - INFO - Creating a auto trading bot Autobot
+2023-01-17 16:23:37,609 - Models - INFO - no bot detected, creating a bot
+2023-01-17 16:23:50,111 - Models - INFO - Sold 50.0 BTCUSD at 21339.5
+2023-01-17 16:23:51,938 - Models - ERROR - phemex {"code":39996,"msg":"ord-type is not supported.Stoploss","data":null}
+2023-01-17 16:28:56,320 - Models - INFO - sell order for BTCUSD already exists with id: b2f37394-c82a-400e-a6de-a7abbbe8c6fc
+2023-01-17 16:34:37,961 - Models - INFO - Creating a auto trading bot Autobot
+2023-01-17 16:34:41,905 - Models - INFO - no bot detected, creating a bot
+2023-01-17 16:34:52,337 - Models - INFO - sell order for BTCUSD already exists with id: b2f37394-c82a-400e-a6de-a7abbbe8c6fc
+2023-01-17 16:37:26,332 - Models - INFO - Creating a auto trading bot Autobot
+2023-01-17 16:37:37,079 - Models - INFO - no bot detected, creating a bot
+2023-01-17 16:49:42,702 - Models - INFO - Creating a auto trading bot Autobot
+2023-01-17 16:50:35,368 - Models - INFO - no bot detected, creating a bot
+2023-01-17 16:50:43,789 - Models - INFO - the prediction gave 0 waiting for a trading oppertunity!
+2023-01-17 16:51:46,186 - Models - INFO - the prediction gave 0 waiting for a trading oppertunity!
+2023-01-17 16:52:48,595 - Models - INFO - the prediction gave 0 waiting for a trading oppertunity!
+2023-01-17 16:53:50,993 - Models - INFO - the prediction gave 0 waiting for a trading oppertunity!
+2023-01-17 16:54:53,379 - Models - INFO - the prediction gave 0 waiting for a trading oppertunity!
+2023-01-17 16:55:55,772 - Models - INFO - the prediction gave 0 waiting for a trading oppertunity!
+2023-01-17 16:56:58,159 - Models - INFO - the prediction gave 0 waiting for a trading oppertunity!
+2023-01-17 16:58:00,555 - Models - INFO - the prediction gave 0 waiting for a trading oppertunity!
+2023-01-17 16:59:02,950 - Models - INFO - the prediction gave 0 waiting for a trading oppertunity!
+2023-01-17 17:06:11,446 - Models - INFO - Creating a auto trading bot Autobot
+2023-01-17 17:06:18,975 - Models - INFO - no bot detected, creating a bot
+2023-01-17 17:06:31,418 - Models - INFO - Bought 50.0 BTCUSD at 21151.9
+2023-01-17 17:06:33,253 - Models - ERROR - phemex {"code":39996,"msg":"ord-type is not supported.Stoploss","data":null}
+2023-01-17 17:07:39,675 - Models - INFO - Bought 50.0 BTCUSD at 21132.9
+2023-01-17 17:07:41,492 - Models - ERROR - phemex {"code":39996,"msg":"ord-type is not supported.Stoploss","data":null}
+2023-01-17 17:08:47,917 - Models - INFO - Bought 50.0 BTCUSD at 21150.3
+2023-01-17 17:08:49,729 - Models - ERROR - phemex {"code":39996,"msg":"ord-type is not supported.Stoploss","data":null}
+2023-01-17 17:09:56,164 - Models - INFO - Bought 50.0 BTCUSD at 21143.5
+2023-01-17 17:09:58,161 - Models - ERROR - phemex {"code":39996,"msg":"ord-type is not supported.Stoploss","data":null}
+2023-01-18 15:41:47,369 - Models - INFO - Creating a auto trading bot Autobot

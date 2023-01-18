@@ -13,7 +13,7 @@ class Presenter:
         self._model = model
         self._view = view
         self.get_frames()
-
+        self.bot_count = 0
         
     def run(self):
         self._view.mainloop()
@@ -134,17 +134,35 @@ class Presenter:
         # self.trade_tab.update_history()
         
         
-        
     # Bot tab  ----------------------------------------------------------------------
-    def toggle_auto_trade(self) ->None:
-        self.auto_trade = self._model.bottab_model.toggle_auto_trade()
-        self.bot_tab = self.bot_tab_view()
-        if self.auto_trade:
-            # Update the status label
-            self.bot_tab.auto_trade_button.config(text="Stop Auto Trade")
+
+    def start_bot(self, index: int) -> None:
+        self._model.bottab_model.start_bot(index)
+        
+        bot_tab = self.bot_tab_view()
+        bot_tab.update_bot_status("Started", index)
+
+    def stop_bot(self, index: int) -> None:
+        self._model.bottab_model.stop_bot(index)
+        
+        bot_tab = self.bot_tab_view()
+        bot_tab.update_bot_status("Stopped", index)
+
+    def create_bot(self) -> None:
+        self.bot_count += 1
+        self._model.bottab_model.create_bot()
+        
+        bot_tab = self.bot_tab_view()
+        bot_tab.add_bot_to_optionmenu(self.bot_count)
+
+    def destroy_bot(self, index: int) -> None:
+        if index < len(self._model.bottab_model.bots):
+            self._model.bottab_model.destroy_bot(index)
+            
+            bot_tab = self.bot_tab_view()
+            bot_tab.remove_bot_from_optionmenu(index)
         else:
-            # Update the status label
-            self.bot_tab.auto_trade_button.config(text="Start Auto Trade")
+            messagebox.showerror("Error", "There is no bot to destroy.")
 
     def get_data_ml_files(self) -> list:
         files = self._model.bottab_model.get_data_ml_files()

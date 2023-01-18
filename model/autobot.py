@@ -3,7 +3,7 @@ import time
 
 
 class AutoBot:
-    def __init__(self,exchange, symbol, amount, stop_loss, take_profit, model, time, ml,logger):
+    def __init__(self,exchange, symbol, amount, stop_loss, take_profit, model, time, ml, trade_x,logger):
         # Initialize class variables as before
         self.exchange = exchange
         self.symbol = symbol
@@ -13,6 +13,7 @@ class AutoBot:
         self.model = model 
         self.time = time
         self.ml = ml
+        self.trade_x = trade_x
         self.open_orders = {}
         
         
@@ -38,21 +39,18 @@ class AutoBot:
         
     def start_auto_trading(self, event):
         self.auto_trade = event
-        self.thread = threading.Thread(target=self._run_auto_trading)
-        self.thread.setDaemon(True)
-        if self.auto_trade:
-            self.thread.start()
-        else:
-            self.thread.join()
+        self._run_auto_trading()
+
 
             
-    def stop_auto_trading(self):
-        self.auto_trade = False
-        self.thread.join()
+    def stop_auto_trading(self, event):
+        self.auto_trade = event
        
         
     def _run_auto_trading(self):
         while self.auto_trade:
+            if self.auto_trade == False:
+                break
             # Get the current price of the asset
             current_price = self.exchange.fetch_ticker(self.symbol)['last']
             
@@ -61,7 +59,7 @@ class AutoBot:
             print(prediction)
             
             # Check if the prediction is above the take profit or below the stop loss
-            if prediction == 0:
+            if prediction == 2:
                 
                 open_orders = self.exchange.fetch_open_orders(symbol=self.symbol)
                 for order in open_orders:
@@ -84,8 +82,8 @@ class AutoBot:
                 
                 open_orders = self.exchange.fetch_open_orders(symbol=self.symbol)
                 for order in open_orders:
-                    if order['side'] == 'sell':
-                        self.logger.info(f'sell order for {self.symbol} already exists with id: {order["id"]}')
+                    if order['side'] == 'buy':
+                        self.logger.info(f'buy order for {self.symbol} already exists with id: {order["id"]}')
                         if self.check_order_status(order['id']):
                             self.open_orders.pop(order['id'], None)
                         else:
@@ -99,7 +97,8 @@ class AutoBot:
                     self.open_orders[order['id']] = {'symbol': self.symbol, 'side': 'buy','amount': self.amount, 'price': current_price}
                 except Exception as e:
                     self.logger.error(e)
-                    
+            elif prediction == 0:
+                    self.logger.info(f"the prediction gave {prediction} waiting for a trading oppertunity!")
             time.sleep(self.getnormal_count())
             
     def check_order_status(self, order_id):
@@ -108,3 +107,6 @@ class AutoBot:
             return True
         else:
             return False
+
+    def __str__(self):
+        return "Autobot"

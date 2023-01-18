@@ -63,14 +63,16 @@ class MachineLearning:
             joblib.dump(model, f'{path}trained_model{model}-{accuracy}.pkl')
             
     def load_model(self, filename):
+        path = r'data/ml/'
+        file = f'{path}{filename}'
         try:
             # Open the file and load the model
-            model = joblib.load(filename)
+            model = joblib.load(file)
         except FileNotFoundError:
-            name = 'Decision Tree Classifier'
-            model = self.train_evaluate_and_save_model(name)
+            # name = 'Decision Tree Classifier'
+            # model = self.train_evaluate_and_save_model(name)
+            self.logger.info(f'there is no file called: {file}')
 
-            
         return model
 
 
