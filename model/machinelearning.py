@@ -99,6 +99,7 @@ class MachineLearning:
                      'Extra Tree Classifier', 'Logistic Regression', 'MLPClassifier', 
                      'Gradient Boosting Classifier']:
             
+            #TODO: bins are not probably set 
             # Divide labels into three categories: low, medium, and high
             labels = ['low', 'medium','high']
             df['label_category'] = pd.qcut(df['close'].astype(float), q=5, labels=labels, duplicates='drop')
@@ -266,6 +267,7 @@ class MLModelTrainer:
                 "objective": ["binary:logistic","multi:softmax"],
                 "num_class": [1,2,3,4]
             }
+        # TODO: refactor the errors 
         elif self.algorithm == "Gaussian Naive Bayes":
             model = GaussianNB()
             parameters = {
