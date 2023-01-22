@@ -29,7 +29,7 @@ class MachineLearning:
         self.symbol = symbol
         self.logger = logger
     
-    def predict(self, model, t='1m', symbol='BTC/USDT'):
+    def predict(self, model, t='1m', symbol='BTC/USDT') -> int:
         # Fetch the current data for the symbol
         data = self.exchange.fetch_ohlcv(symbol, timeframe=t, limit=1)
         df = pd.DataFrame(data, columns=['date', 'open', 'high', 'low', 'close', 'volume'])
@@ -95,18 +95,17 @@ class MachineLearning:
         # Create the features array
         features = np.column_stack((rsi.fillna(0), macd.fillna(0), moving_average.fillna(0), df.open.fillna(0), df.high.fillna(0), df.low.fillna(0), df.volume.fillna(0)))
         
-        if model in ["SVC", "Random Forest Classifier", 'Decision Tree Classifier', 'Extra Tree Classifier', 
-                     'Logistic Regression', 'MLPClassifier', 'Gradient Boosting Classifier']:
+        if model in ["SVC", "Random Forest Classifier", 'Decision Tree Classifier', 
+                     'Extra Tree Classifier', 'Logistic Regression', 'MLPClassifier', 
+                     'Gradient Boosting Classifier']:
             
             # Divide labels into three categories: low, medium, and high
             labels = ['low', 'medium','high']
             df['label_category'] = pd.qcut(df['close'].astype(float), q=5, labels=labels, duplicates='drop')
-            
+            print(df['label_category'])
             # Create labels using the label categories
             labels = df['label_category']
-            
         else:
-            
             labels = df['close']
 
         # Initialize the scaler
@@ -123,7 +122,11 @@ class MachineLearning:
         X_train, X_test, y_train, y_test = train_test_split(features_scaled, labels_scaled, test_size=0.2)
         
 
-        if model in ['Random Forest Classifier','Gradient Boosting Classifier','SVC', 'Logistic Regression','Decision Tree Classifier','MLPClassifier',"SVR", "Extra Tree Classifier", 'XGBoost', 'Linear Regression']:
+        if model in ['Random Forest Classifier','Gradient Boosting Classifier','SVC', 
+                     'Logistic Regression','Decision Tree Classifier','MLPClassifier',
+                     "SVR", "Extra Tree Classifier", 'XGBoost Classifier', 
+                     'Linear Regression', "Radius Neighbors Classifier"]:
+            
             y_train = column_or_1d(y_train, warn=True)
             y_test = column_or_1d(y_test, warn=True)
                 
@@ -152,7 +155,7 @@ class MachineLearning:
         
         return trained_model
     
-    def train_evaluate_and_save_model_thread(self, model:str):
+    def train_evaluate_and_save_model_thread(self, model:str) -> None:
         # Create a new thread
         t = threading.Thread(target=self.train_evaluate_and_save_model, args=(model,))
         t.setDaemon(True)
@@ -160,7 +163,7 @@ class MachineLearning:
         t.start()
         
 
-    def selected_labels_features_train_thread(self, model:str, X, y):
+    def selected_labels_features_train_thread(self, model:str, X, y)-> None:
         # Create a new thread
         t = threading.Thread(target=self.selected_labels_features_train, args=(model,X,y,))
         t.setDaemon(True)
@@ -170,15 +173,11 @@ class MachineLearning:
 
 
 class MLModelTrainer:
-    def __init__(self, algorithm, logger):
+    def __init__(self, algorithm, logger) -> None:
         self.algorithm = algorithm
         self.logger = logger
-        self.valid_algorithms = ["Linear Regression", "Logistic Regression", "MLPClassifier", "Decision Tree Classifier", "Random Forest Classifier", "SVC", "SVR", "Isolation Forest", "Gradient Boosting Classifier", "Extra Tree Classifier", "XGBoost"]
 
     def train(self, X, y):
-        if self.algorithm not in self.valid_algorithms:
-            self.logger.error(f"Invalid algorithm passed: {self.algorithm}. Please pass a valid algorithm.")
-            return
         if self.algorithm == "Linear Regression":
             model = LinearRegression()
             parameters = {
@@ -259,31 +258,34 @@ class MLModelTrainer:
                 "min_samples_leaf": [1, 2, 3, 4, 5],
                 "criterion": ["gini", "entropy"]
             }
-        elif self.algorithm == "XGBoost":
-            model = XGBClassifier(use_label_encoder=False)
+        elif self.algorithm == "XGBoost Classifier":
+            model = XGBClassifier()
             parameters = {
                 "max_depth": [2, 4, 6, 8, 10],
                 "eta": [0.1,0.2,0.3,0.4,0.5],
                 "objective": ["binary:logistic","multi:softmax"],
                 "num_class": [1,2,3,4]
             }
+        elif self.algorithm == "Gaussian Naive Bayes":
+            model = GaussianNB()
+            parameters = {
+                'priors': [None, [0.1, 0.9], [0.2, 0.8]],
+                'var_smoothing': [1e-9, 1e-8, 1e-7]
+            }
+        elif self.algorithm == "Radius Neighbors Classifier":
+            model = RadiusNeighborsClassifier()
+            parameters = {
+                'radius': [1, 2, 3, 4, 5,6,7,8,9,10],
+                'weights': ['uniform', 'distance'],
+                'algorithm': ['auto', 'ball_tree', 'kd_tree', 'brute'],
+                'leaf_size': [30, 40, 50],
+                'p': [1, 2],
+                'outlier_label': ['outliners']
+            }
         else:
             raise ValueError("Invalid algorithm: {}".format(self.algorithm))
-
-        def parallelize_search(estimator, param_grid, X, y):
-            grid_search_estimator = GridSearchCV(estimator, param_grid, cv=5)
-            random_search_estimator = RandomizedSearchCV(estimator, param_grid, cv=5)
-            bayes_search_estimator = BayesSearchCV(estimator, param_grid, cv=5)
-            with ThreadPoolExecutor() as executor:
-                grid_search = executor.submit(grid_search_estimator.fit, X, y)
-                random_search = executor.submit(random_search_estimator.fit, X, y)
-                bayes_search = executor.submit(bayes_search_estimator.fit, X, y)
-                results = [result.result() for result in as_completed([grid_search, random_search, bayes_search])]
-            best_estimator = max(results, key=lambda x: x.best_score_ if isinstance(x, (GridSearchCV, RandomizedSearchCV, BayesSearchCV)) else x.best_score)
-            print(best_estimator)
-            return best_estimator
             
-        best_estimator = parallelize_search(model, parameters, X, y)
+        best_estimator = self.parallelize_search(model, parameters, X, y)
             
         best_params = best_estimator.best_params_
         best_f1_score = best_estimator.best_score_
@@ -296,3 +298,20 @@ class MLModelTrainer:
         # return the best model
         return best_estimator
 
+    def parallelize_search(self, estimator, param_grid, X, y):
+        grid_search_estimator = GridSearchCV(estimator, param_grid, cv=5)
+        random_search_estimator = RandomizedSearchCV(estimator, param_grid, cv=5)
+        bayes_search_estimator = BayesSearchCV(estimator, param_grid, cv=5)
+        
+        with ThreadPoolExecutor() as executor:
+            grid_search = executor.submit(grid_search_estimator.fit, X, y)
+            random_search = executor.submit(random_search_estimator.fit, X, y)
+            bayes_search = executor.submit(bayes_search_estimator.fit, X, y)
+        
+            results = [result.result() for result in as_completed([grid_search, random_search, bayes_search])]
+       
+        best_estimator = max(results, key=lambda x: x.best_score_ if isinstance(x, (GridSearchCV, RandomizedSearchCV, BayesSearchCV)) else x.best_score)
+        
+        print(best_estimator)
+        
+        return best_estimator
