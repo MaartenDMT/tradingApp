@@ -30,17 +30,18 @@ class MachineLearning:
         self.logger = logger
     
     def predict(self, model, t='1m', symbol='BTC/USDT') -> int:
+        #TODO: ta.macd problem with the return wants to give 3 but you need only one
         # Fetch the current data for the symbol
-        data = self.exchange.fetch_ohlcv(symbol, timeframe=t, limit=1)
+        data = self.exchange.fetch_ohlcv(symbol, timeframe=t, limit=80)
         df = pd.DataFrame(data, columns=['date', 'open', 'high', 'low', 'close', 'volume'])
         df = df[['open', 'high', 'low', 'close', 'volume']].astype(float)
         data = np.array(df)
         # Calculate the technical indicators
         df['rsi'] = ta.rsi(df.close)
-        df['macd'] = ta.macd(df.close)
+        df['macd'] = ta.macd(df.close)[0]
         df['moving_average'] = ta.sma(df.close, length=50)
         # Create the features array
-        features = np.column_stack((df.open.fillna(0), df.high.fillna(0), df.low.fillna(0), df.close.fillna(0), df.volume.fillna(0)))
+        features = np.column_stack((df.rsi.fillna(0), df.macd.fillna(0), df.moving_average.fillna(0), df.open.fillna(0), df.high.fillna(0), df.low.fillna(0), df.volume.fillna(0)))
         # Make a prediction using the model
         prediction = model.predict(features[-1].reshape(1, -1))[0]
         return prediction

@@ -8,6 +8,7 @@ class BotTab(Frame):
         self._parent = parent
         self._presenter = presenter
         self.exchange = self._presenter.get_exchange()
+        self.bot_names = []
         # ... GUI elements for the trade page go here ...
         
         self.options_ml_frame = Frame(self)
@@ -138,8 +139,8 @@ class BotTab(Frame):
         else:
             messagebox.showerror("Error", "there is no bot to destroy")
 
-    def add_bot_to_optionmenu(self, count: int)-> None:
-        self.bot_select["menu"].add_command(label=f"Bot {count}", command=lambda: self.bot_select_var.set(f"{count}"))
+    def add_bot_to_optionmenu(self, count: int, name)-> None:
+        self.bot_select["menu"].add_command(label=f"{name}{count}", command=lambda: self.bot_select_var.set(f"{count}"))
 
     def remove_bot_from_optionmenu(self, index: int) -> None:
         if index < len(self.bot_select_var):
@@ -147,5 +148,5 @@ class BotTab(Frame):
         else:
             messagebox.showerror("Error", "There is no bot to remove.")
 
-    def update_bot_status(self, status: str, index: int) -> None:
-        self.bot_select["menu"].entryconfigure(index, label=f"Bot {index + 1} ({status})")
+    def update_bot_status(self, status: str, index: int, name) -> None:
+        self.bot_select["menu"].entryconfigure(index, label=f"{name}{index + 1} ({status})")

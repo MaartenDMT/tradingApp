@@ -237,8 +237,9 @@ class BotTabModel:
             self.logger.error(f"there is no bot to stop! ")
 
     def create_bot(self) -> None:
-        self.bots.append(self._presenter.get_auto_bot())
-        self.logger.info(f"Creating a auto trading bot {self._presenter.get_auto_bot()}")
+        bot = self._presenter.get_auto_bot()
+        self.bots.append(bot)
+        self.logger.info(f"Creating a auto trading bot {bot}")
 
 
     def destroy_bot(self, index: int) -> None:

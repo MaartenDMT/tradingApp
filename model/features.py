@@ -66,9 +66,10 @@ class Tradex_indicator:
 
         return df
 
-# make the features of the trade-x screener and the trade-x trend
+
 
     def trade_x(self):
+        # make the features of the trade-x screener and the trade-x trend
         self.create_signals_with_multiprocessing()
         
         return self.data

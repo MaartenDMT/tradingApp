@@ -140,20 +140,23 @@ class Presenter:
         self._model.bottab_model.start_bot(index)
         
         bot_tab = self.bot_tab_view()
-        bot_tab.update_bot_status("Started", index)
+        name = self.get_bot_name(bot_tab, index)
+        bot_tab.update_bot_status("Started", index, name)
 
     def stop_bot(self, index: int) -> None:
         self._model.bottab_model.stop_bot(index)
         
         bot_tab = self.bot_tab_view()
-        bot_tab.update_bot_status("Stopped", index)
+        name = self.get_bot_name(bot_tab, index)
+        bot_tab.update_bot_status("Stopped", index, name)
 
     def create_bot(self) -> None:
         self.bot_count += 1
         self._model.bottab_model.create_bot()
         
         bot_tab = self.bot_tab_view()
-        bot_tab.add_bot_to_optionmenu(self.bot_count)
+        name = self.get_bot_name(bot_tab, self.bot_count-1)
+        bot_tab.add_bot_to_optionmenu(self.bot_count, name)
 
     def destroy_bot(self, index: int) -> None:
         if index < len(self._model.bottab_model.bots):
@@ -180,8 +183,16 @@ class Presenter:
         
         
         autobot = self._model.bottab_model.get_autobot(exchange, symbol, amount,stoploss,takeprofit, file, time)
+        self.append_botname_bottab(self.bot_tab,autobot.__str__())
         return autobot
     
+    def append_botname_bottab(self, bottab, name)-> None:
+        bottab.bot_names.append(name)
+    
+    def get_bot_name(self, bot_tab, index) -> str:
+        return bot_tab.bot_names[index]
+    
+        
     def get_autobot_exchange(self):
         exchange_tab =  self.exchange_tab_view()
         exchange_name = exchange_tab.exchange_var.get()

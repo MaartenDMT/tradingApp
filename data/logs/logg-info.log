@@ -558,3 +558,12 @@
 2023-01-22 19:31:11,892 - Models - INFO - machine learning model Radius Neighbors Classifier selected
 2023-01-22 19:32:53,236 - Models - INFO - machine learning model Radius Neighbors Classifier selected
 2023-01-22 19:35:55,219 - Models - INFO - machine learning model Gaussian Naive Bayes selected
+2023-01-22 19:46:23,149 - Models - INFO - Creating a auto trading bot Autobot
+2023-01-22 19:49:11,743 - Models - INFO - no bot detected, creating a bot
+2023-01-22 19:58:00,644 - Models - INFO - Creating a auto trading bot Autobot-Phemex: BTC/USDT-1m-DecisionTreeClassifier(max_depth=10)-count: 0 -> 
+2023-01-22 19:58:33,200 - Models - INFO - no bot detected, creating a bot
+2023-01-22 20:24:12,120 - Models - INFO - Creating a auto trading bot Autobot-Phemex: BTC/USDT-1m-DecisionTreeClassifier(max_depth=3, min_samples_leaf=4)-count: 0 -> 
+2023-01-22 20:29:52,115 - Models - INFO - Creating a auto trading bot Autobot-Phemex: BTC/USDT-1m-DecisionTreeClassifier(max_depth=3, min_samples_leaf=4)-count: 0 -> 
+2023-01-22 20:47:00,897 - Models - INFO - Creating a auto trading bot Autobot-Phemex: BTC/USDT-1m-DecisionTreeClassifier(max_depth=3, min_samples_leaf=4)-count: 0 -> 
+2023-01-22 20:50:01,954 - Models - INFO - Creating a auto trading bot Autobot-Phemex: BTC/USDT-1m-DecisionTreeClassifier(max_depth=3, min_samples_leaf=4)-count: 0 -> 
+2023-01-22 20:50:31,174 - Models - INFO - no bot detected, creating a bot
