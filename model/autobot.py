@@ -1,4 +1,3 @@
-import threading
 import time
 
 
@@ -57,6 +56,10 @@ class AutoBot:
             # Use the model to predict the next price
             prediction = self.ml.predict(self.model, self.time, self.symbol)
             print(prediction)
+            
+            #Use the trade_x to get the signal
+            trade_x_signal = self.trade_x.trade_x()
+            print(trade_x_signal)
             
             # Check if the prediction is above the take profit or below the stop loss
             if prediction == 2:

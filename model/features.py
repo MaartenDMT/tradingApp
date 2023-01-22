@@ -1,7 +1,12 @@
+from re import T
 import pandas_ta as ta
 import numpy as np
 import pandas as pd
 import vectorbt as vbt
+from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor
+from multiprocessing import Pool, cpu_count
+import threading
 
 class Tradex_indicator:
 
@@ -64,10 +69,35 @@ class Tradex_indicator:
 # make the features of the trade-x screener and the trade-x trend
 
     def trade_x(self):
-        self.create_signals()
+        self.create_signals_with_multiprocessing()
         
         return self.data
+    
+    def create_signals_with_multiprocessing(self):
+        print("Creating signals using multiprocessing")
+        # Creating a pool of processes
+        pool = Pool(cpu_count())
+        # Mapping the function to the pool of processes
+        result = pool.map(self.create_signals, [self.data])
+        # Closing the pool
+        pool.close()
+        # Joining the processes
+        pool.join()
+        return result
 
+    def create_signals_with_multithreading(self):
+        print("Creating signals using multithreading")
+        # Creating a list of threads
+        threads = []
+        for i in range(cpu_count()):
+            t = threading.Thread(target=self.create_signals, args=[self.data])
+        threads.append(T)
+        for i in threads:
+            i.start()
+        for i in threads:
+            i.join()
+        result = [t.result() for t in threads]
+        return result
 
     def create_signals(self):
         
@@ -77,169 +107,170 @@ class Tradex_indicator:
         df30 = self.changeTime(self.data, '30min')
         df60 = self.changeTime(self.data, '60min')
         
-        
+        with ProcessPoolExecutor() as executor:
 
-        ##########   TREND   #########
+            ##########   TREND   #########
 
-        #Getting the Signals for the 55 high/low channel
-        ema55H, ema55L = self.trend.df_trend.ema55H, self.trend.df_trend.ema55L
-        ema_upper = np.where(self.data['close'] > ema55H, 1, 0)
-        ema_channel = np.where(self.data['close'] < ema55L, -1, ema_upper)
+            #Getting the Signals for the 55 high/low channel
+            ema55H, ema55L = self.trend.df_trend.ema55H, self.trend.df_trend.ema55L
+            ema_upper = np.where(self.data['close'] > ema55H, 1, 0)
+            ema_channel = np.where(self.data['close'] < ema55L, -1, ema_upper)
 
-        #Getting the signal for 200 ema trend
-        ema_200, ema_100 = self.trend.df_trend.ema_100, self.trend.df_trend.ema_200
+            #Getting the signal for 200 ema trend
+            ema_200, ema_100 = self.trend.df_trend.ema_100, self.trend.df_trend.ema_200
 
-        ema_trend = np.where(ema_100 > ema_200, 1, -1)
-        ema_cross = np.where(ta.cross(ema_100, ema_200), 1, 0)
-        ema_cross = np.where(ta.cross(ema_200, ema_100), -1, ema_cross)
+            ema_trend = np.where(ema_100 > ema_200, 1, -1)
+            ema_cross = np.where(ta.cross(ema_100, ema_200), 1, 0)
+            ema_cross = np.where(ta.cross(ema_200, ema_100), -1, ema_cross)
 
-        #Getting the signal for lsma trend
-        lsma, ema_10 = self.trend.df_trend.lsma, self.trend.df_trend.ema_10
-        lsma_cross_ema1 = np.where(ta.cross(ema_10, lsma), 1, 0)
-        lsma_cross_ema = np.where(ta.cross(lsma, ema_10), -1, lsma_cross_ema1)
+            #Getting the signal for lsma trend
+            lsma, ema_10 = self.trend.df_trend.lsma, self.trend.df_trend.ema_10
+            lsma_cross_ema1 = np.where(ta.cross(ema_10, lsma), 1, 0)
+            lsma_cross_ema = np.where(ta.cross(lsma, ema_10), -1, lsma_cross_ema1)
 
-        #Getting the signal for Vwap trend
-        vwap, wma = self.trend.df_trend.vwap, self.trend.df_trend.wma
-        vwap_cross1 = np.where(ta.cross(wma, vwap), 1, 0)
-        vwap_cross = np.where(ta.cross(vwap, wma), -1, vwap_cross1)
-        vwap_buy_sell_signal1 = np.where(vwap_cross & ema_channel == 1, 1, 0)
-        vwap_buy_sell_signal = np.where(
-        vwap_cross & ema_channel == -1, -1, vwap_buy_sell_signal1)
-        
-        ######### SCREENER ###########
-        
-        wma10, vwap10 = self.screener.waves(df10)
-        wma30,vwap30 = self.screener.waves(df30)
-        wma60, vwap60 = self.screener.waves(df60)
-        
-        #10min
-        s_green_dot10 = np.where(ta.cross(wma10, vwap10), 1, 0)
-        s_dots10 = np.where(ta.cross(vwap10, wma10), -1, s_green_dot10)
+            #Getting the signal for Vwap trend
+            vwap, wma = self.trend.df_trend.vwap, self.trend.df_trend.wma
+            vwap_cross1 = np.where(ta.cross(wma, vwap), 1, 0)
+            vwap_cross = np.where(ta.cross(vwap, wma), -1, vwap_cross1)
+            vwap_buy_sell_signal1 = np.where(vwap_cross & ema_channel == 1, 1, 0)
+            vwap_buy_sell_signal = np.where(
+            vwap_cross & ema_channel == -1, -1, vwap_buy_sell_signal1)
+            
+            ######### SCREENER ###########
+            
+            wma10, vwap10 = self.screener.waves(df10)
+            wma30,vwap30 = self.screener.waves(df30)
+            wma60, vwap60 = self.screener.waves(df60)
+            
+            #10min
+            s_green_dot10 = np.where(ta.cross(wma10, vwap10), 1, 0)
+            s_dots10 = np.where(ta.cross(vwap10, wma10), -1, s_green_dot10)
 
-        #30min
-        s_green_dot30 = np.where(ta.cross(wma30, vwap30), 1, 0)
-        s_dots30 = np.where(ta.cross(vwap30, wma30), -1, s_green_dot30)
+            #30min
+            s_green_dot30 = np.where(ta.cross(wma30, vwap30), 1, 0)
+            s_dots30 = np.where(ta.cross(vwap30, wma30), -1, s_green_dot30)
 
-        #60min
-        s_green_dot60 = np.where(ta.cross(wma60, vwap60), 1, 0)
-        s_dots60 = np.where(ta.cross(vwap60, wma60), -1, s_green_dot60)
-        s_dots60_trend = np.where(wma60 > vwap60, 1, -1)
-        
-        # self.df_screener['dots_10'] = pd.DataFrame(dots10).fillna(0)
-        # self.df_screener['dots_30'] = pd.DataFrame(dots30).fillna(0)
-        # self.df_screener['dots_60'] = pd.DataFrame(dots60).fillna(0)
-        # self.df_screener['dots60_trend'] = pd.DataFrame(dots60_trend).fillna(0)
-        
-   
-        ######### REAL TIME ###########
-        
-        #gets blue wave and ligth blue wave
-        wt11, wt21 = self.real_time.waves(df10)
-        wt13, wt23 = self.real_time.waves(df30)
-        wt16, wt26 = self.real_time.waves(df60)
-
-        #10min
-        green_dot10 = np.where(ta.cross(wt11, wt21), 1, 0)
-        dots10 = np.where(ta.cross(wt21, wt11), -1, green_dot10)
-
-        #30min
-        green_dot30 = np.where(ta.cross(wt13, wt23), 1, 0)
-        dots30 = np.where(ta.cross(wt23, wt13), -1, green_dot30)
-
-        #60min
-        green_dot60 = np.where(ta.cross(wt16, wt26), 1, 0)
-        dots60 = np.where(ta.cross(wt26, wt16), -1, green_dot60)
-        dots60_trend = np.where(wt16 > wt26, 1, -1)
-
-        #########   SCANNER   #########
-
-        #Get the RSI SIGNALS
-        rsi14, rsi40 = self.scanner.df_scanner.rsi14, self.scanner.df_scanner.rsi40
-
-        rsi14p = rsi14.shift(1)
-        rsi40p = rsi40.shift(1)
-        rsi14.fillna(0, inplace=True)
-        rsi14p.fillna(0, inplace=True)
-        rsi40.fillna(0, inplace=True)
-        rsi40p.fillna(0, inplace=True)
-
-        rsi_trend1 = np.where(rsi40 > 46.5, -1, 0)
-        rsi_trend2 = np.where(rsi40 < 49.82, -1, rsi_trend1)
-        rsi_trend = np.where(rsi40 > 49.82, 1, rsi_trend2)
-
-        #Get the RSI SIGNALS FOR OVERBOUGHT AND OVERSOLD
-        def find_crossover(rsi, rsip):
-            if rsi > 30 and rsip < 30:
-                return 1
-            elif rsi < 70 and rsip > 70:
-                return -1
-            return 0
-
-        def find_crossover40(rsi, rsip):
-            if rsi > 49.2 and rsip < 49.2:
-                return 1
-            elif rsi < 49.2 and rsip > 49.2:
-                return -1
-            return 0
-
-
-        rsi_overbought = np.where(rsi14 > 70, -1, 0)
-        rsi_sb = np.where(rsi14 < 28, 1, rsi_overbought)
-
-        
-
-        #### SIGNALS INTO DATAFRAME #####
-        
-        #Trend Dataframe
-        self.trend.df_trend['ema_channel'] = ema_channel
-        self.trend.df_trend['lsma_cross_ema'] = lsma_cross_ema
-        self.trend.df_trend['vwap_cross'] = vwap_cross
-        self.trend.df_trend['vwap_buy_sell'] = vwap_buy_sell_signal
-        self.trend.df_trend['ema_trend'] = ema_trend
-
-        #Screener Dataframe
-        self.screener.df_screener['s_dots10'] = pd.Series(s_dots10)
-        self.screener.df_screener['s_dots30'] = pd.Series(s_dots30)
-        self.screener.df_screener['s_dots60'] = pd.Series(s_dots60)
-        self.screener.df_screener['s_dots60_trend'] = pd.Series(s_dots60_trend)
-
-        
-      
-        #Real Time Dataframe
-        self.real_time.df_real_time['dots10'] = pd.Series(dots10).fillna(inplace=True, value=0)
-        self.real_time.df_real_time['dots30'] = pd.Series(dots30).fillna(inplace=True, value=0)
-        self.real_time.df_real_time['dots60'] = pd.Series(dots60).fillna(inplace=True, value=0)
-        self.real_time.df_real_time['dots60_trend'] = pd.Series(dots60_trend).fillna(inplace=True, value=0)
-        
-        
-        
-        
-        #Scanner Dataframe
-        self.scanner.df_scanner['rsi_trend'] = rsi_trend
-        self.scanner.df_scanner['rsi_sb'] = rsi_sb
-        self.scanner.df_scanner['rsi_b_s14'] = np.vectorize(find_crossover)(rsi14, rsi14p)
-        self.scanner.df_scanner['rsi40_buy_sell'] = np.vectorize(find_crossover40)(rsi40, rsi40p)
-
-  
-        #general Dataframe
-        
-        
-        #T
-      
-
-        #S
+            #60min
+            s_green_dot60 = np.where(ta.cross(wma60, vwap60), 1, 0)
+            s_dots60 = np.where(ta.cross(vwap60, wma60), -1, s_green_dot60)
+            s_dots60_trend = np.where(wma60 > vwap60, 1, -1)
+            
+            # self.df_screener['dots_10'] = pd.DataFrame(dots10).fillna(0)
+            # self.df_screener['dots_30'] = pd.DataFrame(dots30).fillna(0)
+            # self.df_screener['dots_60'] = pd.DataFrame(dots60).fillna(0)
+            # self.df_screener['dots60_trend'] = pd.DataFrame(dots60_trend).fillna(0)
+            
     
-        #RT
+            ######### REAL TIME ###########
+            
+            #gets blue wave and ligth blue wave
+            wt11, wt21 = self.real_time.waves(df10)
+            wt13, wt23 = self.real_time.waves(df30)
+            wt16, wt26 = self.real_time.waves(df60)
+
+            #10min
+            green_dot10 = np.where(ta.cross(wt11, wt21), 1, 0)
+            dots10 = np.where(ta.cross(wt21, wt11), -1, green_dot10)
+
+            #30min
+            green_dot30 = np.where(ta.cross(wt13, wt23), 1, 0)
+            dots30 = np.where(ta.cross(wt23, wt13), -1, green_dot30)
+
+            #60min
+            green_dot60 = np.where(ta.cross(wt16, wt26), 1, 0)
+            dots60 = np.where(ta.cross(wt26, wt16), -1, green_dot60)
+            dots60_trend = np.where(wt16 > wt26, 1, -1)
+
+            #########   SCANNER   #########
+
+            #Get the RSI SIGNALS
+            rsi14, rsi40 = self.scanner.df_scanner.rsi14, self.scanner.df_scanner.rsi40
+
+            rsi14p = rsi14.shift(1)
+            rsi40p = rsi40.shift(1)
+            rsi14.fillna(0, inplace=True)
+            rsi14p.fillna(0, inplace=True)
+            rsi40.fillna(0, inplace=True)
+            rsi40p.fillna(0, inplace=True)
+
+            rsi_trend1 = np.where(rsi40 > 46.5, -1, 0)
+            rsi_trend2 = np.where(rsi40 < 49.82, -1, rsi_trend1)
+            rsi_trend = np.where(rsi40 > 49.82, 1, rsi_trend2)
+
+            #Get the RSI SIGNALS FOR OVERBOUGHT AND OVERSOLD
+            def find_crossover(rsi, rsip):
+                if rsi > 30 and rsip < 30:
+                    return 1
+                elif rsi < 70 and rsip > 70:
+                    return -1
+                return 0
+
+            def find_crossover40(rsi, rsip):
+                if rsi > 49.2 and rsip < 49.2:
+                    return 1
+                elif rsi < 49.2 and rsip > 49.2:
+                    return -1
+                return 0
+
+
+            rsi_overbought = np.where(rsi14 > 70, -1, 0)
+            rsi_sb = np.where(rsi14 < 28, 1, rsi_overbought)
+
+            
+
+            #### SIGNALS INTO DATAFRAME #####
+            
+            #Trend Dataframe
+            self.trend.df_trend['ema_channel'] = ema_channel
+            self.trend.df_trend['lsma_cross_ema'] = lsma_cross_ema
+            self.trend.df_trend['vwap_cross'] = vwap_cross
+            self.trend.df_trend['vwap_buy_sell'] = vwap_buy_sell_signal
+            self.trend.df_trend['ema_trend'] = ema_trend
+
+            #Screener Dataframe
+            self.screener.df_screener['s_dots10'] = pd.Series(s_dots10)
+            self.screener.df_screener['s_dots30'] = pd.Series(s_dots30)
+            self.screener.df_screener['s_dots60'] = pd.Series(s_dots60)
+            self.screener.df_screener['s_dots60_trend'] = pd.Series(s_dots60_trend)
+
+            
         
-        #SC
+            #Real Time Dataframe
+            self.real_time.df_real_time['dots10'] = pd.Series(dots10).fillna(inplace=True, value=0)
+            self.real_time.df_real_time['dots30'] = pd.Series(dots30).fillna(inplace=True, value=0)
+            self.real_time.df_real_time['dots60'] = pd.Series(dots60).fillna(inplace=True, value=0)
+            self.real_time.df_real_time['dots60_trend'] = pd.Series(dots60_trend).fillna(inplace=True, value=0)
+            
+            
+            
+            
+            #Scanner Dataframe
+            self.scanner.df_scanner['rsi_trend'] = rsi_trend
+            self.scanner.df_scanner['rsi_sb'] = rsi_sb
+            self.scanner.df_scanner['rsi_b_s14'] = np.vectorize(find_crossover)(rsi14, rsi14p)
+            self.scanner.df_scanner['rsi40_buy_sell'] = np.vectorize(find_crossover40)(rsi40, rsi40p)
+
+    
+            #general Dataframe
+            
+            
+            #T
+        
+
+            #S
+        
+            #RT
+            
+            #SC
         
         
 
 
-'''
-    TREND: visueel beeld van de market trend
-'''
+
 class Trend:
+    '''
+    TREND: visueel beeld van de market trend
+    '''
     def __init__(self, data):
         self.data = data
         self.df_trend = pd.DataFrame()
@@ -338,11 +369,13 @@ class Trend:
         return data.vwap  
 
 
-'''
-    SCREENER: be a market maker
-'''
+
 
 class Screener:
+    '''
+
+    SCREENER: be a market maker
+    '''
     def __init__(self, data):
         self.data = data
         self.df_screener = pd.DataFrame()
@@ -381,7 +414,6 @@ class Screener:
 
         ap = ta.hlc3(df.high, df.low, df.close)
         esa = ta.vwma(ap, df.volume, n1)
-        print(esa)
         d = ta.ema(abs(ap - esa), n1)
         ci = (ap - esa) / (0.030 * d)
         tci = ta.wma(ci, n2) #, talib=True
@@ -424,57 +456,18 @@ class Screener:
 
         money_flow = typical_price * self.data['volume']
 
-        #Get all of the positive and negative money flows
-        #where the current typical price is higher than the previous day's typical price, we will append that days money flow to a positive list
-        #and where the current typical price is lower than the previous day's typical price, we will append that days money flow to a negative list
-        #and set any other value to 0 to be used when summing
+        # Get all of the positive and negative money flows
+        positive_flow = money_flow.where(typical_price > typical_price.shift(), 0)
+        negative_flow = money_flow.where(typical_price < typical_price.shift(), 0)
 
-        positive_flow = []  # Create a empty list called positive flow
-        negative_flow = []  # Create a empty list called negative flow
+        # Get all of the positive and negative money flows within the time period
+        positive_mf = positive_flow.rolling(period).sum()
+        negative_mf = negative_flow.rolling(period).sum()
 
-        #Loop through the typical price
-        for i in np.arange(1, len(typical_price)):
-
-            # if the present typical price is greater than yesterdays typical price
-            if typical_price[i] > typical_price[i-1]:
-
-                # Then append money flow at position i-1 to the positive flow list
-                positive_flow.append(money_flow[i-1])
-                negative_flow.append(0)  # Append 0 to the negative flow list
-
-                # if the present typical price is less than yesterdays typical price
-            elif typical_price[i] < typical_price[i-1]:
-
-                # Then append money flow at position i-1 to negative flow list
-                negative_flow.append(money_flow[i-1])
-                positive_flow.append(0)  # Append 0 to the positive flow list
-
-            else:
-
-                # Append 0 if the present typical price is equal to yesterdays typical price
-                positive_flow.append(0)
-                negative_flow.append(0)
-
-        #Get all of the positive and negative money flows within the time period
-        positive_mf = []
-        negative_mf = []
-
-        #Get all of the positive money flows within the time period
-        
-        for i in np.arange(period-1, len(positive_flow)):
-
-            positive_mf.append(np.sum(positive_flow[i+1-period: i+1]))
-
-        #Get all of the negative money flows within the time period
-        for i in np.arange(period-1, len(negative_flow)):
-
-            negative_mf.append(np.sum(negative_flow[i+1-period: i+1]))
-
-        self.mfi_sum = 100 * (np.array(positive_mf) /
-                    (np.array(positive_mf) + np.array(negative_mf)))
+        self.mfi_sum = 100 * (positive_mf / (positive_mf + negative_mf))
 
         return mfi
-    
+
     def dots(self):
         print('- getting the dots')
         
@@ -493,11 +486,12 @@ class Screener:
 
         return dots
 
-'''
+
+class Real_time:
+    '''
     REAL TIME: the fastes way to get market updates
 
-'''
-class Real_time:
+    '''
     
     def __init__(self, data):
         self.data = data
@@ -578,11 +572,12 @@ class Real_time:
 
         return space_between
 
-'''
-    SCANNER: scan the market for traps and trends
-'''
+
     
 class Scanner:
+    '''
+    SCANNER: scan the market for traps and trends
+    '''
     
     def __init__(self, data):
         self.data = data
@@ -612,15 +607,11 @@ class Scanner:
         #make the rsi's
         rsi14 = ta.rsi(self.data['close'], 14)
         rsi40 = ta.rsi(self.data['close'], 40)
-        rsi14.fillna(inplace=True, value=0)
-        rsi40.fillna(inplace=True, value=0)
+        # rsi14.fillna(inplace=True, value=0)
+        # rsi40.fillna(inplace=True, value=0)
 
         return rsi14, rsi40
 
     def divergences(self):
         pass
 
-
-# trade_x = Tradex_indicator('BTCUSDT', '30m')
-
-# print(trade_x)

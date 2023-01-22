@@ -20,7 +20,7 @@ class MLTab(Frame):
         self.ml_select_menu = OptionMenu(
             self, self.type_var, "Linear Regression", "Logistic Regression", 
             "MLPClassifier", "Decision Tree Classifier", "Random Forest Classifier", "SVC", "SVR",
-            "Isolation Forest", "Gradient Boosting Classifier", "Extra Tree Classifier")
+            "Isolation Forest", "Gradient Boosting Classifier", "Extra Tree Classifier", "XGBoost")
         self.select_ml_button = Button(self, text="Select ML", 
                                        command=self._presenter.get_ML_model)
         
