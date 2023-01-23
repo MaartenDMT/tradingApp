@@ -147,3 +147,423 @@
 2023-01-16 21:03:08,437 - Models - INFO - the Decision Tree Classifier model has been trained evaluated 0.99 and saved selected
 2023-01-16 21:03:08,440 - Models - INFO - Starting auto trading bot with symbol BTCUSD
 2023-01-16 21:03:13,148 - Models - INFO - sell order for BTCUSD already exists with id: 75a02874-4547-40ef-b9f2-8ea9a4e23084
+2023-01-17 13:25:24,029 - Models - INFO - Starting auto trading bot with symbol BTCUSD
+2023-01-17 13:25:36,433 - Models - INFO - Sold 50.0 BTCUSD at 21318.8
+2023-01-17 13:25:38,443 - Models - ERROR - phemex {"code":39996,"msg":"ord-type is not supported.Stoploss","data":null}
+2023-01-17 13:26:42,855 - Models - INFO - sell order for BTCUSD already exists with id: a00fe39d-4726-4eed-98a0-0bbd66861eb8
+2023-01-17 13:27:55,421 - Models - INFO - Starting auto trading bot with symbol BTCUSD
+2023-01-17 13:28:05,829 - Models - INFO - sell order for BTCUSD already exists with id: a00fe39d-4726-4eed-98a0-0bbd66861eb8
+2023-01-17 15:55:00,670 - Models - INFO - Creating a auto trading bot <model.autobot.AutoBot object at 0x00000173819DFC70>
+2023-01-17 15:55:13,465 - Models - INFO - no bot detected, creating a bot
+2023-01-17 15:58:46,017 - Models - INFO - Creating a auto trading bot <model.autobot.AutoBot object at 0x0000017082F7EC70>
+2023-01-17 16:01:10,797 - Models - INFO - Creating a auto trading bot <model.autobot.AutoBot object at 0x00000297F16AEC70>
+2023-01-17 16:04:59,877 - Models - INFO - Creating a auto trading bot <model.autobot.AutoBot object at 0x00000297F12BAA90>
+2023-01-17 16:07:48,779 - Models - INFO - Creating a auto trading bot Autobot
+2023-01-17 16:11:01,597 - Models - INFO - Creating a auto trading bot Autobot
+2023-01-17 16:13:08,016 - Models - INFO - Creating a auto trading bot Autobot
+2023-01-17 16:13:12,435 - Models - INFO - no bot detected, creating a bot
+2023-01-17 16:13:24,869 - Models - INFO - Sold 50.0 BTCUSD at 21311.0
+2023-01-17 16:13:26,698 - Models - ERROR - phemex {"code":39996,"msg":"ord-type is not supported.Stoploss","data":null}
+2023-01-17 16:14:31,105 - Models - INFO - sell order for BTCUSD already exists with id: 6568390a-3753-4e71-819f-eb0d1ffbe96b
+2023-01-17 16:19:58,838 - Models - INFO - Creating a auto trading bot Autobot
+2023-01-17 16:20:03,051 - Models - INFO - no bot detected, creating a bot
+2023-01-17 16:20:15,499 - Models - INFO - Sold 50.0 BTCUSD at 21354.9
+2023-01-17 16:20:17,495 - Models - ERROR - phemex {"code":39996,"msg":"ord-type is not supported.Stoploss","data":null}
+2023-01-17 16:23:31,886 - Models - INFO - Creating a auto trading bot Autobot
+2023-01-17 16:23:37,609 - Models - INFO - no bot detected, creating a bot
+2023-01-17 16:23:50,111 - Models - INFO - Sold 50.0 BTCUSD at 21339.5
+2023-01-17 16:23:51,938 - Models - ERROR - phemex {"code":39996,"msg":"ord-type is not supported.Stoploss","data":null}
+2023-01-17 16:28:56,320 - Models - INFO - sell order for BTCUSD already exists with id: b2f37394-c82a-400e-a6de-a7abbbe8c6fc
+2023-01-17 16:34:37,961 - Models - INFO - Creating a auto trading bot Autobot
+2023-01-17 16:34:41,905 - Models - INFO - no bot detected, creating a bot
+2023-01-17 16:34:52,337 - Models - INFO - sell order for BTCUSD already exists with id: b2f37394-c82a-400e-a6de-a7abbbe8c6fc
+2023-01-17 16:37:26,332 - Models - INFO - Creating a auto trading bot Autobot
+2023-01-17 16:37:37,079 - Models - INFO - no bot detected, creating a bot
+2023-01-17 16:49:42,702 - Models - INFO - Creating a auto trading bot Autobot
+2023-01-17 16:50:35,368 - Models - INFO - no bot detected, creating a bot
+2023-01-17 16:50:43,789 - Models - INFO - the prediction gave 0 waiting for a trading oppertunity!
+2023-01-17 16:51:46,186 - Models - INFO - the prediction gave 0 waiting for a trading oppertunity!
+2023-01-17 16:52:48,595 - Models - INFO - the prediction gave 0 waiting for a trading oppertunity!
+2023-01-17 16:53:50,993 - Models - INFO - the prediction gave 0 waiting for a trading oppertunity!
+2023-01-17 16:54:53,379 - Models - INFO - the prediction gave 0 waiting for a trading oppertunity!
+2023-01-17 16:55:55,772 - Models - INFO - the prediction gave 0 waiting for a trading oppertunity!
+2023-01-17 16:56:58,159 - Models - INFO - the prediction gave 0 waiting for a trading oppertunity!
+2023-01-17 16:58:00,555 - Models - INFO - the prediction gave 0 waiting for a trading oppertunity!
+2023-01-17 16:59:02,950 - Models - INFO - the prediction gave 0 waiting for a trading oppertunity!
+2023-01-17 17:06:11,446 - Models - INFO - Creating a auto trading bot Autobot
+2023-01-17 17:06:18,975 - Models - INFO - no bot detected, creating a bot
+2023-01-17 17:06:31,418 - Models - INFO - Bought 50.0 BTCUSD at 21151.9
+2023-01-17 17:06:33,253 - Models - ERROR - phemex {"code":39996,"msg":"ord-type is not supported.Stoploss","data":null}
+2023-01-17 17:07:39,675 - Models - INFO - Bought 50.0 BTCUSD at 21132.9
+2023-01-17 17:07:41,492 - Models - ERROR - phemex {"code":39996,"msg":"ord-type is not supported.Stoploss","data":null}
+2023-01-17 17:08:47,917 - Models - INFO - Bought 50.0 BTCUSD at 21150.3
+2023-01-17 17:08:49,729 - Models - ERROR - phemex {"code":39996,"msg":"ord-type is not supported.Stoploss","data":null}
+2023-01-17 17:09:56,164 - Models - INFO - Bought 50.0 BTCUSD at 21143.5
+2023-01-17 17:09:58,161 - Models - ERROR - phemex {"code":39996,"msg":"ord-type is not supported.Stoploss","data":null}
+2023-01-18 15:41:47,369 - Models - INFO - Creating a auto trading bot Autobot
+2023-01-19 13:20:49,568 - Models - INFO - machine learning model XGBoost selected
+2023-01-19 13:20:54,365 - Models - INFO - machine learning model XGBoost selected
+2023-01-19 13:26:01,320 - Models - INFO - machine learning model XGBoost selected
+2023-01-19 13:30:40,382 - Models - INFO - machine learning model XGBoost selected
+2023-01-19 13:33:06,687 - Models - INFO - machine learning model XGBoost selected
+2023-01-19 13:39:57,192 - Models - INFO - machine learning model XGBoost selected
+2023-01-19 13:57:18,290 - Models - INFO - machine learning model XGBoost selected
+2023-01-19 13:57:24,559 - Models - INFO - machine learning model Logistic Regression selected
+2023-01-19 13:57:31,836 - Models - INFO - the grid search best params are {'C': 10.0, 'max_iter': 50, 'penalty': 'l2', 'solver': 'liblinear'}
+2023-01-19 13:57:31,836 - Models - INFO - the grid search best score is 0.4699999999999999
+2023-01-19 13:57:40,468 - Models - INFO - the grid search best params are {'C': 10.0, 'max_iter': 50, 'penalty': 'l2', 'solver': 'liblinear'}
+2023-01-19 13:57:40,468 - Models - INFO - the grid search best score is 0.4699999999999999
+2023-01-19 13:57:48,877 - Models - INFO - the grid search best params are {'C': 10.0, 'max_iter': 50, 'penalty': 'l2', 'solver': 'liblinear'}
+2023-01-19 13:57:48,877 - Models - INFO - the grid search best score is 0.4699999999999999
+2023-01-19 13:57:57,447 - Models - INFO - the grid search best params are {'C': 10.0, 'max_iter': 50, 'penalty': 'l2', 'solver': 'liblinear'}
+2023-01-19 13:57:57,447 - Models - INFO - the grid search best score is 0.4699999999999999
+2023-01-19 13:57:57,977 - Models - INFO - the Logistic Regression model has been trained evaluated 0.43 and saved selected
+2023-01-19 13:58:07,459 - Models - INFO - machine learning model MLPClassifier selected
+2023-01-19 13:58:21,312 - Models - INFO - the grid search best params are {'alpha': 1.0, 'hidden_layer_sizes': (20,)}
+2023-01-19 13:58:21,313 - Models - INFO - the grid search best score is 0.5275
+2023-01-19 13:58:34,925 - Models - INFO - the grid search best params are {'alpha': 1.0, 'hidden_layer_sizes': (20,)}
+2023-01-19 13:58:34,926 - Models - INFO - the grid search best score is 0.5275
+2023-01-19 13:58:49,497 - Models - INFO - the grid search best params are {'alpha': 1.0, 'hidden_layer_sizes': (20,)}
+2023-01-19 13:58:49,497 - Models - INFO - the grid search best score is 0.5275
+2023-01-19 13:59:03,218 - Models - INFO - the grid search best params are {'alpha': 1.0, 'hidden_layer_sizes': (20,)}
+2023-01-19 13:59:03,219 - Models - INFO - the grid search best score is 0.5275
+2023-01-19 13:59:03,221 - Models - INFO - the MLPClassifier model has been trained evaluated 0.48 and saved selected
+2023-01-19 14:00:50,651 - Models - INFO - machine learning model Decision Tree Classifier selected
+2023-01-19 14:00:52,642 - Models - INFO - the grid search best params are {'criterion': 'entropy', 'max_depth': 5, 'min_samples_leaf': 2, 'min_samples_split': 5}
+2023-01-19 14:00:52,642 - Models - INFO - the grid search best score is 0.9324999999999999
+2023-01-19 14:00:55,737 - Models - INFO - the grid search best params are {'criterion': 'entropy', 'max_depth': 5, 'min_samples_leaf': 2, 'min_samples_split': 5}
+2023-01-19 14:00:55,737 - Models - INFO - the grid search best score is 0.9324999999999999
+2023-01-19 14:00:58,742 - Models - INFO - the grid search best params are {'criterion': 'entropy', 'max_depth': 5, 'min_samples_leaf': 2, 'min_samples_split': 5}
+2023-01-19 14:00:58,743 - Models - INFO - the grid search best score is 0.9324999999999999
+2023-01-19 14:01:01,888 - Models - INFO - the grid search best params are {'criterion': 'entropy', 'max_depth': 5, 'min_samples_leaf': 2, 'min_samples_split': 5}
+2023-01-19 14:01:01,889 - Models - INFO - the grid search best score is 0.9324999999999999
+2023-01-19 14:01:01,894 - Models - INFO - the Decision Tree Classifier model has been trained evaluated 0.76 and saved selected
+2023-01-19 14:12:35,115 - Models - INFO - machine learning model Linear Regression selected
+2023-01-19 14:12:36,123 - Models - INFO - the custom: grid search best params are {'copy_X': True, 'fit_intercept': True, 'n_jobs': -1}
+2023-01-19 14:12:36,124 - Models - INFO - the costum: grid search best F1 score is nan
+2023-01-19 14:12:36,369 - Models - INFO - the custom: grid search best params are {'copy_X': True, 'fit_intercept': True, 'n_jobs': -1}
+2023-01-19 14:12:36,369 - Models - INFO - the costum: grid search best F1 score is nan
+2023-01-19 14:12:36,586 - Models - INFO - the custom: grid search best params are {'copy_X': True, 'fit_intercept': True, 'n_jobs': -1}
+2023-01-19 14:12:36,586 - Models - INFO - the costum: grid search best F1 score is nan
+2023-01-19 14:12:36,789 - Models - INFO - the custom: grid search best params are {'copy_X': True, 'fit_intercept': True, 'n_jobs': -1}
+2023-01-19 14:12:36,789 - Models - INFO - the costum: grid search best F1 score is nan
+2023-01-19 14:13:04,050 - Models - INFO - machine learning model Logistic Regression selected
+2023-01-19 14:13:10,733 - Models - INFO - the grid search best params are None
+2023-01-19 14:13:10,733 - Models - INFO - the grid search best score is 0.5
+2023-01-19 14:13:19,019 - Models - INFO - the grid search best params are None
+2023-01-19 14:13:19,020 - Models - INFO - the grid search best score is 0.5
+2023-01-19 14:13:27,206 - Models - INFO - the grid search best params are None
+2023-01-19 14:13:27,206 - Models - INFO - the grid search best score is 0.5
+2023-01-19 14:13:33,576 - Models - INFO - the grid search best params are None
+2023-01-19 14:13:33,576 - Models - INFO - the grid search best score is 0.5
+2023-01-19 14:13:33,579 - Models - INFO - the Logistic Regression model has been trained evaluated 0.54 and saved selected
+2023-01-19 14:18:20,181 - Models - INFO - machine learning model Linear Regression selected
+2023-01-19 14:18:21,096 - Models - INFO - the custom: grid search best params are {'copy_X': True, 'fit_intercept': True, 'n_jobs': -1}
+2023-01-19 14:18:21,096 - Models - INFO - the costum: grid search best F1 score is nan
+2023-01-19 14:18:21,378 - Models - INFO - the custom: grid search best params are {'copy_X': True, 'fit_intercept': True, 'n_jobs': -1}
+2023-01-19 14:18:21,378 - Models - INFO - the costum: grid search best F1 score is nan
+2023-01-19 14:18:21,604 - Models - INFO - the custom: grid search best params are {'copy_X': True, 'fit_intercept': True, 'n_jobs': -1}
+2023-01-19 14:18:21,604 - Models - INFO - the costum: grid search best F1 score is nan
+2023-01-19 14:18:21,816 - Models - INFO - the custom: grid search best params are {'copy_X': True, 'fit_intercept': True, 'n_jobs': -1}
+2023-01-19 14:18:21,817 - Models - INFO - the costum: grid search best F1 score is nan
+2023-01-19 14:19:14,814 - Models - INFO - machine learning model Logistic Regression selected
+2023-01-19 14:19:21,494 - Models - INFO - the grid search best params are None
+2023-01-19 14:19:21,495 - Models - INFO - the grid search best score is 0.5
+2023-01-19 14:19:27,897 - Models - INFO - the grid search best params are None
+2023-01-19 14:19:27,900 - Models - INFO - the grid search best score is 0.5
+2023-01-19 14:19:34,366 - Models - INFO - the grid search best params are None
+2023-01-19 14:19:34,367 - Models - INFO - the grid search best score is 0.5
+2023-01-19 14:19:40,827 - Models - INFO - the grid search best params are None
+2023-01-19 14:19:40,828 - Models - INFO - the grid search best score is 0.5
+2023-01-19 14:19:40,832 - Models - INFO - the Logistic Regression model has been trained evaluated 0.45 and saved selected
+2023-01-19 14:19:48,486 - Models - INFO - machine learning model MLPClassifier selected
+2023-01-19 14:20:01,875 - Models - INFO - the grid search best params are {'alpha': 1.0, 'hidden_layer_sizes': (20,)}
+2023-01-19 14:20:01,875 - Models - INFO - the grid search best score is 0.56
+2023-01-19 14:20:15,404 - Models - INFO - the grid search best params are {'alpha': 0.1, 'hidden_layer_sizes': (10, 10)}
+2023-01-19 14:20:15,404 - Models - INFO - the grid search best score is 0.5712726624753479
+2023-01-19 14:20:28,513 - Models - INFO - the grid search best params are {'alpha': 0.1, 'hidden_layer_sizes': (10, 10)}
+2023-01-19 14:20:28,513 - Models - INFO - the grid search best score is 0.5712726624753479
+2023-01-19 14:20:42,767 - Models - INFO - the grid search best params are {'alpha': 0.1, 'hidden_layer_sizes': (10, 10)}
+2023-01-19 14:20:42,768 - Models - INFO - the grid search best score is 0.5712726624753479
+2023-01-19 14:20:42,771 - Models - INFO - the MLPClassifier model has been trained evaluated 0.5 and saved selected
+2023-01-19 14:22:27,322 - Models - INFO - machine learning model Decision Tree Classifier selected
+2023-01-19 14:22:29,141 - Models - INFO - the grid search best params are {'criterion': 'entropy', 'max_depth': 10, 'min_samples_leaf': 1, 'min_samples_split': 2}
+2023-01-19 14:22:29,142 - Models - INFO - the grid search best score is 0.925
+2023-01-19 14:22:30,731 - Models - INFO - the grid search best params are {'criterion': 'entropy', 'max_depth': 10, 'min_samples_leaf': 1, 'min_samples_split': 2}
+2023-01-19 14:22:30,731 - Models - INFO - the grid search best score is 0.9308303656408958
+2023-01-19 14:22:32,353 - Models - INFO - the grid search best params are {'criterion': 'entropy', 'max_depth': 10, 'min_samples_leaf': 1, 'min_samples_split': 2}
+2023-01-19 14:22:32,354 - Models - INFO - the grid search best score is 0.9308303656408958
+2023-01-19 14:22:33,968 - Models - INFO - the grid search best params are {'criterion': 'entropy', 'max_depth': 10, 'min_samples_leaf': 1, 'min_samples_split': 2}
+2023-01-19 14:22:33,968 - Models - INFO - the grid search best score is 0.9308303656408958
+2023-01-19 14:22:33,974 - Models - INFO - the Decision Tree Classifier model has been trained evaluated 0.93 and saved selected
+2023-01-19 14:23:04,318 - Models - INFO - machine learning model Random Forest Classifier selected
+2023-01-19 14:23:17,668 - Models - INFO - machine learning model SVC selected
+2023-01-19 14:23:29,119 - Models - INFO - the custom: grid search best params are {'C': 10.0, 'degree': 2, 'gamma': 'scale', 'kernel': 'rbf'}
+2023-01-19 14:23:29,120 - Models - INFO - the costum: grid search best F1 score is 0.6928290615559263
+2023-01-19 14:23:39,299 - Models - INFO - the custom: grid search best params are {'C': 10.0, 'degree': 2, 'gamma': 'scale', 'kernel': 'rbf'}
+2023-01-19 14:23:39,300 - Models - INFO - the costum: grid search best F1 score is 0.6928290615559263
+2023-01-19 14:23:49,624 - Models - INFO - the custom: grid search best params are {'C': 10.0, 'degree': 2, 'gamma': 'scale', 'kernel': 'rbf'}
+2023-01-19 14:23:49,626 - Models - INFO - the costum: grid search best F1 score is 0.6928290615559263
+2023-01-19 14:24:00,528 - Models - INFO - the custom: grid search best params are {'C': 10.0, 'degree': 2, 'gamma': 'scale', 'kernel': 'rbf'}
+2023-01-19 14:24:00,531 - Models - INFO - the costum: grid search best F1 score is 0.6928290615559263
+2023-01-19 14:24:00,542 - Models - INFO - the SVC model has been trained evaluated 0.63 and saved selected
+2023-01-19 14:25:15,202 - Models - INFO - machine learning model SVR selected
+2023-01-19 14:25:26,587 - Models - INFO - the custom: grid search best params are {'C': 0.1, 'degree': 2, 'gamma': 'auto', 'kernel': 'linear'}
+2023-01-19 14:25:26,588 - Models - INFO - the costum: grid search best F1 score is nan
+2023-01-19 14:25:37,203 - Models - INFO - the custom: grid search best params are {'C': 0.1, 'degree': 2, 'gamma': 'auto', 'kernel': 'linear'}
+2023-01-19 14:25:37,204 - Models - INFO - the costum: grid search best F1 score is nan
+2023-01-19 14:25:48,042 - Models - INFO - the custom: grid search best params are {'C': 0.1, 'degree': 2, 'gamma': 'auto', 'kernel': 'linear'}
+2023-01-19 14:25:48,043 - Models - INFO - the costum: grid search best F1 score is nan
+2023-01-19 14:25:58,813 - Models - INFO - the custom: grid search best params are {'C': 0.1, 'degree': 2, 'gamma': 'auto', 'kernel': 'linear'}
+2023-01-19 14:25:58,814 - Models - INFO - the costum: grid search best F1 score is nan
+2023-01-19 14:27:04,346 - Models - INFO - machine learning model Isolation Forest selected
+2023-01-19 14:29:03,356 - Models - INFO - the custom: grid search best params are {'contamination': 0.1, 'max_samples': 'auto', 'n_estimators': 10}
+2023-01-19 14:29:03,357 - Models - INFO - the costum: grid search best F1 score is nan
+2023-01-19 14:29:48,044 - Models - INFO - machine learning model Gradient Boosting Classifier selected
+2023-01-19 14:31:23,330 - Models - INFO - the custom: grid search best params are {'contamination': 0.1, 'max_samples': 'auto', 'n_estimators': 10}
+2023-01-19 14:31:23,332 - Models - INFO - the costum: grid search best F1 score is nan
+2023-01-19 14:33:55,816 - Models - INFO - the custom: grid search best params are {'contamination': 0.1, 'max_samples': 'auto', 'n_estimators': 10}
+2023-01-19 14:33:55,817 - Models - INFO - the costum: grid search best F1 score is nan
+2023-01-19 14:37:17,985 - Models - INFO - machine learning model Linear Regression selected
+2023-01-19 14:37:18,869 - Models - INFO - the custom: grid search best params are {'copy_X': True, 'fit_intercept': True, 'n_jobs': -1}
+2023-01-19 14:37:18,870 - Models - INFO - the costum: grid search best F1 score is nan
+2023-01-19 14:42:40,803 - Models - INFO - machine learning model Logistic Regression selected
+2023-01-19 14:42:47,653 - Models - INFO - the Logistic Regression model has been trained evaluated 0.46 and saved selected
+2023-01-19 14:43:01,414 - Models - INFO - machine learning model MLPClassifier selected
+2023-01-19 14:43:15,511 - Models - INFO - the grid search best params are {'alpha': 1.0, 'hidden_layer_sizes': (20,)}
+2023-01-19 14:43:15,513 - Models - INFO - the grid search best score is 0.5275
+2023-01-19 14:43:15,517 - Models - INFO - the MLPClassifier model has been trained evaluated 0.53 and saved selected
+2023-01-19 14:43:50,868 - Models - INFO - machine learning model XGBoost selected
+2023-01-19 14:44:00,570 - Models - INFO - machine learning model Decision Tree Classifier selected
+2023-01-19 14:44:02,391 - Models - INFO - the grid search best params are {'criterion': 'gini', 'max_depth': 5, 'min_samples_leaf': 2, 'min_samples_split': 2}
+2023-01-19 14:44:02,391 - Models - INFO - the grid search best score is 0.9324999999999999
+2023-01-19 14:44:02,397 - Models - INFO - the Decision Tree Classifier model has been trained evaluated 0.9 and saved selected
+2023-01-19 14:44:16,885 - Models - INFO - machine learning model Random Forest Classifier selected
+2023-01-19 14:44:36,372 - Models - INFO - machine learning model SVC selected
+2023-01-19 14:45:03,911 - Models - INFO - the custom: grid search best params are {'C': 0.1, 'degree': 2, 'gamma': 'auto', 'kernel': 'linear'}
+2023-01-19 14:45:03,912 - Models - INFO - the costum: grid search best F1 score is nan
+2023-01-19 14:45:03,918 - Models - INFO - the SVC model has been trained evaluated 0.45 and saved selected
+2023-01-19 14:46:28,485 - Models - INFO - machine learning model SVR selected
+2023-01-19 14:46:39,019 - Models - INFO - the custom: grid search best params are {'C': 0.1, 'degree': 2, 'gamma': 'auto', 'kernel': 'linear'}
+2023-01-19 14:46:39,020 - Models - INFO - the costum: grid search best F1 score is nan
+2023-01-19 17:29:36,689 - Models - INFO - machine learning model Linear Regression selected
+2023-01-19 17:31:44,461 - Models - INFO - machine learning model Linear Regression selected
+2023-01-19 17:32:00,841 - Models - INFO - machine learning model MLPClassifier selected
+2023-01-19 17:35:35,262 - Models - INFO - machine learning model Linear Regression selected
+2023-01-19 17:44:51,391 - Models - INFO - machine learning model Logistic Regression selected
+2023-01-19 17:44:54,505 - Models - INFO - machine learning model SVR selected
+2023-01-19 17:44:57,218 - Models - INFO - machine learning model Extra Tree Classifier selected
+2023-01-19 17:45:39,683 - Models - INFO - machine learning model Linear Regression selected
+2023-01-19 17:45:55,355 - Models - INFO - machine learning model Logistic Regression selected
+2023-01-19 17:46:48,840 - Models - INFO - machine learning model MLPClassifier selected
+2023-01-19 17:47:17,188 - Models - INFO - machine learning model Decision Tree Classifier selected
+2023-01-19 17:49:21,134 - Models - INFO - the custom: grid search best params are OrderedDict([('criterion', 'entropy'), ('max_depth', 10), ('min_samples_leaf', 1), ('min_samples_split', 2)])
+2023-01-19 17:49:21,135 - Models - INFO - the costum: grid search best F1 score is 0.8775000000000001
+2023-01-19 17:53:07,424 - Models - INFO - machine learning model Linear Regression selected
+2023-01-19 17:55:35,023 - Models - INFO - machine learning model Linear Regression selected
+2023-01-19 17:57:15,225 - Models - INFO - machine learning model MLPClassifier selected
+2023-01-19 17:58:15,259 - Models - INFO - machine learning model Logistic Regression selected
+2023-01-19 17:59:41,612 - Models - INFO - machine learning model Logistic Regression selected
+2023-01-19 18:01:29,665 - Models - INFO - the custom: grid search best params are {'C': 0.1, 'max_iter': 50, 'penalty': 'l2', 'solver': 'liblinear'}
+2023-01-19 18:01:29,667 - Models - INFO - the costum: grid search best F1 score is 0.5675
+2023-01-19 18:01:29,677 - Models - INFO - the Logistic Regression model has been trained evaluated 0.62 and saved selected
+2023-01-19 18:05:14,923 - Models - INFO - machine learning model MLPClassifier selected
+2023-01-19 18:09:34,709 - Models - INFO - machine learning model SVC selected
+2023-01-19 18:14:17,858 - Models - INFO - machine learning model SVR selected
+2023-01-19 18:16:55,175 - Models - INFO - machine learning model Linear Regression selected
+2023-01-19 18:18:38,941 - Models - INFO - machine learning model Linear Regression selected
+2023-01-19 18:20:26,542 - Models - INFO - machine learning model Linear Regression selected
+2023-01-19 18:22:17,272 - Models - INFO - machine learning model Linear Regression selected
+2023-01-19 18:24:18,936 - Models - INFO - machine learning model Linear Regression selected
+2023-01-19 18:30:11,279 - Models - INFO - machine learning model Linear Regression selected
+2023-01-19 18:33:12,543 - Models - INFO - machine learning model Linear Regression selected
+2023-01-19 18:40:37,799 - Models - INFO - machine learning model Linear Regression selected
+2023-01-19 18:40:59,217 - Models - INFO - machine learning model Logistic Regression selected
+2023-01-19 18:48:40,709 - Models - INFO - machine learning model Linear Regression selected
+2023-01-19 18:52:22,050 - Models - INFO - machine learning model Linear Regression selected
+2023-01-19 18:52:28,242 - Models - INFO - machine learning model Logistic Regression selected
+2023-01-19 18:54:28,835 - Models - INFO - machine learning model SVC selected
+2023-01-19 18:54:31,106 - Models - INFO - the custom: parallelize search best params are {'solver': 'sag', 'penalty': 'l2', 'max_iter': 300, 'C': 10.0}
+2023-01-19 18:54:31,107 - Models - INFO - the custom: parallelize search best score is 0.5725
+2023-01-19 18:54:31,111 - Models - INFO - the custom: parallelize search best estimator is RandomizedSearchCV(cv=5, estimator=LogisticRegression(),
+                   param_distributions={'C': [0.1, 1.0, 10.0],
+                                        'max_iter': [50, 100, 200, 300],
+                                        'penalty': ['l2'],
+                                        'solver': ['newton-cg', 'lbfgs',
+                                                   'liblinear', 'sag',
+                                                   'saga']})
+2023-01-19 18:54:31,116 - Models - INFO - the Logistic Regression model has been trained evaluated 0.63 and saved selected
+2023-01-19 18:54:39,638 - Models - INFO - machine learning model XGBoost selected
+2023-01-19 18:54:57,777 - Models - INFO - machine learning model Gradient Boosting Classifier selected
+2023-01-22 13:22:24,795 - Models - INFO - Creating a auto trading bot Autobot
+2023-01-22 13:29:29,580 - Models - INFO - no bot detected, creating a bot
+2023-01-22 14:22:13,663 - Models - INFO - machine learning model Linear Regression selected
+2023-01-22 14:22:19,071 - Models - INFO - machine learning model Logistic Regression selected
+2023-01-22 14:23:18,290 - Models - INFO - the custom: parallelize search best params are {'solver': 'saga', 'penalty': 'l2', 'max_iter': 50, 'C': 1.0}
+2023-01-22 14:23:18,290 - Models - INFO - the custom: parallelize search best score is 0.9973684210526315
+2023-01-22 14:23:18,292 - Models - INFO - the custom: parallelize search best estimator is RandomizedSearchCV(cv=5, estimator=LogisticRegression(),
+                   param_distributions={'C': [0.1, 1.0, 10.0],
+                                        'max_iter': [50, 100, 200, 300],
+                                        'penalty': ['l2'],
+                                        'solver': ['newton-cg', 'lbfgs',
+                                                   'liblinear', 'sag',
+                                                   'saga']})
+2023-01-22 14:25:45,348 - Models - INFO - machine learning model Linear Regression selected
+2023-01-22 14:27:39,557 - Models - INFO - machine learning model Logistic Regression selected
+2023-01-22 14:28:41,451 - Models - INFO - the custom: parallelize search best params are {'solver': 'lbfgs', 'penalty': 'l2', 'max_iter': 100, 'C': 10.0}
+2023-01-22 14:28:41,451 - Models - INFO - the custom: parallelize search best score is 0.9973684210526315
+2023-01-22 14:28:41,453 - Models - INFO - the custom: parallelize search best estimator is RandomizedSearchCV(cv=5, estimator=LogisticRegression(),
+                   param_distributions={'C': [0.1, 1.0, 10.0],
+                                        'max_iter': [50, 100, 200, 300],
+                                        'penalty': ['l2'],
+                                        'solver': ['newton-cg', 'lbfgs',
+                                                   'liblinear', 'sag',
+                                                   'saga']})
+2023-01-22 14:28:41,456 - Models - INFO - the Logistic Regression model has been trained evaluated 0.9894736842105263 and saved selected
+2023-01-22 14:29:03,071 - Models - INFO - machine learning model MLPClassifier selected
+2023-01-22 14:41:49,622 - Models - INFO - machine learning model Decision Tree Classifier selected
+2023-01-22 14:42:40,079 - Models - INFO - the custom: parallelize search best params are {'min_samples_split': 2, 'min_samples_leaf': 3, 'max_depth': 3, 'criterion': 'gini'}
+2023-01-22 14:42:40,079 - Models - INFO - the custom: parallelize search best score is 0.9949999999999999
+2023-01-22 14:42:40,081 - Models - INFO - the custom: parallelize search best estimator is RandomizedSearchCV(cv=5, estimator=DecisionTreeClassifier(),
+                   param_distributions={'criterion': ['gini', 'entropy'],
+                                        'max_depth': [3, 5, 10],
+                                        'min_samples_leaf': [1, 2, 3, 4, 5],
+                                        'min_samples_split': [2, 5, 10]})
+2023-01-22 14:42:40,085 - Models - INFO - the Decision Tree Classifier model has been trained evaluated 1.0 and saved selected
+2023-01-22 14:43:24,959 - Models - INFO - machine learning model SVC selected
+2023-01-22 14:43:33,914 - Models - INFO - machine learning model SVR selected
+2023-01-22 14:45:02,788 - Models - INFO - machine learning model Linear Regression selected
+2023-01-22 14:45:35,777 - Models - INFO - the custom: parallelize search best params are {'copy_X': True, 'fit_intercept': True, 'n_jobs': -1}
+2023-01-22 14:45:35,778 - Models - INFO - the custom: parallelize search best score is 0.8478776563095639
+2023-01-22 14:45:35,778 - Models - INFO - the custom: parallelize search best estimator is GridSearchCV(cv=5, estimator=LinearRegression(),
+             param_grid={'copy_X': [True, False],
+                         'fit_intercept': [True, False], 'n_jobs': [-1, 1]})
+2023-01-22 14:52:30,344 - Models - INFO - machine learning model Linear Regression selected
+2023-01-22 14:53:06,224 - Models - INFO - the custom: parallelize search best params are {'n_jobs': -1, 'fit_intercept': True, 'copy_X': True}
+2023-01-22 14:53:06,224 - Models - INFO - the custom: parallelize search best score is 0.8104626307567578
+2023-01-22 14:53:06,225 - Models - INFO - the custom: parallelize search best estimator is RandomizedSearchCV(cv=5, estimator=LinearRegression(),
+                   param_distributions={'copy_X': [True, False],
+                                        'fit_intercept': [True, False],
+                                        'n_jobs': [-1, 1]})
+2023-01-22 14:54:57,032 - Models - INFO - machine learning model Linear Regression selected
+2023-01-22 14:56:55,205 - Models - INFO - machine learning model Linear Regression selected
+2023-01-22 14:57:33,588 - Models - INFO - the custom: parallelize search best params are {'copy_X': True, 'fit_intercept': True, 'n_jobs': -1}
+2023-01-22 14:57:33,589 - Models - INFO - the custom: parallelize search best score is 0.8092560049689368
+2023-01-22 14:57:33,589 - Models - INFO - the custom: parallelize search best estimator is GridSearchCV(cv=5, estimator=LinearRegression(),
+             param_grid={'copy_X': [True, False],
+                         'fit_intercept': [True, False], 'n_jobs': [-1, 1]})
+2023-01-22 15:14:14,623 - Models - INFO - machine learning model Linear Regression selected
+2023-01-22 15:14:47,290 - Models - INFO - the custom: parallelize search best params are {'copy_X': True, 'fit_intercept': True, 'n_jobs': -1}
+2023-01-22 15:14:47,291 - Models - INFO - the custom: parallelize search best score is 0.8112014895475559
+2023-01-22 15:14:47,292 - Models - INFO - the custom: parallelize search best estimator is GridSearchCV(cv=5, estimator=LinearRegression(),
+             param_grid={'copy_X': [True, False],
+                         'fit_intercept': [True, False], 'n_jobs': [-1, 1]})
+2023-01-22 15:14:47,295 - Models - INFO - the Linear Regression model has been trained evaluated 1.7329921032099525 and saved selected
+2023-01-22 15:19:02,628 - Models - INFO - machine learning model Linear Regression selected
+2023-01-22 15:19:34,110 - Models - INFO - the custom: parallelize search best params are {'copy_X': True, 'fit_intercept': True, 'n_jobs': -1}
+2023-01-22 15:19:34,110 - Models - INFO - the custom: parallelize search best score is 0.8696434369475204
+2023-01-22 15:19:34,111 - Models - INFO - the custom: parallelize search best estimator is GridSearchCV(cv=5, estimator=LinearRegression(),
+             param_grid={'copy_X': [True, False],
+                         'fit_intercept': [True, False], 'n_jobs': [-1, 1]})
+2023-01-22 15:19:34,114 - Models - INFO - the Linear Regression model has been trained evaluated 0.8453577352062279 and saved selected
+2023-01-22 15:20:02,289 - Models - INFO - machine learning model MLPClassifier selected
+2023-01-22 15:23:34,047 - Models - INFO - machine learning model SVC selected
+2023-01-22 15:24:24,533 - Models - INFO - machine learning model SVR selected
+2023-01-22 15:24:45,959 - Models - INFO - the custom: parallelize search best params are {'kernel': 'linear', 'gamma': 'scale', 'degree': 4, 'C': 10.0}
+2023-01-22 15:24:45,959 - Models - INFO - the custom: parallelize search best score is 0.9974999999999999
+2023-01-22 15:24:45,961 - Models - INFO - the custom: parallelize search best estimator is RandomizedSearchCV(cv=5, estimator=SVC(),
+                   param_distributions={'C': [0.1, 1.0, 10.0],
+                                        'degree': [2, 3, 4, 5],
+                                        'gamma': ['auto', 'scale'],
+                                        'kernel': ['linear', 'poly', 'rbf',
+                                                   'sigmoid']})
+2023-01-22 15:24:45,966 - Models - INFO - the SVC model has been trained evaluated 1.0 and saved selected
+2023-01-22 15:26:45,332 - Models - INFO - the custom: parallelize search best params are OrderedDict([('C', 10.0), ('degree', 5), ('gamma', 'scale'), ('kernel', 'rbf')])
+2023-01-22 15:26:45,332 - Models - INFO - the custom: parallelize search best score is 0.9836104558546136
+2023-01-22 15:26:45,333 - Models - INFO - the custom: parallelize search best estimator is BayesSearchCV(cv=5, estimator=SVR(),
+              search_spaces={'C': [0.1, 1.0, 10.0], 'degree': [2, 3, 4, 5],
+                             'gamma': ['auto', 'scale'],
+                             'kernel': ['linear', 'poly', 'rbf', 'sigmoid']})
+2023-01-22 15:34:24,372 - Models - INFO - machine learning model SVR selected
+2023-01-22 15:35:53,298 - Models - INFO - the custom: parallelize search best params are OrderedDict([('C', 10.0), ('degree', 4), ('gamma', 'scale'), ('kernel', 'rbf')])
+2023-01-22 15:35:53,299 - Models - INFO - the custom: parallelize search best score is 0.9750776215487177
+2023-01-22 15:35:53,300 - Models - INFO - the custom: parallelize search best estimator is BayesSearchCV(cv=5, estimator=SVR(),
+              search_spaces={'C': [0.1, 1.0, 10.0], 'degree': [2, 3, 4, 5],
+                             'gamma': ['auto', 'scale'],
+                             'kernel': ['linear', 'poly', 'rbf', 'sigmoid']})
+2023-01-22 15:35:53,304 - Models - INFO - the SVR model has been trained evaluated 0.9098980439302904 and saved selected
+2023-01-22 15:37:39,799 - Models - INFO - machine learning model Isolation Forest selected
+2023-01-22 15:38:04,910 - Models - INFO - machine learning model Gradient Boosting Classifier selected
+2023-01-22 15:41:52,631 - Models - INFO - machine learning model Gradient Boosting Classifier selected
+2023-01-22 15:44:08,423 - Models - INFO - machine learning model Extra Tree Classifier selected
+2023-01-22 15:44:13,451 - Models - INFO - machine learning model XGBoost selected
+2023-01-22 15:46:31,437 - Models - INFO - machine learning model Gradient Boosting Classifier selected
+2023-01-22 16:01:14,044 - Models - INFO - machine learning model Gradient Boosting Classifier selected
+2023-01-22 16:04:53,221 - Models - INFO - machine learning model Gradient Boosting Classifier selected
+2023-01-22 17:17:00,122 - Models - INFO - machine learning model Gradient Boosting Classifier selected
+2023-01-22 17:19:43,949 - Models - INFO - machine learning model Extra Tree Classifier selected
+2023-01-22 17:24:00,287 - Models - INFO - machine learning model Extra Tree Classifier selected
+2023-01-22 17:24:15,501 - Models - INFO - machine learning model XGBoost selected
+2023-01-22 17:28:22,474 - Models - INFO - machine learning model Gradient Boosting Classifier selected
+2023-01-22 17:31:39,112 - Models - INFO - machine learning model Gradient Boosting Classifier selected
+2023-01-22 17:58:44,545 - Models - INFO - machine learning model Gradient Boosting Classifier selected
+2023-01-22 17:59:53,636 - Models - INFO - machine learning model Gradient Boosting Classifier selected
+2023-01-22 18:02:41,836 - Models - INFO - machine learning model Gradient Boosting Classifier selected
+2023-01-22 18:10:08,036 - Models - INFO - machine learning model Gradient Boosting Classifier selected
+2023-01-22 18:10:15,738 - Models - INFO - machine learning model Logistic Regression selected
+2023-01-22 18:10:18,772 - Models - INFO - machine learning model MLPClassifier selected
+2023-01-22 18:10:21,226 - Models - INFO - machine learning model Isolation Forest selected
+2023-01-22 18:10:27,937 - Models - INFO - machine learning model Extra Tree Classifier selected
+2023-01-22 18:12:59,909 - Models - INFO - machine learning model Gradient Boosting Classifier selected
+2023-01-22 18:14:13,787 - Models - INFO - machine learning model Logistic Regression selected
+2023-01-22 18:16:35,899 - Models - INFO - machine learning model Logistic Regression selected
+2023-01-22 18:18:31,977 - Models - INFO - the custom: parallelize search best params are {'solver': 'newton-cg', 'penalty': 'l2', 'max_iter': 300, 'C': 10.0}
+2023-01-22 18:18:31,978 - Models - INFO - the custom: parallelize search best score is 1.0
+2023-01-22 18:18:31,980 - Models - INFO - the custom: parallelize search best estimator is RandomizedSearchCV(cv=5, estimator=LogisticRegression(),
+                   param_distributions={'C': [0.1, 1.0, 10.0],
+                                        'max_iter': [300, 400, 500, 600],
+                                        'penalty': ['l2'],
+                                        'solver': ['newton-cg', 'lbfgs',
+                                                   'liblinear', 'sag',
+                                                   'saga']})
+2023-01-22 18:18:31,987 - Models - INFO - the Logistic Regression model has been trained evaluated 0.9855072463768116 and saved selected
+2023-01-22 18:18:39,833 - Models - INFO - machine learning model MLPClassifier selected
+2023-01-22 18:20:41,664 - Models - INFO - machine learning model Linear Regression selected
+2023-01-22 18:21:28,987 - Models - INFO - machine learning model Decision Tree Classifier selected
+2023-01-22 18:22:21,593 - Models - INFO - the custom: parallelize search best params are {'copy_X': True, 'fit_intercept': True, 'n_jobs': -1}
+2023-01-22 18:22:21,593 - Models - INFO - the custom: parallelize search best score is 0.6844540994898296
+2023-01-22 18:22:21,596 - Models - INFO - the custom: parallelize search best estimator is GridSearchCV(cv=5, estimator=LinearRegression(),
+             param_grid={'copy_X': [True, False],
+                         'fit_intercept': [True, False], 'n_jobs': [-1, 1]})
+2023-01-22 18:22:21,601 - Models - INFO - the Linear Regression model has been trained evaluated 0.8913055140833581 and saved selected
+2023-01-22 18:23:06,077 - Models - INFO - machine learning model SVC selected
+2023-01-22 18:23:25,381 - Models - INFO - machine learning model Gradient Boosting Classifier selected
+2023-01-22 18:23:28,614 - Models - INFO - machine learning model Extra Tree Classifier selected
+2023-01-22 18:23:33,769 - Models - INFO - machine learning model XGBoost selected
+2023-01-22 18:23:44,271 - Models - INFO - the custom: parallelize search best params are {'min_samples_split': 2, 'min_samples_leaf': 4, 'max_depth': 3, 'criterion': 'gini'}
+2023-01-22 18:23:44,271 - Models - INFO - the custom: parallelize search best score is 0.9962962962962963
+2023-01-22 18:23:44,273 - Models - INFO - the custom: parallelize search best estimator is RandomizedSearchCV(cv=5, estimator=DecisionTreeClassifier(),
+                   param_distributions={'criterion': ['gini', 'entropy'],
+                                        'max_depth': [3, 5, 10],
+                                        'min_samples_leaf': [1, 2, 3, 4, 5],
+                                        'min_samples_split': [2, 5, 10]})
+2023-01-22 18:23:44,279 - Models - INFO - the Decision Tree Classifier model has been trained evaluated 1.0 and saved selected
+2023-01-22 19:26:29,619 - Models - INFO - machine learning model Radius Neighbors Classifier selected
+2023-01-22 19:26:30,079 - Models - ERROR - Invalid algorithm passed: Radius Neighbors Classifier. Please pass a valid algorithm.
+2023-01-22 19:26:59,288 - Models - INFO - machine learning model Gaussian Naive Bayes selected
+2023-01-22 19:26:59,748 - Models - ERROR - Invalid algorithm passed: Gaussian Naive Bayes. Please pass a valid algorithm.
+2023-01-22 19:27:16,157 - Models - INFO - machine learning model Logistic Regression selected
+2023-01-22 19:29:59,210 - Models - INFO - machine learning model Radius Neighbors Classifier selected
+2023-01-22 19:29:59,674 - Models - ERROR - Invalid algorithm passed: Radius Neighbors Classifier. Please pass a valid algorithm.
+2023-01-22 19:31:11,892 - Models - INFO - machine learning model Radius Neighbors Classifier selected
+2023-01-22 19:32:53,236 - Models - INFO - machine learning model Radius Neighbors Classifier selected
+2023-01-22 19:35:55,219 - Models - INFO - machine learning model Gaussian Naive Bayes selected
+2023-01-22 19:46:23,149 - Models - INFO - Creating a auto trading bot Autobot
+2023-01-22 19:49:11,743 - Models - INFO - no bot detected, creating a bot
+2023-01-22 19:58:00,644 - Models - INFO - Creating a auto trading bot Autobot-Phemex: BTC/USDT-1m-DecisionTreeClassifier(max_depth=10)-count: 0 -> 
+2023-01-22 19:58:33,200 - Models - INFO - no bot detected, creating a bot
+2023-01-22 20:24:12,120 - Models - INFO - Creating a auto trading bot Autobot-Phemex: BTC/USDT-1m-DecisionTreeClassifier(max_depth=3, min_samples_leaf=4)-count: 0 -> 
+2023-01-22 20:29:52,115 - Models - INFO - Creating a auto trading bot Autobot-Phemex: BTC/USDT-1m-DecisionTreeClassifier(max_depth=3, min_samples_leaf=4)-count: 0 -> 
+2023-01-22 20:47:00,897 - Models - INFO - Creating a auto trading bot Autobot-Phemex: BTC/USDT-1m-DecisionTreeClassifier(max_depth=3, min_samples_leaf=4)-count: 0 -> 
+2023-01-22 20:50:01,954 - Models - INFO - Creating a auto trading bot Autobot-Phemex: BTC/USDT-1m-DecisionTreeClassifier(max_depth=3, min_samples_leaf=4)-count: 0 -> 
+2023-01-22 20:50:31,174 - Models - INFO - no bot detected, creating a bot

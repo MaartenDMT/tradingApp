@@ -55,9 +55,14 @@ class LoginView(Frame):
         Label(self, text="Password").grid(row=1, column=0, padx=5, pady=5)
         self.password_entry = Entry(self, textvariable=self._password_var, show="*").grid(row=1, column=1, padx=5, pady=5)
 
-        Button(self, text="Login", command=self._presenter.on_login_button_clicked).grid(row=2, column=1, padx=5, pady=5)
-        Button(self, text="Register", command=self._presenter.on_register_button_clicked).grid(row=3, column=1, padx=5, pady=5)
-        
+        self.login = Button(self, text="Login", command=self._presenter.on_login_button_clicked)
+        self.login.config(width=10)
+         
+        self.registering = Button(self, text="Register", command=self._presenter.on_register_button_clicked)
+        self.registering.config(width=10)
+
+        self.login.grid(row=2, column=0, pady=5)
+        self.registering.grid(row=2, column=1, pady=5)
 
     def get_username(self) -> str:
         return self._username_var.get()

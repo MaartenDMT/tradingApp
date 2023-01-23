@@ -1,5 +1,6 @@
 import logging
 import os
+import pickle
 import threading
 from pathlib import Path
 
@@ -11,6 +12,7 @@ from dotenv import load_dotenv
 from model.autobot import AutoBot
 from model.machinelearning import MachineLearning
 from model.trading import Trading
+from model.features import Tradex_indicator
 
 # Set the path to the .env file
 dotenv_path = r'.env'
@@ -195,7 +197,9 @@ class ExchangeTabModel:
 class BotTabModel:
     def __init__(self, logger, presenter):
         self.logger = logger
-        self.presenter = presenter
+        self._presenter = presenter
+        self.bots = []
+        self.auto_trade_threads = []
         self.stop_event_trade = threading.Event()
     
     def get_data_ml_files(self) -> list:
@@ -204,54 +208,61 @@ class BotTabModel:
         files = os.listdir(path)
         
         return files
-        
-    def toggle_auto_trade(self)-> bool:
-        self.bot = self.presenter.get_auto_bot()
-        
-        # Toggle the automatic trading flag
-        self.bot.auto_trade = not self.bot.auto_trade
-
-        # Update the button text
-        if self.bot.auto_trade:
-            self.logger.info(
-                f"Starting auto trading bot with symbol {self.bot.symbol}")
-
-            
-            # Start the automatic trading thread
-            self.auto_trade_thread = threading.Thread(
-                target=self.bot.start_auto_trading, args=(self.stop_event_trade,))
-
-
-            # Reset the stop event
+    
+    def start_bot(self, index: int) -> None:
+        if len(self.auto_trade_threads) <= index:
+            self.logger.info(f"no bot detected, creating a bot")
+            self.bots.append(self._presenter.get_auto_bot())
+            self.auto_trade_threads.append(threading.Thread(target=self.bots[-1].start_auto_trading, args=(self.stop_event_trade,)))
             self.stop_event_trade.clear()
+            self.auto_trade_threads[-1].setDaemon(True)
+            self.auto_trade_threads[-1].start()
+            self.bots[-1].auto_trade = True
 
-            # Start the thread
-            self.auto_trade_thread.setDaemon(True)
-            self.auto_trade_thread.start()
-            
-            return True
-        
-        else:
-            self.logger.info(
-                f"Stopping auto trading bot with symbol {self.bot.symbol}")
+        elif self.auto_trade_threads[index] and not self.auto_trade_threads[index].is_alive():
+            self.stop_event_trade.clear()
+            self.auto_trade_threads[index] = threading.Thread(target=self.bots[index].start_auto_trading, args=(self.stop_event_trade,))
+            self.auto_trade_threads[index].setDaemon(True)
+            self.auto_trade_threads[index].start()
+            self.bots[index].auto_trade = True
+            self.logger.info(f"Starting a auto trading bot {self.bots[index]}")
 
-            # Set the stop event to signal the thread to stop
+    def stop_bot(self, index: int) -> None:
+        if index < len(self.auto_trade_threads) and self.auto_trade_threads[index].is_alive():
             self.stop_event_trade.set()
+            self.auto_trade_threads[index].join()
+            self.bots[index].auto_trade = False
+            self.logger.info(f"Stopping the auto trading bot called: {self.bots[index]}")
+        else:
+            self.logger.error(f"there is no bot to stop! ")
 
-            # Wait for the thread to finish
-            self.auto_trade_thread.join()
+    def create_bot(self) -> None:
+        bot = self._presenter.get_auto_bot()
+        self.bots.append(bot)
+        self.logger.info(f"Creating a auto trading bot {bot}")
+
+
+    def destroy_bot(self, index: int) -> None:
+        if index < len(self.auto_trade_threads):
+            self.stop_bot(index)
+            del self.auto_trade_threads[index]
+            del self.bots[index]
+            self.logger.info(f"Destroying the auto trading bot called: {self.bots[index]}")
             
-            return False
             
     def get_autobot(self, exchange,symbol,amount, stop_loss,take_profit, file, time):
         
         ml = MachineLearning(exchange, symbol,self.logger)
         model = ml.load_model(file)
-
+        
+        with open(f'data/pickle/{time}.p', 'rb') as f:
+            df = pickle.load(f)
+        df = df.dropna()
+        trade_x = Tradex_indicator(symbol=symbol, t=None, get_data=True ,data=df)
         # # Make predictions using the scaled test data
         # y_pred = ml.predict(model)
-        autobot = AutoBot(exchange,symbol, amount, stop_loss, take_profit, model, time, ml,self.logger )
-        self.presenter.save_autobot(autobot)
+        autobot = AutoBot(exchange,symbol, amount, stop_loss, take_profit, model, time, ml, trade_x, self.logger )
+        #self._presenter.save_autobot(autobot)
         return autobot
             
 class ChartTabModel:
