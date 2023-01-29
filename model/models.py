@@ -34,7 +34,7 @@ class Models:
         self._presenter = presenter
         self.mainview_model = MainviewModel()
         self.tradetab_model = TradeTabModel(self.logger, self._presenter)
-        self.exchangetab_model = ExchangeTabModel()
+        self.exchangetab_model = ExchangeTabModel(self.logger, self._presenter)
         self.bottab_model = BotTabModel(self.logger, self._presenter)
         self.charttab_model = ChartTabModel(self.logger, self._presenter)
     
@@ -59,10 +59,13 @@ class Models:
     
     def get_exchange(self):
         # Create an instance of the exchange using the CCXT library
-        exchange =  getattr(ccxt, "phemex")({'apiKey': os.environ.get('API_KEY_PHE_TEST'),
-                        'secret': os.environ.get('API_SECRET_PHE_TEST'),
-                        'rateLimit': 2000,
-                        'enableRateLimit': True})
+        exchange = ccxt.binance({'apiKey': os.environ.get('API_KEY_BIN_TEST'),
+            'secret': os.environ.get('API_SECRET_BIN_TEST'),
+            'rateLimit': 2000,
+            'enableRateLimit': True
+            })
+        exchange.set_sandbox_mode(True)
+        
         if not exchange.check_required_credentials():
             print('THERE ARE NOT CREDENTIALS')
             
@@ -188,11 +191,38 @@ class TradeTabModel:
             trade_type, amount, price, takeprofit, stoploss, y_pred)
 
 class ExchangeTabModel:
-    def __init__(self):
-        pass
+    def __init__(self, logger, presenter):
+        self.logger = logger
+        self._presenter = presenter
+        self.exchange = []
     
-    def get_exchange(self):
-        pass
+    def set_first_exchange(self):
+        exchange =  getattr(ccxt, "binance")({
+            'apiKey': os.environ.get('API_KEY_BIN_TEST'),
+            'secret': os.environ.get('API_SECRET_BIN_TEST'),
+            'rateLimit': 2000,
+            'options': {
+                    'defaultType': 'future',
+                    }, 
+            'enableRateLimit': True})
+        self.exchange.append(exchange)
+        return exchange
+        
+    def create_exchange(self, exchange_name, api_key, api_secret):
+        exchange =  getattr(ccxt, exchange_name)({'apiKey': api_key,
+            'secret': api_secret,
+            'rateLimit': 2000,
+            'enableRateLimit': True})
+        self.exchange.append(exchange)
+        self.logger.info(f'creating the exchange {exchange}')
+        return exchange
+        
+    def get_exchange(self, index):
+        return self.exchange[index]
+    
+    def remove_exchange(self, index) -> None:
+        self.logger.info(f'Removing exchange {self.exchange[index]}')
+        del self.exchange[index]
 
 class BotTabModel:
     def __init__(self, logger, presenter):
@@ -210,7 +240,7 @@ class BotTabModel:
         return files
     
     def start_bot(self, index: int) -> None:
-        if len(self.auto_trade_threads) <= index:
+        if len(self.auto_trade_threads) < index:
             self.logger.info(f"no bot detected, creating a bot")
             self.bots.append(self._presenter.get_auto_bot())
             self.auto_trade_threads.append(threading.Thread(target=self.bots[-1].start_auto_trading, args=(self.stop_event_trade,)))

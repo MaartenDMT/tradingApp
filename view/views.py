@@ -61,7 +61,7 @@ class LoginView(Frame):
         self.registering = Button(self, text="Register", command=self._presenter.on_register_button_clicked)
         self.registering.config(width=10)
 
-        self.login.grid(row=2, column=0, pady=5)
+        self.login.grid(row=2, column=0, pady=5, padx=5)
         self.registering.grid(row=2, column=1, pady=5)
 
     def get_username(self) -> str:

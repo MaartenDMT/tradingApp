@@ -62,11 +62,8 @@ class Trading:
         try:
             order = self.exchange.create_order(symbol=self.symbol, type=trade_type, side=side, amount=amount, price=price, params={
                 'stopLoss': self.stoploss,
-                'takeProfit': self.takeprofit1,
-                'takeProfit2': self.takeprofit2,
-                'takeProfit3': self.takeprofit3,
-
-            })
+                'takeProfit': self.takeprofit1})
+            
             self.logger.info(f"{self.symbol} {side} Order Placed with order Type: +\
                 {trade_type} {amount} at {price} with a stop at {self.stoploss}+\
                     and take profit {self.takeprofit1} | {self.takeprofit2} | {self.takeprofit2} ")
@@ -174,24 +171,3 @@ class Trading:
         if self.check_trade_status():
             # If we are, update the size of the trade
             self.exchange.update_order(self.trade_id, {'amount': amount})
-
-    def auto_trade_loop(self, stop_event):
-
-            # Check if automatic trading is enabled
-            while not stop_event.is_set():
-                print('AUTO BOT TRADING --> TESTER')
-
-                # Check for trade signals
-                signal = check_for_signal()
-
-                if signal:
-                    try:
-                        # Place a trade if a signal is received
-                        self.check_and_place_trade(
-                            'market', 1000, 10000, self.takeprofit1, self.stoploss)
-                    except Exception as e:
-                        self.logger.error(
-                            f"in the auto_trade_loop (order) Error: {e}")
-            # Sleep for 1 minute before checking for signals again
-            time.sleep(60)
-            

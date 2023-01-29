@@ -567,3 +567,14 @@
 2023-01-22 20:47:00,897 - Models - INFO - Creating a auto trading bot Autobot-Phemex: BTC/USDT-1m-DecisionTreeClassifier(max_depth=3, min_samples_leaf=4)-count: 0 -> 
 2023-01-22 20:50:01,954 - Models - INFO - Creating a auto trading bot Autobot-Phemex: BTC/USDT-1m-DecisionTreeClassifier(max_depth=3, min_samples_leaf=4)-count: 0 -> 
 2023-01-22 20:50:31,174 - Models - INFO - no bot detected, creating a bot
+2023-01-29 17:11:51,795 - Models - INFO - Creating a auto trading bot Autobot-Binance: BTC/USDT-1m-DecisionTreeClassifier(max_depth=3, min_samples_leaf=4)-count: 0 -> 
+2023-01-29 17:12:26,801 - Models - INFO - no bot detected, creating a bot
+2023-01-29 17:20:56,328 - Models - INFO - no bot detected, creating a bot
+2023-01-29 17:20:59,447 - Models - INFO - no bot detected, creating a bot
+2023-01-29 17:21:05,793 - Models - ERROR - there is no bot to stop! 
+2023-01-29 17:21:10,286 - Models - ERROR - there is no bot to stop! 
+2023-01-29 17:26:27,624 - Models - ERROR - there is no bot to stop! 
+2023-01-29 17:26:31,196 - Models - INFO - no bot detected, creating a bot
+2023-01-29 17:26:34,810 - Models - INFO - no bot detected, creating a bot
+2023-01-29 17:29:38,408 - Models - INFO - Creating a auto trading bot Autobot-Binance: BTC/USDT-1m-DecisionTreeClassifier(max_depth=3, min_samples_leaf=4)-count: 0 -> 
+2023-01-29 17:36:39,937 - Models - INFO - no bot detected, creating a bot

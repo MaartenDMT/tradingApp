@@ -14,6 +14,7 @@ class Presenter:
         self._view = view
         self.get_frames()
         self.bot_count = 0
+        self.exchange_count = 0
         
     def run(self):
         self._view.mainloop()
@@ -23,7 +24,7 @@ class Presenter:
         return exchange
         
 
-    # Login view
+    # Login view -------------------------------------------------------------------
     def on_login_button_clicked(self):
         username = self.loginview.get_username()
         password = self.loginview.get_password()
@@ -194,24 +195,16 @@ class Presenter:
     
         
     def get_autobot_exchange(self):
-        exchange_tab =  self.exchange_tab_view()
-        exchange_name = exchange_tab.exchange_var.get()
-        key = exchange_tab.api_key_entry.get()
-        secret = exchange_tab.api_secret_entry.get()
-        l=False
+        exchange = self.select_exchange()
+        exchange_tab = self.exchange_tab_view()
+        l= exchange_tab.text_exchange_var.get()
         
-        print(exchange_name)
-        
-        if key == "" or secret == "" or exchange_name == "":
+        if exchange == None:
             exchange_name = "phemex"
             key = os.environ.get('API_KEY_PHE_TEST')
             secret = os.environ.get('API_SECRET_PHE_TEST')
             l = True
         
-        exchange = getattr(ccxt, exchange_name)({'apiKey': key,
-                        'secret': secret,
-                        'rateLimit': 2000,
-                        'enableRateLimit': True})
         if l:
             exchange.set_sandbox_mode(True)
             
@@ -251,9 +244,33 @@ class Presenter:
     
     # Exchange tab --------------------------------------------------------------------------
     
-    def save_autobot(self, autobot):
+    def save_first_exchange(self) -> None:
+        exchange = self._model.exchangetab_model.set_first_exchange()
         exchange_tab = self.exchange_tab_view()
-        exchange_tab.history_autobot.insert(END, autobot)
+        exchange_tab.add_exchange_optionmenu(exchange)
+    
+    def create_exchange(self) -> None:
+        exchange_tab = self.exchange_tab_view()
+        exchange_name = exchange_tab.exchange_var.get()
+        api_key = exchange_tab.api_key_entry.get()
+        api_secret = exchange_tab.api_secret_entry.get()
+        exchange = self._model.exchangetab_model.create_exchange(exchange_name,api_key,api_secret)
+        exchange_tab.add_exchange_optionmenu(exchange)
+    
+    def remove_exchange(self):
+        exchange_tab = self.exchange_tab_view()
+        index = exchange_tab.select_exchange()
+        self._model.exchangetab_model.remove_exchange(index)
+        
+    
+    def select_exchange(self):
+        exchange_tab = self.exchange_tab_view()
+        index = exchange_tab.select_exchange()
+        exchange = self._model.exchangetab_model.get_exchange(index)
+        return exchange
+        
+
+         
     
     
     # ML tab -------------------------------------------------------------------

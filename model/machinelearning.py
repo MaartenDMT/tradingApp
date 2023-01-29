@@ -38,7 +38,7 @@ class MachineLearning:
         data = np.array(df)
         # Calculate the technical indicators
         df['rsi'] = ta.rsi(df.close)
-        df['macd'] = ta.macd(df.close)[0]
+        df['macd'] = ta.macd(df.close)
         df['moving_average'] = ta.sma(df.close, length=50)
         # Create the features array
         features = np.column_stack((df.rsi.fillna(0), df.macd.fillna(0), df.moving_average.fillna(0), df.open.fillna(0), df.high.fillna(0), df.low.fillna(0), df.volume.fillna(0)))
