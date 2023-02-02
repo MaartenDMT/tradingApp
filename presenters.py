@@ -25,7 +25,7 @@ class Presenter:
         
 
     # Login view -------------------------------------------------------------------
-    def on_login_button_clicked(self):
+    def on_login_button_clicked(self) -> None:
         username = self.loginview.get_username()
         password = self.loginview.get_password()
         self._model.login_model.set_credentials(username, password)
@@ -35,7 +35,7 @@ class Presenter:
         else:
             self.loginview.login_failed()
             
-    def on_register_button_clicked(self):
+    def on_register_button_clicked(self)-> None:
         username = self.loginview.get_username()
         password = self.loginview.get_password()
         
@@ -46,7 +46,7 @@ class Presenter:
         else:
             self.loginview.login_failed()
     
-    def get_frames(self):
+    def get_frames(self) -> None:
         self._view.frames = {}
         self.loginview = self._view.loginview(self)
         self._view.show_frame(self.loginview, self)
