@@ -1,8 +1,8 @@
+from concurrent.futures import ThreadPoolExecutor
 import logging
 import os
 import pickle
 import threading
-from pathlib import Path
 
 import ccxt
 import pandas as pd
@@ -32,11 +32,13 @@ class Models:
                 
     def create_tabmodels(self, presenter) -> None:
         self._presenter = presenter
-        self.mainview_model = MainviewModel()
+        self.logger.info("Starting loading the models")
+        self.mainview_model = MainviewModel(self.logger,self._presenter)
         self.tradetab_model = TradeTabModel(self.logger, self._presenter)
         self.exchangetab_model = ExchangeTabModel(self.logger, self._presenter)
         self.bottab_model = BotTabModel(self.logger, self._presenter)
         self.charttab_model = ChartTabModel(self.logger, self._presenter)
+        self.logger.info("Finished loading the models")
     
 
     def add_log_info(self) -> None:
@@ -133,13 +135,16 @@ class LoginModel:
 
 
 class MainviewModel:
-    def __init__(self):
-        pass
+    def __init__(self, logger, presenter):
+        self.logger = logger
+        self.presenter = presenter
+        self.logger.info("loading the Main view model")
 
 class TradeTabModel:
     def __init__(self, logger, presenter):
         self.logger = logger
         self.presenter = presenter
+        self.logger.info("loading the Trade tab model")
         self._trading = self.get_trading()
     
     def get_trading(self, symbol='BTC/USDT') -> Trading:
@@ -194,6 +199,7 @@ class ExchangeTabModel:
     def __init__(self, logger, presenter):
         self.logger = logger
         self._presenter = presenter
+        self.logger.info("loading the Exchange tab model")
         self.exchange = []
     
     def set_first_exchange(self):
@@ -228,6 +234,7 @@ class BotTabModel:
     def __init__(self, logger, presenter):
         self.logger = logger
         self._presenter = presenter
+        self.logger.info("loading the Bot tab model")
         self.bots = []
         self.auto_trade_threads = []
         self.stop_event_trade = threading.Event()
@@ -239,45 +246,76 @@ class BotTabModel:
         
         return files
     
-    def start_bot(self, index: int) -> None:
-        if len(self.auto_trade_threads) < index:
-            self.logger.info(f"no bot detected, creating a bot")
-            self.bots.append(self._presenter.get_auto_bot())
+    def start_bot(self, index: int) -> bool:
+        print(index)
+        if index > len(self.bots):
+            bot = self._presenter.get_auto_bot()
+            self.bots.append(bot)
+            self.logger.info(f"no bot detected, Creating a auto trading bot {bot}")
             self.auto_trade_threads.append(threading.Thread(target=self.bots[-1].start_auto_trading, args=(self.stop_event_trade,)))
             self.stop_event_trade.clear()
-            self.auto_trade_threads[-1].setDaemon(True)
-            self.auto_trade_threads[-1].start()
+            if not self.auto_trade_threads[-1].is_alive():
+                self.auto_trade_threads[-1].setDaemon(True)
+                self.auto_trade_threads[-1].start()
             self.bots[-1].auto_trade = True
+            return True
 
-        elif self.auto_trade_threads[index] and not self.auto_trade_threads[index].is_alive():
-            self.stop_event_trade.clear()
-            self.auto_trade_threads[index] = threading.Thread(target=self.bots[index].start_auto_trading, args=(self.stop_event_trade,))
-            self.auto_trade_threads[index].setDaemon(True)
-            self.auto_trade_threads[index].start()
-            self.bots[index].auto_trade = True
-            self.logger.info(f"Starting a auto trading bot {self.bots[index]}")
+        elif self.bots[index]:
+            if index <= len(self.auto_trade_threads) and index > 0:
+                self.stop_event_trade.clear()
+                self.auto_trade_threads[index] = threading.Thread(target=self.bots[index].start_auto_trading, args=(self.stop_event_trade,))
+                if not self.auto_trade_threads[index].is_alive():
+                    self.auto_trade_threads[index].setDaemon(True)
+                    self.auto_trade_threads[index].start()
+                self.bots[index].auto_trade = True
+                self.logger.info(f"Starting a auto trading bot {self.bots[index]}")
+                return True
+            else:
+                self.logger.error(f"Index {index} is out of bounds, the thread list only has {len(self.bots)} elements. creating a new thread")
+                self.stop_event_trade.clear()
+                thread = threading.Thread(target=self.bots[index].start_auto_trading, args=(self.stop_event_trade,))
+                self.auto_trade_threads.append(thread)
+                if not self.auto_trade_threads[-1].is_alive():
+                    self.auto_trade_threads[-1].setDaemon(True)
+                    self.auto_trade_threads[-1].start()
+                self.bots[index].auto_trade = True
+                self.logger.info(f"Starting a auto trading bot {self.bots[index]}")
+                return True
+                
+        else:
+            self.logger.error(f"there is no bot to start! ")
+            return False
 
-    def stop_bot(self, index: int) -> None:
-        if index < len(self.auto_trade_threads) and self.auto_trade_threads[index].is_alive():
+    def stop_bot(self, index: int) -> bool:
+        if index <= len(self.auto_trade_threads) and self.auto_trade_threads[index].is_alive():
             self.stop_event_trade.set()
             self.auto_trade_threads[index].join()
             self.bots[index].auto_trade = False
             self.logger.info(f"Stopping the auto trading bot called: {self.bots[index]}")
+            return True
         else:
             self.logger.error(f"there is no bot to stop! ")
+            return False
 
     def create_bot(self) -> None:
         bot = self._presenter.get_auto_bot()
         self.bots.append(bot)
+        print(self.bots.__iter__)
         self.logger.info(f"Creating a auto trading bot {bot}")
 
 
-    def destroy_bot(self, index: int) -> None:
-        if index < len(self.auto_trade_threads):
+
+    def destroy_bot(self, index: int) -> bool:
+        if index <= len(self.bots):
             self.stop_bot(index)
             del self.auto_trade_threads[index]
             del self.bots[index]
             self.logger.info(f"Destroying the auto trading bot called: {self.bots[index]}")
+            return True
+        else:
+            self.logger.error(f"there is no bot to destroy! ")
+            return False
+            
             
             
     def get_autobot(self, exchange,symbol,amount, stop_loss,take_profit, file, time):
@@ -299,6 +337,7 @@ class ChartTabModel:
     def __init__(self, logger, presenter):
         self.logger = logger
         self.presenter = presenter
+        self.logger.info("loading the Chart tab model")
         self.stop_event_chart = threading.Event()
         self.auto_chart = False
     

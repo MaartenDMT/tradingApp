@@ -112,4 +112,4 @@ class AutoBot:
             return False
 
     def __str__(self):
-        return f"Autobot-{self.exchange}: {self.symbol}-{self.time}-{self.model}-count: {len(self.open_orders)} -> "
+        return f"Autobot-{self.exchange}: {self.symbol}-{self.time}-{self.model}- Trades: {len(self.open_orders)} -> "

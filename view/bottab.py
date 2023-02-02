@@ -9,8 +9,8 @@ class BotTab(Frame):
         self._presenter = presenter
         self.exchange = self._presenter.get_exchange()
         self.bot_names = []
-        # ... GUI elements for the trade page go here ...
         
+        # ... GUI elements for the trade page go here ...
         self.options_ml_frame = Frame(self)
         self.bot_frame = Frame(self)
         
@@ -111,18 +111,20 @@ class BotTab(Frame):
     
 
     def start_bot(self):
-        selection = int(self.bot_select_var.get())
+        selection = int(self.bot_select_var.get()) -1
+        print(selection)
         if selection == None:
-            selection = 1
+            messagebox.showerror("Error", "there is no bot selected!")
         if isinstance(selection, int):
             self._presenter.start_bot(selection)
         else:
             messagebox.showerror("Error", "you need to select a bot to start")
             
     def stop_bot(self):
-        selection = int(self.bot_select_var.get())
-        if selection == "":
-            selection = 1
+        selection = int(self.bot_select_var.get()) -1 
+        print(selection)
+        if selection == None:
+            messagebox.showerror("Error", "there is no bot selected!")
         if isinstance(selection, int):
             self._presenter.stop_bot(selection)
         else:
@@ -130,10 +132,11 @@ class BotTab(Frame):
 
     
     def create_bot(self) -> None:
-        self._presenter.create_bot()
+        self._presenter.threading_createbot()
 
     def destroy_bot(self) -> None:
-        selection = int(self.bot_select_var.get())
+        selection = int(self.bot_select_var.get()) - 1
+        print(selection)
         if isinstance(selection, int):
             self._presenter.destroy_bot(selection)
         else:
@@ -143,7 +146,7 @@ class BotTab(Frame):
         self.bot_select["menu"].add_command(label=f"{name}{count}", command=lambda: self.bot_select_var.set(f"{count}"))
 
     def remove_bot_from_optionmenu(self, index: int) -> None:
-        if index < len(self.bot_select_var):
+        if index < int(self.bot_select_var.get()):
             self.bot_select["menu"].delete(index)
         else:
             messagebox.showerror("Error", "There is no bot to remove.")

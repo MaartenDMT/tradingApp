@@ -48,11 +48,9 @@ class ExchangeTab(Frame):
     
     def select_exchange(self):
         exchange = self.history_exchange.curselection()[0]
-        self.history_exchange.delete(exchange)
-        
         return exchange
     
-    def remove_exchange_from_optionmenu(self, index: int) -> None:
+    def remove_exchange_from_optionmenu(self) -> None:
         index = self.history_exchange.curselection()[0]
         self.history_exchange.delete(index)
         return index

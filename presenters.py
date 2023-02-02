@@ -1,4 +1,5 @@
 import os
+import threading
 from tkinter import END, messagebox
 
 import ccxt
@@ -138,33 +139,41 @@ class Presenter:
     # Bot tab  ----------------------------------------------------------------------
 
     def start_bot(self, index: int) -> None:
-        self._model.bottab_model.start_bot(index)
+        started = self._model.bottab_model.start_bot(index)
         
-        bot_tab = self.bot_tab_view()
-        name = self.get_bot_name(bot_tab, index)
-        bot_tab.update_bot_status("Started", index, name)
+        if started:
+            bot_tab = self.bot_tab_view()
+            name = self.get_bot_name(bot_tab, index)
+            bot_tab.update_bot_status("Started", index, name)
 
     def stop_bot(self, index: int) -> None:
-        self._model.bottab_model.stop_bot(index)
+        stopped = self._model.bottab_model.stop_bot(index)
         
-        bot_tab = self.bot_tab_view()
-        name = self.get_bot_name(bot_tab, index)
-        bot_tab.update_bot_status("Stopped", index, name)
+        if stopped:
+            bot_tab = self.bot_tab_view()
+            name = self.get_bot_name(bot_tab, index)
+            bot_tab.update_bot_status("Stopped", index, name)
 
     def create_bot(self) -> None:
         self.bot_count += 1
         self._model.bottab_model.create_bot()
-        
         bot_tab = self.bot_tab_view()
         name = self.get_bot_name(bot_tab, self.bot_count-1)
         bot_tab.add_bot_to_optionmenu(self.bot_count, name)
+        
+        
+    def threading_createbot(self) -> None:
+        t = threading.Thread(target=self.create_bot)
+        t.setDaemon(True)
+        t.start()
 
     def destroy_bot(self, index: int) -> None:
         if index < len(self._model.bottab_model.bots):
-            self._model.bottab_model.destroy_bot(index)
+            destroyed = self._model.bottab_model.destroy_bot(index)
             
-            bot_tab = self.bot_tab_view()
-            bot_tab.remove_bot_from_optionmenu(index)
+            if destroyed:
+                bot_tab = self.bot_tab_view()
+                bot_tab.remove_bot_from_optionmenu(index)
         else:
             messagebox.showerror("Error", "There is no bot to destroy.")
 
@@ -259,7 +268,7 @@ class Presenter:
     
     def remove_exchange(self):
         exchange_tab = self.exchange_tab_view()
-        index = exchange_tab.select_exchange()
+        index = exchange_tab.remove_exchange_from_optionmenu()
         self._model.exchangetab_model.remove_exchange(index)
         
     

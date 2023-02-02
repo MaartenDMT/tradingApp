@@ -14,14 +14,16 @@ class Tradex_indicator:
         self.symbol = symbol 
         self.data = self.changeTime(self.get_data(get_data, data), t)
         print(self.data)
-        self.trend = Trend(self.data)
-        self.screener = Screener(self.data)
-        self.real_time = Real_time(self.data)
-        self.scanner = Scanner(self.data)
+        self.set_tradex(self.data)
        
-        
-        
     
+    def set_tradex(self, data):
+        with ThreadPoolExecutor() as executor:
+            self.trend = executor.submit(Trend,data)
+            self.screener = executor.submit(Screener,data)
+            self.real_time = executor.submit(Real_time,data)
+            self.scanner = executor.submit(Scanner,data)
+
     def get_data(self, get_data, data) -> pd.DataFrame:
         if get_data:
             print('getting the data')
@@ -74,6 +76,7 @@ class Tradex_indicator:
         
         return self.data
     
+    
     def create_signals_with_multiprocessing(self):
         print("Creating signals using multiprocessing")
         # Creating a pool of processes
@@ -92,13 +95,12 @@ class Tradex_indicator:
         threads = []
         for i in range(cpu_count()):
             t = threading.Thread(target=self.create_signals, args=[self.data])
-        threads.append(T)
+        threads.append(t)
         for i in threads:
             i.start()
         for i in threads:
             i.join()
-        result = [t.result() for t in threads]
-        return result
+
 
     def create_signals(self):
         
@@ -353,21 +355,20 @@ class Trend:
         
         vwma = ta.vwma(self.data['close'], self.data['volume'], 14)
         wma = ta.wma(vwma, 21)
-        vwap = self.get_tv_vwap(wma)
+        vwap = self.get_tv_vwap(wma, self.data)
         # Calculate the VWAP using the "price" and "volume" columns
         # vwap = (df["price"] * df["volume"]).sum() / df["volume"].sum()
 
         return vwap, wma
 
-    def get_tv_vwap(self,source):
-        data = self.data
-        data['source'] = source
-        data['typicalPrice'] = (data.source).div(1).values
-        data['typicalPriceVolume'] = data['typicalPrice'] * data['volume']
-        data['cumulativeTypicalPriceVolume1'] = data['typicalPriceVolume'].rolling(48).sum()
-        data['cumulativeVolume1'] = data['volume'].rolling(48).sum()
-        data['vwap'] = data['cumulativeTypicalPriceVolume1']/data['cumulativeVolume1']
-        return data.vwap  
+    def get_tv_vwap(self,source, data):
+        typical_price = np.divide(source.wt2,1)
+        typical_price_volume = np.multiply(typical_price, data['volume'])
+        cumulative_typical_price_volume = np.cumsum(typical_price_volume.values)
+        cumulative_volume = np.cumsum(data['volume'].values)
+        vwap = np.divide(cumulative_typical_price_volume[47:], cumulative_volume[47:])
+        data['vwap'] = np.concatenate([np.full((48,), np.nan), vwap])
+        return data['vwap']
 
 
 
@@ -431,14 +432,13 @@ class Screener:
         return df_temp['s_wma'] ,df_temp['s_vwap']
     
     def get_tv_vwap(self,data):
-      
-        
-        data['typicalPrice'] = (data.wt2).div(1).values
-        data['typicalPriceVolume'] = data['typicalPrice'] * data['volume']
-        data['cumulativeTypicalPriceVolume1'] = data['typicalPriceVolume'].rolling(48).sum()
-        data['cumulativeVolume1'] = data['volume'].rolling(48).sum()
-        data['vwap'] = data['cumulativeTypicalPriceVolume1']/data['cumulativeVolume1']
-        return data.vwap  
+        data['typicalPrice'] = np.divide(data.wt2,1)
+        data['typicalPriceVolume'] = np.multiply(data['typicalPrice'], data['volume'])
+        cumulative_typical_price_volume = np.cumsum(data['typicalPriceVolume'].values)
+        cumulative_volume = np.cumsum(data['volume'].values)
+        vwap = np.divide(cumulative_typical_price_volume[47:], cumulative_volume[47:])
+        data['vwap'] = np.concatenate([np.full((48,), np.nan), vwap])
+        return data['vwap']
     
     def get_vwap2(self,df):
         v = df['volume'].values

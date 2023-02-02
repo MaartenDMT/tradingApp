@@ -32,16 +32,16 @@ class MachineLearning:
     def predict(self, model, t='1m', symbol='BTC/USDT') -> int:
         #TODO: ta.macd problem with the return wants to give 3 but you need only one
         # Fetch the current data for the symbol
-        data = self.exchange.fetch_ohlcv(symbol, timeframe=t, limit=80)
+        data = self.exchange.fetch_ohlcv(symbol, timeframe=t, limit=100)
         df = pd.DataFrame(data, columns=['date', 'open', 'high', 'low', 'close', 'volume'])
         df = df[['open', 'high', 'low', 'close', 'volume']].astype(float)
         data = np.array(df)
         # Calculate the technical indicators
         df['rsi'] = ta.rsi(df.close)
-        df['macd'] = ta.macd(df.close)
+        df['adx'] = ta.adx(df.high, df.low, df.close, length=14)
         df['moving_average'] = ta.sma(df.close, length=50)
         # Create the features array
-        features = np.column_stack((df.rsi.fillna(0), df.macd.fillna(0), df.moving_average.fillna(0), df.open.fillna(0), df.high.fillna(0), df.low.fillna(0), df.volume.fillna(0)))
+        features = np.column_stack((df.rsi.fillna(0), df.adx.fillna(0), df.moving_average.fillna(0), df.open.fillna(0), df.high.fillna(0), df.low.fillna(0), df.volume.fillna(0)))
         # Make a prediction using the model
         prediction = model.predict(features[-1].reshape(1, -1))[0]
         return prediction
@@ -91,10 +91,10 @@ class MachineLearning:
         df = df[['open', 'high', 'low', 'close', 'volume']].astype(float)
         # Calculate the technical indicators
         rsi = ta.rsi(df.close)
-        macd = ta.macd(df.close)
+        adx = ta.adx(df.high, df.low, df.close, 14)
         moving_average = ta.sma(df.close, length=50)
         # Create the features array
-        features = np.column_stack((rsi.fillna(0), macd.fillna(0), moving_average.fillna(0), df.open.fillna(0), df.high.fillna(0), df.low.fillna(0), df.volume.fillna(0)))
+        features = np.column_stack((rsi.fillna(0), adx.fillna(0), moving_average.fillna(0), df.open.fillna(0), df.high.fillna(0), df.low.fillna(0), df.volume.fillna(0)))
         
         if model in ["SVC", "Random Forest Classifier", 'Decision Tree Classifier', 
                      'Extra Tree Classifier', 'Logistic Regression', 'MLPClassifier', 
