@@ -1,4 +1,5 @@
 import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import joblib
 import numpy as np
@@ -8,6 +9,8 @@ from sklearn.ensemble import (GradientBoostingClassifier, IsolationForest,
                               RandomForestClassifier)
 from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.metrics import accuracy_score, r2_score
+from sklearn.model_selection import (GridSearchCV, RandomizedSearchCV,
+                                     train_test_split)
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import RadiusNeighborsClassifier
 from sklearn.neural_network import MLPClassifier
@@ -15,10 +18,8 @@ from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.svm import SVC, SVR
 from sklearn.tree import DecisionTreeClassifier, ExtraTreeClassifier
 from sklearn.utils import column_or_1d
-from xgboost import XGBClassifier
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from sklearn.model_selection import GridSearchCV, RandomizedSearchCV, train_test_split
 from skopt import BayesSearchCV
+from xgboost import XGBClassifier
 
 from util.utils import array_min2d
 

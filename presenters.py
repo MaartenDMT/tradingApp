@@ -1,8 +1,7 @@
 import os
 import threading
-from tkinter import END, messagebox
+from tkinter import messagebox
 
-import ccxt
 from ttkbootstrap import Frame
 
 MAX_POSITION_SIZE = 0.01

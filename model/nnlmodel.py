@@ -4,16 +4,17 @@ import numpy as np
 import pandas as pd
 import pytab as pt
 import tensorflow as tf
-from dotenv import load_dotenv
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from tensorflow.keras.layers import Dense, Dropout
 from tensorflow.keras.models import Sequential
+from ttkbootstrap import Toplevel
 
 
 class NeuralNetwork:
-    def __init__(self):
-        pass
+    def __init__(self, exchanges, symbol):
+        self.exchanges = exchanges
+        self.symbol = symbol
 
     def start_bot(self):
         
@@ -33,7 +34,7 @@ class NeuralNetwork:
         while not self.stop_flag:
             
             # Get the current market data for each exchange
-            markets = [exchange.fetch_ticker('BTC/USDT') for exchange in self.exchanges]
+            markets = [exchange.fetch_ticker(self.symbol) for exchange in self.exchanges]
             
             # Convert the market data to a Pandas DataFrame
             df = pd.DataFrame(markets)
@@ -48,10 +49,10 @@ class NeuralNetwork:
             for exchange, p in zip(self.exchanges, prediction):
                 if p > 0:
                     # exchange.create_market_buy_order('BTC/USDT', trade_amount)
-                    self.place_trade(exchange, 'BTC/USDT', 'buy', trade_amount)
+                    self.place_trade(exchange, self.symbol, 'buy', trade_amount)
                 else:
                     # exchange.create_market_sell_order('BTC/USDT', trade_amount)
-                    self.place_trade(exchange, 'BTC/USDT', 'sell', trade_amount)
+                    self.place_trade(exchange, self.symbol, 'sell', trade_amount)
                     
             # Sleep for 60 seconds before making the next prediction
             time.sleep(60)
@@ -67,7 +68,7 @@ class NeuralNetwork:
     def view_trade_history(self):
         
         # Create a new window
-        trade_history_window = tk.Toplevel(self.parent)
+        trade_history_window = Toplevel(self.parent)
         trade_history_window.title('Trade History')
         
         # Convert the trade history data to a Pandas DataFrame

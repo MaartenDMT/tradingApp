@@ -1,6 +1,8 @@
 from tkinter import END, BooleanVar, Listbox
+
 import ccxt
-from ttkbootstrap import Button, Entry, Frame, Label, OptionMenu, StringVar, Checkbutton
+from ttkbootstrap import (Button, Checkbutton, Entry, Frame, Label, OptionMenu,
+                          StringVar)
 
 
 class ExchangeTab(Frame):

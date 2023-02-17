@@ -1,16 +1,11 @@
-import time
-
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
-
-# Set up logging
-#logging.basicConfig(level=logging.INFO, format='Trading: %(asctime)s - %(levelname)s - %(message)s')
 
 
 class Trading:
     def __init__(self, exchange, symbol, position_size, max_drawdown,
                  moving_average_period, decision_tree_depth, logger):
 
-        self.exchange = exchange  # getattr(ccxt, exchange_id)()
+        self.exchange = exchange 
         self.getBalancUSDT, self.getBalancBTC = self.getBalance()
         self.logger = logger
         self.symbol = symbol
@@ -27,7 +22,6 @@ class Trading:
         self.moving_average_period = moving_average_period
         self.decision_tree_depth = decision_tree_depth
         self.analyzer = SentimentIntensityAnalyzer()
-
 
         
     def check_trade_status(self):

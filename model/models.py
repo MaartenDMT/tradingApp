@@ -1,4 +1,3 @@
-from concurrent.futures import ThreadPoolExecutor
 import logging
 import os
 import pickle
@@ -10,9 +9,9 @@ import psycopg2
 from dotenv import load_dotenv
 
 from model.autobot import AutoBot
+from model.features import Tradex_indicator
 from model.machinelearning import MachineLearning
 from model.trading import Trading
-from model.features import Tradex_indicator
 
 # Set the path to the .env file
 dotenv_path = r'.env'

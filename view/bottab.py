@@ -1,5 +1,6 @@
 from tkinter import messagebox
-from ttkbootstrap import (Button, Frame, Label, OptionMenu, Scale, StringVar)
+
+from ttkbootstrap import Button, Frame, Label, OptionMenu, Scale, StringVar
 
 
 class BotTab(Frame):

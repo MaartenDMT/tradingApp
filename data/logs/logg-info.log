@@ -90,3 +90,10 @@
 2023-02-02 21:00:03,723 - Models - INFO - Starting a auto trading bot Autobot-Binance: BNB/BUSD-1m-DecisionTreeClassifier(max_depth=3, min_samples_leaf=4)- Trades: 0 -> 
 2023-02-02 21:01:24,736 - Models - ERROR - there is no bot to stop! 
 2023-02-02 21:01:28,191 - Models - ERROR - there is no bot to stop! 
+2023-02-15 16:34:17,133 - Models - INFO - Starting loading the models
+2023-02-15 16:34:17,153 - Models - INFO - loading the Main view model
+2023-02-15 16:34:17,153 - Models - INFO - loading the Trade tab model
+2023-02-15 16:34:57,489 - Models - INFO - loading the Exchange tab model
+2023-02-15 16:34:57,489 - Models - INFO - loading the Bot tab model
+2023-02-15 16:34:57,489 - Models - INFO - loading the Chart tab model
+2023-02-15 16:34:57,512 - Models - INFO - Finished loading the models

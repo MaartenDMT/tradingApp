@@ -1,12 +1,12 @@
-from re import T
-import pandas_ta as ta
+import threading
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+from multiprocessing import Pool, cpu_count
+
 import numpy as np
 import pandas as pd
+import pandas_ta as ta
 import vectorbt as vbt
-from concurrent.futures import ThreadPoolExecutor
-from concurrent.futures import ProcessPoolExecutor
-from multiprocessing import Pool, cpu_count
-import threading
+
 
 class Tradex_indicator:
 

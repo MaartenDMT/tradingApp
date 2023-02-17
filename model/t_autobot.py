@@ -1,3 +1,4 @@
+import asyncio
 import json
 import time
 
@@ -5,7 +6,6 @@ import nest_asyncio
 import pandas as pd
 import requests
 import websockets
-import asyncio
 
 nest_asyncio.apply()
 

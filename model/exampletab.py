@@ -6,10 +6,10 @@ from tkinter import BOTH, BOTTOM, LEFT, RIGHT, TOP, messagebox
 
 import ccxt
 import pandas as pd
+from autobot import AutoBot
 from dotenv import load_dotenv
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
-from autobot import AutoBot
 from ttkbootstrap import (Button, Entry, Frame, Label, Notebook, OptionMenu,
                           StringVar, Window)
 
