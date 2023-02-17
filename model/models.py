@@ -160,6 +160,8 @@ class TradeTabModel:
                          self.moving_average_period, self.decision_tree_depth, self.logger)
         return trading
     
+    def get_balance(self):
+        return self._trading.getBalance()
     
     def update_stoploss(self, stop_loss) -> None:
 

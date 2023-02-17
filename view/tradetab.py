@@ -54,6 +54,18 @@ class TradeTab(Frame):
         self.price_entry = Entry(self, validate='key', validatecommand=(
             self.register(validate_float), '%d', '%i', '%P', '%S', '%T'))
         
+        self.usdt_label = Label(
+            self, text='USDT Balance', font=('Arial', 12))
+        
+        self.btc_label = Label(
+            self, text='BTC Balance', font=('Arial', 12))
+        
+                
+        self.usdt_balance_label = Label(
+            self, text='', font=('Arial', 12))
+        
+        self.btc_balance_label = Label(
+            self, text='', font=('Arial', 12))
     
         # Notebook Trading page --------------------------------------------------------
         
@@ -72,5 +84,12 @@ class TradeTab(Frame):
 
         self.stoploss_slider.grid(row=6, column=0, pady=5)
         self.takeprofit_slider.grid(row=6, column=1, pady=5)
+        
+        self.usdt_label.grid(row=3, column=2, pady=5)
+        self.usdt_balance_label.grid(row=4, column=2, pady=5)
+        
+        self.btc_label.grid(row=5, column=2, pady=5)
+        self.btc_balance_label.grid(row=6, column=2, pady=5)
+        
         
         

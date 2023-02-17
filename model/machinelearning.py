@@ -32,19 +32,23 @@ class MachineLearning:
     
     def predict(self, model, t='1m', symbol='BTC/USDT') -> int:
         #TODO: ta.macd problem with the return wants to give 3 but you need only one
+        
         # Fetch the current data for the symbol
         data = self.exchange.fetch_ohlcv(symbol, timeframe=t, limit=100)
         df = pd.DataFrame(data, columns=['date', 'open', 'high', 'low', 'close', 'volume'])
         df = df[['open', 'high', 'low', 'close', 'volume']].astype(float)
         data = np.array(df)
+        
         # Calculate the technical indicators
         df['rsi'] = ta.rsi(df.close)
-        df['adx'] = ta.adx(df.high, df.low, df.close, length=14)
         df['moving_average'] = ta.sma(df.close, length=50)
+        
         # Create the features array
-        features = np.column_stack((df.rsi.fillna(0), df.adx.fillna(0), df.moving_average.fillna(0), df.open.fillna(0), df.high.fillna(0), df.low.fillna(0), df.volume.fillna(0)))
+        features = np.column_stack((df.rsi.fillna(0), df.moving_average.fillna(0), df.open.fillna(0), df.high.fillna(0), df.low.fillna(0), df.volume.fillna(0)))
+        
         # Make a prediction using the model
         prediction = model.predict(features[-1].reshape(1, -1))[0]
+        
         return prediction
   
 
@@ -92,20 +96,19 @@ class MachineLearning:
         df = df[['open', 'high', 'low', 'close', 'volume']].astype(float)
         # Calculate the technical indicators
         rsi = ta.rsi(df.close)
-        adx = ta.adx(df.high, df.low, df.close, 14)
         moving_average = ta.sma(df.close, length=50)
         # Create the features array
-        features = np.column_stack((rsi.fillna(0), adx.fillna(0), moving_average.fillna(0), df.open.fillna(0), df.high.fillna(0), df.low.fillna(0), df.volume.fillna(0)))
+        features = np.column_stack((rsi.fillna(0), moving_average.fillna(0), df.open.fillna(0), df.high.fillna(0), df.low.fillna(0), df.volume.fillna(0)))
         
-        if model in ["SVC", "Random Forest Classifier", 'Decision Tree Classifier', 
-                     'Extra Tree Classifier', 'Logistic Regression', 'MLPClassifier', 
-                     'Gradient Boosting Classifier']:
+        if model in ["SVC", "Random Forest Classifier", "Random Forest Classifier", 
+                     "Extra Tree Classifier", "Logistic Regression", "MLPClassifier", 
+                     "Gradient Boosting Classifier"]:
             
             #TODO: bins are not probably set 
             # Divide labels into three categories: low, medium, and high
             labels = ['low', 'medium','high']
             df['label_category'] = pd.qcut(df['close'].astype(float), q=5, labels=labels, duplicates='drop')
-            print(df['label_category'])
+            self.logger.info(df['label_category'])
             # Create labels using the label categories
             labels = df['label_category']
         else:
@@ -125,10 +128,10 @@ class MachineLearning:
         X_train, X_test, y_train, y_test = train_test_split(features_scaled, labels_scaled, test_size=0.2)
         
 
-        if model in ['Random Forest Classifier','Gradient Boosting Classifier','SVC', 
-                     'Logistic Regression','Decision Tree Classifier','MLPClassifier',
-                     "SVR", "Extra Tree Classifier", 'XGBoost Classifier', 
-                     'Linear Regression', "Radius Neighbors Classifier"]:
+        if model in ["Random Forest Classifier","Gradient Boosting Classifier","SVC", 
+                     "Logistic Regression","Decision Tree Classifier","MLPClassifier",
+                     "SVR", "Extra Tree Classifier", "XGBoost Classifier", 
+                     "Linear Regression", "Radius Neighbors Classifier"]:
             
             y_train = column_or_1d(y_train, warn=True)
             y_test = column_or_1d(y_test, warn=True)

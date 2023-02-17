@@ -134,6 +134,11 @@ class Presenter:
         # Update the trade history list
         # self.trade_tab.update_history()
         
+    def get_balance(self):
+        usdt, btc = self._model.tradetab_model.get_balance()
+        trade_tab = self.trade_tab()
+        trade_tab.usdt_balance_label.config(text=f"{usdt}")
+        trade_tab.btc_balance_label.config(text=f"{btc}")
         
     # Bot tab  ----------------------------------------------------------------------
 

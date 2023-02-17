@@ -97,3 +97,371 @@
 2023-02-15 16:34:57,489 - Models - INFO - loading the Bot tab model
 2023-02-15 16:34:57,489 - Models - INFO - loading the Chart tab model
 2023-02-15 16:34:57,512 - Models - INFO - Finished loading the models
+2023-02-17 09:00:52,444 - Models - INFO - Starting loading the models
+2023-02-17 09:00:52,445 - Models - INFO - loading the Main view model
+2023-02-17 09:00:52,445 - Models - INFO - loading the Trade tab model
+2023-02-17 09:01:33,271 - Models - INFO - loading the Exchange tab model
+2023-02-17 09:01:33,271 - Models - INFO - loading the Bot tab model
+2023-02-17 09:01:33,271 - Models - INFO - loading the Chart tab model
+2023-02-17 09:01:33,271 - Models - INFO - Finished loading the models
+2023-02-17 09:03:03,639 - Models - INFO - Creating a auto trading bot Autobot-Binance: BTC/USDT-1m-DecisionTreeClassifier(max_depth=10, min_samples_leaf=2, min_samples_split=5)- Trades: 0 -> 
+2023-02-17 09:03:22,890 - Models - ERROR - Index 0 is out of bounds, the thread list only has 1 elements. creating a new thread
+2023-02-17 09:03:22,892 - Models - INFO - Starting a auto trading bot Autobot-Binance: BTC/USDT-1m-DecisionTreeClassifier(max_depth=10, min_samples_leaf=2, min_samples_split=5)- Trades: 0 -> 
+2023-02-17 09:07:42,784 - Models - INFO - Starting loading the models
+2023-02-17 09:07:42,785 - Models - INFO - loading the Main view model
+2023-02-17 09:07:42,785 - Models - INFO - loading the Trade tab model
+2023-02-17 09:08:23,570 - Models - INFO - loading the Exchange tab model
+2023-02-17 09:08:23,570 - Models - INFO - loading the Bot tab model
+2023-02-17 09:08:23,571 - Models - INFO - loading the Chart tab model
+2023-02-17 09:08:23,571 - Models - INFO - Finished loading the models
+2023-02-17 09:09:18,055 - Models - INFO - Creating a auto trading bot Autobot-Binance: BTC/USDT-1m-DecisionTreeClassifier(criterion='entropy', max_depth=10, min_samples_leaf=3)- Trades: 0 -> 
+2023-02-17 09:09:25,708 - Models - ERROR - Index 0 is out of bounds, the thread list only has 1 elements. creating a new thread
+2023-02-17 09:09:25,709 - Models - INFO - Starting a auto trading bot Autobot-Binance: BTC/USDT-1m-DecisionTreeClassifier(criterion='entropy', max_depth=10, min_samples_leaf=3)- Trades: 0 -> 
+2023-02-17 09:19:50,493 - Models - INFO - Starting loading the models
+2023-02-17 09:19:50,494 - Models - INFO - loading the Main view model
+2023-02-17 09:19:50,494 - Models - INFO - loading the Trade tab model
+2023-02-17 09:20:31,253 - Models - INFO - loading the Exchange tab model
+2023-02-17 09:20:31,253 - Models - INFO - loading the Bot tab model
+2023-02-17 09:20:31,254 - Models - INFO - loading the Chart tab model
+2023-02-17 09:20:31,254 - Models - INFO - Finished loading the models
+2023-02-17 09:20:59,812 - Models - INFO - Removing exchange Binance
+2023-02-17 09:21:15,020 - Models - INFO - machine learning model Linear Regression selected
+2023-02-17 09:21:16,567 - Models - INFO - machine learning model Linear Regression selected
+2023-02-17 09:21:50,486 - Models - INFO - the custom: parallelize search best params are {'n_jobs': -1, 'fit_intercept': True, 'copy_X': True}
+2023-02-17 09:21:50,487 - Models - INFO - the custom: parallelize search best score is 0.8812854940793267
+2023-02-17 09:21:50,488 - Models - INFO - the custom: parallelize search best estimator is RandomizedSearchCV(cv=5, estimator=LinearRegression(),
+                   param_distributions={'copy_X': [True, False],
+                                        'fit_intercept': [True, False],
+                                        'n_jobs': [-1, 1]})
+2023-02-17 09:21:50,491 - Models - INFO - the Linear Regression model has been trained evaluated 0.9486368267527819 and saved selected
+2023-02-17 09:22:29,826 - Models - INFO - machine learning model MLPClassifier selected
+2023-02-17 09:22:49,029 - Models - INFO - machine learning model Decision Tree Classifier selected
+2023-02-17 09:23:03,508 - Models - INFO - machine learning model Random Forest Classifier selected
+2023-02-17 09:23:07,024 - Models - INFO - machine learning model SVC selected
+2023-02-17 09:23:11,068 - Models - INFO - machine learning model SVR selected
+2023-02-17 09:23:27,477 - Models - INFO - machine learning model Isolation Forest selected
+2023-02-17 09:23:40,004 - Models - INFO - machine learning model Gradient Boosting Classifier selected
+2023-02-17 09:23:44,224 - Models - INFO - machine learning model Extra Tree Classifier selected
+2023-02-17 09:23:48,790 - Models - INFO - machine learning model XGBoost Classifier selected
+2023-02-17 09:24:11,397 - Models - INFO - the custom: parallelize search best params are {'kernel': 'linear', 'gamma': 'auto', 'degree': 2, 'C': 1.0}
+2023-02-17 09:24:11,398 - Models - INFO - the custom: parallelize search best score is 0.9272521434500864
+2023-02-17 09:24:11,399 - Models - INFO - the custom: parallelize search best estimator is RandomizedSearchCV(cv=5, estimator=SVR(),
+                   param_distributions={'C': [0.1, 1.0, 10.0],
+                                        'degree': [2, 3, 4, 5],
+                                        'gamma': ['auto', 'scale'],
+                                        'kernel': ['linear', 'poly', 'rbf',
+                                                   'sigmoid']})
+2023-02-17 09:24:11,406 - Models - INFO - the SVR model has been trained evaluated 0.9545027054026584 and saved selected
+2023-02-17 09:25:35,307 - Models - INFO - machine learning model Radius Neighbors Classifier selected
+2023-02-17 09:25:44,353 - Models - INFO - machine learning model Gaussian Naive Bayes selected
+2023-02-17 09:27:15,201 - Models - INFO - Starting loading the models
+2023-02-17 09:27:15,202 - Models - INFO - loading the Main view model
+2023-02-17 09:27:15,202 - Models - INFO - loading the Trade tab model
+2023-02-17 09:27:55,973 - Models - INFO - loading the Exchange tab model
+2023-02-17 09:27:55,974 - Models - INFO - loading the Bot tab model
+2023-02-17 09:27:55,974 - Models - INFO - loading the Chart tab model
+2023-02-17 09:27:55,974 - Models - INFO - Finished loading the models
+2023-02-17 09:28:39,430 - Models - INFO - Creating a auto trading bot Autobot-Binance: BTC/USDT-1m-LinearRegression(n_jobs=-1)- Trades: 0 -> 
+2023-02-17 09:28:43,632 - Models - ERROR - Index 0 is out of bounds, the thread list only has 1 elements. creating a new thread
+2023-02-17 09:28:43,634 - Models - INFO - Starting a auto trading bot Autobot-Binance: BTC/USDT-1m-LinearRegression(n_jobs=-1)- Trades: 0 -> 
+2023-02-17 09:33:35,879 - Models - INFO - Starting loading the models
+2023-02-17 09:33:35,880 - Models - INFO - loading the Main view model
+2023-02-17 09:33:35,880 - Models - INFO - loading the Trade tab model
+2023-02-17 09:34:16,656 - Models - INFO - loading the Exchange tab model
+2023-02-17 09:34:16,656 - Models - INFO - loading the Bot tab model
+2023-02-17 09:34:16,656 - Models - INFO - loading the Chart tab model
+2023-02-17 09:34:16,656 - Models - INFO - Finished loading the models
+2023-02-17 09:36:09,886 - Models - INFO - Creating a auto trading bot Autobot-Binance: BTC/USDT-1m-SVR(degree=2, gamma='auto', kernel='linear')- Trades: 0 -> 
+2023-02-17 09:36:35,418 - Models - ERROR - Index 0 is out of bounds, the thread list only has 1 elements. creating a new thread
+2023-02-17 09:36:35,419 - Models - INFO - Starting a auto trading bot Autobot-Binance: BTC/USDT-1m-SVR(degree=2, gamma='auto', kernel='linear')- Trades: 0 -> 
+2023-02-17 09:47:57,952 - Models - INFO - Starting loading the models
+2023-02-17 09:47:57,952 - Models - INFO - loading the Main view model
+2023-02-17 09:47:57,952 - Models - INFO - loading the Trade tab model
+2023-02-17 09:48:38,710 - Models - INFO - loading the Exchange tab model
+2023-02-17 09:48:38,710 - Models - INFO - loading the Bot tab model
+2023-02-17 09:48:38,710 - Models - INFO - loading the Chart tab model
+2023-02-17 09:48:38,710 - Models - INFO - Finished loading the models
+2023-02-17 09:49:27,242 - Models - INFO - Creating a auto trading bot Autobot-Binance: BTC/USDT-1m-SVR(degree=2, gamma='auto', kernel='linear')- Trades: 0 -> 
+2023-02-17 09:49:31,310 - Models - ERROR - Index 0 is out of bounds, the thread list only has 1 elements. creating a new thread
+2023-02-17 09:49:31,311 - Models - INFO - Starting a auto trading bot Autobot-Binance: BTC/USDT-1m-SVR(degree=2, gamma='auto', kernel='linear')- Trades: 0 -> 
+2023-02-17 09:50:37,124 - Models - INFO - Starting loading the models
+2023-02-17 09:50:37,124 - Models - INFO - loading the Main view model
+2023-02-17 09:50:37,124 - Models - INFO - loading the Trade tab model
+2023-02-17 09:51:17,890 - Models - INFO - loading the Exchange tab model
+2023-02-17 09:51:17,891 - Models - INFO - loading the Bot tab model
+2023-02-17 09:51:17,891 - Models - INFO - loading the Chart tab model
+2023-02-17 09:51:17,891 - Models - INFO - Finished loading the models
+2023-02-17 09:52:51,424 - Models - INFO - Creating a auto trading bot Autobot-Binance: BTC/USDT-1m-SVR(degree=2, gamma='auto', kernel='linear')- Trades: 0 -> 
+2023-02-17 09:53:33,381 - Models - ERROR - Index 0 is out of bounds, the thread list only has 1 elements. creating a new thread
+2023-02-17 09:53:33,382 - Models - INFO - Starting a auto trading bot Autobot-Binance: BTC/USDT-1m-SVR(degree=2, gamma='auto', kernel='linear')- Trades: 0 -> 
+2023-02-17 09:54:28,517 - Models - INFO - Starting loading the models
+2023-02-17 09:54:28,517 - Models - INFO - loading the Main view model
+2023-02-17 09:54:28,518 - Models - INFO - loading the Trade tab model
+2023-02-17 09:55:09,291 - Models - INFO - loading the Exchange tab model
+2023-02-17 09:55:09,292 - Models - INFO - loading the Bot tab model
+2023-02-17 09:55:09,292 - Models - INFO - loading the Chart tab model
+2023-02-17 09:55:09,292 - Models - INFO - Finished loading the models
+2023-02-17 09:55:57,231 - Models - INFO - Creating a auto trading bot Autobot-Binance: BNB/BUSD-1m-SVR(degree=2, gamma='auto', kernel='linear')- Trades: 0 -> 
+2023-02-17 09:56:19,587 - Models - ERROR - Index 0 is out of bounds, the thread list only has 1 elements. creating a new thread
+2023-02-17 09:56:19,588 - Models - INFO - Starting a auto trading bot Autobot-Binance: BNB/BUSD-1m-SVR(degree=2, gamma='auto', kernel='linear')- Trades: 0 -> 
+2023-02-17 10:00:03,674 - Models - INFO - Starting loading the models
+2023-02-17 10:00:03,675 - Models - INFO - loading the Main view model
+2023-02-17 10:00:03,675 - Models - INFO - loading the Trade tab model
+2023-02-17 10:00:44,447 - Models - INFO - loading the Exchange tab model
+2023-02-17 10:00:44,447 - Models - INFO - loading the Bot tab model
+2023-02-17 10:00:44,448 - Models - INFO - loading the Chart tab model
+2023-02-17 10:00:44,448 - Models - INFO - Finished loading the models
+2023-02-17 10:01:29,351 - Models - INFO - Creating a auto trading bot Autobot-Binance: BNB/BUSD-1m-SVR(degree=2, gamma='auto', kernel='linear')- Trades: 0 -> 
+2023-02-17 10:02:07,066 - Models - ERROR - Index 0 is out of bounds, the thread list only has 1 elements. creating a new thread
+2023-02-17 10:02:07,067 - Models - INFO - Starting a auto trading bot Autobot-Binance: BNB/BUSD-1m-SVR(degree=2, gamma='auto', kernel='linear')- Trades: 0 -> 
+2023-02-17 10:06:42,561 - Models - INFO - Starting loading the models
+2023-02-17 10:06:42,562 - Models - INFO - loading the Main view model
+2023-02-17 10:06:42,562 - Models - INFO - loading the Trade tab model
+2023-02-17 10:07:23,318 - Models - INFO - loading the Exchange tab model
+2023-02-17 10:07:23,319 - Models - INFO - loading the Bot tab model
+2023-02-17 10:07:23,319 - Models - INFO - loading the Chart tab model
+2023-02-17 10:07:23,319 - Models - INFO - Finished loading the models
+2023-02-17 10:08:39,009 - Models - INFO - Creating a auto trading bot Autobot-Binance: BNB/BUSD-1m-SVR(degree=2, gamma='auto', kernel='linear')- Trades: 0 -> 
+2023-02-17 10:08:43,344 - Models - ERROR - Index 0 is out of bounds, the thread list only has 1 elements. creating a new thread
+2023-02-17 10:08:43,345 - Models - INFO - Starting a auto trading bot Autobot-Binance: BNB/BUSD-1m-SVR(degree=2, gamma='auto', kernel='linear')- Trades: 0 -> 
+2023-02-17 10:10:10,738 - Models - INFO - Starting loading the models
+2023-02-17 10:10:10,738 - Models - INFO - loading the Main view model
+2023-02-17 10:10:10,739 - Models - INFO - loading the Trade tab model
+2023-02-17 10:10:51,504 - Models - INFO - loading the Exchange tab model
+2023-02-17 10:10:51,504 - Models - INFO - loading the Bot tab model
+2023-02-17 10:10:51,505 - Models - INFO - loading the Chart tab model
+2023-02-17 10:10:51,505 - Models - INFO - Finished loading the models
+2023-02-17 10:11:29,802 - Models - INFO - Creating a auto trading bot Autobot-Binance: BTC/USDT-1m-LinearRegression(n_jobs=-1)- Trades: 0 -> 
+2023-02-17 10:11:44,042 - Models - ERROR - Index 0 is out of bounds, the thread list only has 1 elements. creating a new thread
+2023-02-17 10:11:44,043 - Models - INFO - Starting a auto trading bot Autobot-Binance: BTC/USDT-1m-LinearRegression(n_jobs=-1)- Trades: 0 -> 
+2023-02-17 10:20:16,241 - Models - INFO - Starting loading the models
+2023-02-17 10:20:16,241 - Models - INFO - loading the Main view model
+2023-02-17 10:20:16,242 - Models - INFO - loading the Trade tab model
+2023-02-17 10:20:57,002 - Models - INFO - loading the Exchange tab model
+2023-02-17 10:20:57,002 - Models - INFO - loading the Bot tab model
+2023-02-17 10:20:57,003 - Models - INFO - loading the Chart tab model
+2023-02-17 10:20:57,003 - Models - INFO - Finished loading the models
+2023-02-17 10:24:44,862 - Models - INFO - Creating a auto trading bot Autobot-Binance: BTC/USDT-1m-LinearRegression(n_jobs=-1)- Trades: 0 -> 
+2023-02-17 10:24:54,014 - Models - ERROR - Index 0 is out of bounds, the thread list only has 1 elements. creating a new thread
+2023-02-17 10:24:54,015 - Models - INFO - Starting a auto trading bot Autobot-Binance: BTC/USDT-1m-LinearRegression(n_jobs=-1)- Trades: 0 -> 
+2023-02-17 10:29:29,755 - Models - INFO - Starting loading the models
+2023-02-17 10:29:29,756 - Models - INFO - loading the Main view model
+2023-02-17 10:29:29,756 - Models - INFO - loading the Trade tab model
+2023-02-17 10:30:10,526 - Models - INFO - loading the Exchange tab model
+2023-02-17 10:30:10,527 - Models - INFO - loading the Bot tab model
+2023-02-17 10:30:10,527 - Models - INFO - loading the Chart tab model
+2023-02-17 10:30:10,527 - Models - INFO - Finished loading the models
+2023-02-17 10:31:46,240 - Models - INFO - Creating a auto trading bot Autobot-Binance: BTC/USDT-1m-SVR(degree=2, gamma='auto', kernel='linear')- Trades: 0 -> 
+2023-02-17 10:32:37,204 - Models - ERROR - Index 0 is out of bounds, the thread list only has 1 elements. creating a new thread
+2023-02-17 10:32:37,205 - Models - INFO - Starting a auto trading bot Autobot-Binance: BTC/USDT-1m-SVR(degree=2, gamma='auto', kernel='linear')- Trades: 0 -> 
+2023-02-17 10:33:10,464 - Models - INFO - Starting loading the models
+2023-02-17 10:33:10,464 - Models - INFO - loading the Main view model
+2023-02-17 10:33:10,464 - Models - INFO - loading the Trade tab model
+2023-02-17 10:33:51,246 - Models - INFO - loading the Exchange tab model
+2023-02-17 10:33:51,247 - Models - INFO - loading the Bot tab model
+2023-02-17 10:33:51,247 - Models - INFO - loading the Chart tab model
+2023-02-17 10:33:51,247 - Models - INFO - Finished loading the models
+2023-02-17 10:34:26,391 - Models - INFO - Creating a auto trading bot Autobot-Binance: BNB/BUSD-1m-LinearRegression(n_jobs=-1)- Trades: 0 -> 
+2023-02-17 10:34:33,236 - Models - ERROR - Index 0 is out of bounds, the thread list only has 1 elements. creating a new thread
+2023-02-17 10:34:33,237 - Models - INFO - Starting a auto trading bot Autobot-Binance: BNB/BUSD-1m-LinearRegression(n_jobs=-1)- Trades: 0 -> 
+2023-02-17 10:41:42,424 - Models - INFO - Starting loading the models
+2023-02-17 10:41:42,424 - Models - INFO - loading the Main view model
+2023-02-17 10:41:42,424 - Models - INFO - loading the Trade tab model
+2023-02-17 10:42:23,189 - Models - INFO - loading the Exchange tab model
+2023-02-17 10:42:23,190 - Models - INFO - loading the Bot tab model
+2023-02-17 10:42:23,190 - Models - INFO - loading the Chart tab model
+2023-02-17 10:42:23,190 - Models - INFO - Finished loading the models
+2023-02-17 10:44:53,910 - Models - INFO - Starting loading the models
+2023-02-17 10:44:53,910 - Models - INFO - loading the Main view model
+2023-02-17 10:44:53,910 - Models - INFO - loading the Trade tab model
+2023-02-17 10:45:34,665 - Models - INFO - loading the Exchange tab model
+2023-02-17 10:45:34,665 - Models - INFO - loading the Bot tab model
+2023-02-17 10:45:34,665 - Models - INFO - loading the Chart tab model
+2023-02-17 10:45:34,665 - Models - INFO - Finished loading the models
+2023-02-17 10:52:21,738 - Models - INFO - Starting loading the models
+2023-02-17 10:52:21,738 - Models - INFO - loading the Main view model
+2023-02-17 10:52:21,739 - Models - INFO - loading the Trade tab model
+2023-02-17 10:53:02,504 - Models - INFO - loading the Exchange tab model
+2023-02-17 10:53:02,504 - Models - INFO - loading the Bot tab model
+2023-02-17 10:53:02,504 - Models - INFO - loading the Chart tab model
+2023-02-17 10:53:02,505 - Models - INFO - Finished loading the models
+2023-02-17 10:55:07,808 - Models - INFO - Starting loading the models
+2023-02-17 10:55:07,808 - Models - INFO - loading the Main view model
+2023-02-17 10:55:07,808 - Models - INFO - loading the Trade tab model
+2023-02-17 10:55:48,577 - Models - INFO - loading the Exchange tab model
+2023-02-17 10:55:48,577 - Models - INFO - loading the Bot tab model
+2023-02-17 10:55:48,578 - Models - INFO - loading the Chart tab model
+2023-02-17 10:55:48,578 - Models - INFO - Finished loading the models
+2023-02-17 10:57:37,785 - Models - INFO - Starting loading the models
+2023-02-17 10:57:37,786 - Models - INFO - loading the Main view model
+2023-02-17 10:57:37,786 - Models - INFO - loading the Trade tab model
+2023-02-17 10:58:18,550 - Models - INFO - loading the Exchange tab model
+2023-02-17 10:58:18,550 - Models - INFO - loading the Bot tab model
+2023-02-17 10:58:18,550 - Models - INFO - loading the Chart tab model
+2023-02-17 10:58:18,550 - Models - INFO - Finished loading the models
+2023-02-17 10:58:59,167 - Models - INFO - Creating a auto trading bot Autobot-Binance: BTC/USDT-1m-LinearRegression(n_jobs=-1)- Trades: 0 -> 
+2023-02-17 10:59:03,819 - Models - ERROR - Index 0 is out of bounds, the thread list only has 1 elements. creating a new thread
+2023-02-17 10:59:03,820 - Models - INFO - Starting a auto trading bot Autobot-Binance: BTC/USDT-1m-LinearRegression(n_jobs=-1)- Trades: 0 -> 
+2023-02-17 11:02:12,216 - Models - INFO - Starting loading the models
+2023-02-17 11:02:12,217 - Models - INFO - loading the Main view model
+2023-02-17 11:02:12,217 - Models - INFO - loading the Trade tab model
+2023-02-17 11:02:52,977 - Models - INFO - loading the Exchange tab model
+2023-02-17 11:02:52,978 - Models - INFO - loading the Bot tab model
+2023-02-17 11:02:52,978 - Models - INFO - loading the Chart tab model
+2023-02-17 11:02:52,978 - Models - INFO - Finished loading the models
+2023-02-17 11:03:38,257 - Models - INFO - Creating a auto trading bot Autobot-Binance: BTC/USDT-1m-LinearRegression(n_jobs=-1)- Trades: 0 -> 
+2023-02-17 11:04:02,167 - Models - ERROR - Index 0 is out of bounds, the thread list only has 1 elements. creating a new thread
+2023-02-17 11:04:02,168 - Models - INFO - Starting a auto trading bot Autobot-Binance: BTC/USDT-1m-LinearRegression(n_jobs=-1)- Trades: 0 -> 
+2023-02-17 11:06:11,272 - Models - INFO - Starting loading the models
+2023-02-17 11:06:11,273 - Models - INFO - loading the Main view model
+2023-02-17 11:06:11,273 - Models - INFO - loading the Trade tab model
+2023-02-17 11:06:52,044 - Models - INFO - loading the Exchange tab model
+2023-02-17 11:06:52,045 - Models - INFO - loading the Bot tab model
+2023-02-17 11:06:52,045 - Models - INFO - loading the Chart tab model
+2023-02-17 11:06:52,046 - Models - INFO - Finished loading the models
+2023-02-17 11:07:33,292 - Models - INFO - Creating a auto trading bot Autobot-Binance: BTC/USDT-1m-LinearRegression(n_jobs=-1)- Trades: 0 -> 
+2023-02-17 11:09:37,385 - Models - INFO - Starting loading the models
+2023-02-17 11:09:37,386 - Models - INFO - loading the Main view model
+2023-02-17 11:09:37,386 - Models - INFO - loading the Trade tab model
+2023-02-17 11:10:18,155 - Models - INFO - loading the Exchange tab model
+2023-02-17 11:10:18,155 - Models - INFO - loading the Bot tab model
+2023-02-17 11:10:18,156 - Models - INFO - loading the Chart tab model
+2023-02-17 11:10:18,156 - Models - INFO - Finished loading the models
+2023-02-17 11:11:06,887 - Models - INFO - Creating a auto trading bot Autobot-Binance: BTC/USDT-1m-LinearRegression(n_jobs=-1)- Trades: 0 -> 
+2023-02-17 11:11:10,668 - Models - ERROR - Index 0 is out of bounds, the thread list only has 1 elements. creating a new thread
+2023-02-17 11:11:10,670 - Models - INFO - Starting a auto trading bot Autobot-Binance: BTC/USDT-1m-LinearRegression(n_jobs=-1)- Trades: 0 -> 
+2023-02-17 11:14:33,912 - Models - INFO - Starting loading the models
+2023-02-17 11:14:33,913 - Models - INFO - loading the Main view model
+2023-02-17 11:14:33,913 - Models - INFO - loading the Trade tab model
+2023-02-17 11:15:14,695 - Models - INFO - loading the Exchange tab model
+2023-02-17 11:15:14,696 - Models - INFO - loading the Bot tab model
+2023-02-17 11:15:14,696 - Models - INFO - loading the Chart tab model
+2023-02-17 11:15:14,696 - Models - INFO - Finished loading the models
+2023-02-17 11:16:26,905 - Models - INFO - Creating a auto trading bot Autobot-Binance: BTC/USDT-1m-LinearRegression(n_jobs=-1)- Trades: 0 -> 
+2023-02-17 11:18:26,793 - Models - INFO - Starting loading the models
+2023-02-17 11:18:26,793 - Models - INFO - loading the Main view model
+2023-02-17 11:18:26,794 - Models - INFO - loading the Trade tab model
+2023-02-17 11:19:07,554 - Models - INFO - loading the Exchange tab model
+2023-02-17 11:19:07,554 - Models - INFO - loading the Bot tab model
+2023-02-17 11:19:07,555 - Models - INFO - loading the Chart tab model
+2023-02-17 11:19:07,555 - Models - INFO - Finished loading the models
+2023-02-17 11:19:51,168 - Models - INFO - Creating a auto trading bot Autobot-Binance: BTC/USDT-1m-LinearRegression(n_jobs=-1)- Trades: 0 -> 
+2023-02-17 11:22:42,122 - Models - INFO - Starting loading the models
+2023-02-17 11:22:42,122 - Models - INFO - loading the Main view model
+2023-02-17 11:22:42,122 - Models - INFO - loading the Trade tab model
+2023-02-17 11:23:22,901 - Models - INFO - loading the Exchange tab model
+2023-02-17 11:23:22,901 - Models - INFO - loading the Bot tab model
+2023-02-17 11:23:22,901 - Models - INFO - loading the Chart tab model
+2023-02-17 11:23:22,902 - Models - INFO - Finished loading the models
+2023-02-17 11:24:38,597 - Models - INFO - Creating a auto trading bot Autobot-Binance: ETH/USDT-1m-LinearRegression(n_jobs=-1)- Trades: 0 -> 
+2023-02-17 11:24:51,852 - Models - ERROR - Index 0 is out of bounds, the thread list only has 1 elements. creating a new thread
+2023-02-17 11:24:51,853 - Models - INFO - Starting a auto trading bot Autobot-Binance: ETH/USDT-1m-LinearRegression(n_jobs=-1)- Trades: 0 -> 
+2023-02-17 11:26:14,596 - Models - INFO - Starting loading the models
+2023-02-17 11:26:14,596 - Models - INFO - loading the Main view model
+2023-02-17 11:26:14,597 - Models - INFO - loading the Trade tab model
+2023-02-17 11:26:55,360 - Models - INFO - loading the Exchange tab model
+2023-02-17 11:26:55,360 - Models - INFO - loading the Bot tab model
+2023-02-17 11:26:55,360 - Models - INFO - loading the Chart tab model
+2023-02-17 11:26:55,361 - Models - INFO - Finished loading the models
+2023-02-17 11:28:37,511 - Models - INFO - Starting loading the models
+2023-02-17 11:28:37,512 - Models - INFO - loading the Main view model
+2023-02-17 11:28:37,512 - Models - INFO - loading the Trade tab model
+2023-02-17 11:29:18,277 - Models - INFO - loading the Exchange tab model
+2023-02-17 11:29:18,277 - Models - INFO - loading the Bot tab model
+2023-02-17 11:29:18,278 - Models - INFO - loading the Chart tab model
+2023-02-17 11:29:18,278 - Models - INFO - Finished loading the models
+2023-02-17 11:31:52,752 - Models - INFO - Starting loading the models
+2023-02-17 11:31:52,753 - Models - INFO - loading the Main view model
+2023-02-17 11:31:52,753 - Models - INFO - loading the Trade tab model
+2023-02-17 11:32:33,516 - Models - INFO - loading the Exchange tab model
+2023-02-17 11:32:33,517 - Models - INFO - loading the Bot tab model
+2023-02-17 11:32:33,517 - Models - INFO - loading the Chart tab model
+2023-02-17 11:32:33,517 - Models - INFO - Finished loading the models
+2023-02-17 11:34:07,409 - Models - INFO - Starting loading the models
+2023-02-17 11:34:07,409 - Models - INFO - loading the Main view model
+2023-02-17 11:34:07,409 - Models - INFO - loading the Trade tab model
+2023-02-17 11:34:48,169 - Models - INFO - loading the Exchange tab model
+2023-02-17 11:34:48,169 - Models - INFO - loading the Bot tab model
+2023-02-17 11:34:48,170 - Models - INFO - loading the Chart tab model
+2023-02-17 11:34:48,170 - Models - INFO - Finished loading the models
+2023-02-17 11:35:31,165 - Models - INFO - Creating a auto trading bot Autobot-Binance: ETH/USDT-1m-LinearRegression(n_jobs=-1)- Trades: 0 -> 
+2023-02-17 11:35:47,403 - Models - ERROR - Index 0 is out of bounds, the thread list only has 1 elements. creating a new thread
+2023-02-17 11:35:47,404 - Models - INFO - Starting a auto trading bot Autobot-Binance: ETH/USDT-1m-LinearRegression(n_jobs=-1)- Trades: 0 -> 
+2023-02-17 12:01:43,001 - Models - INFO - Starting loading the models
+2023-02-17 12:01:43,001 - Models - INFO - loading the Main view model
+2023-02-17 12:01:43,001 - Models - INFO - loading the Trade tab model
+2023-02-17 12:02:23,767 - Models - INFO - loading the Exchange tab model
+2023-02-17 12:02:23,768 - Models - INFO - loading the Bot tab model
+2023-02-17 12:02:23,768 - Models - INFO - loading the Chart tab model
+2023-02-17 12:02:23,768 - Models - INFO - Finished loading the models
+2023-02-17 12:03:05,618 - Models - INFO - Creating a auto trading bot Autobot-Binance: ETH/USDT-1m-LinearRegression(n_jobs=-1)- Trades: 0 -> 
+2023-02-17 12:03:09,972 - Models - ERROR - Index 0 is out of bounds, the thread list only has 1 elements. creating a new thread
+2023-02-17 12:03:09,973 - Models - ERROR - no model to use!
+2023-02-17 12:03:09,973 - Models - INFO - Starting a auto trading bot Autobot-Binance: ETH/USDT-1m-LinearRegression(n_jobs=-1)- Trades: 0 -> 
+2023-02-17 12:05:01,805 - Models - INFO - Starting loading the models
+2023-02-17 12:05:01,806 - Models - INFO - loading the Main view model
+2023-02-17 12:05:01,806 - Models - INFO - loading the Trade tab model
+2023-02-17 12:05:42,575 - Models - INFO - loading the Exchange tab model
+2023-02-17 12:05:42,576 - Models - INFO - loading the Bot tab model
+2023-02-17 12:05:42,576 - Models - INFO - loading the Chart tab model
+2023-02-17 12:05:42,576 - Models - INFO - Finished loading the models
+2023-02-17 12:06:23,815 - Models - INFO - Creating a auto trading bot Autobot-Binance: ETH/USDT-1m-LinearRegression(n_jobs=-1)- Trades: 0 -> 
+2023-02-17 12:06:30,843 - Models - ERROR - Index 0 is out of bounds, the thread list only has 1 elements. creating a new thread
+2023-02-17 12:06:30,844 - Models - ERROR - no model to use!
+2023-02-17 12:06:30,844 - Models - INFO - Starting a auto trading bot Autobot-Binance: ETH/USDT-1m-LinearRegression(n_jobs=-1)- Trades: 0 -> 
+2023-02-17 12:11:34,029 - Models - INFO - Starting loading the models
+2023-02-17 12:11:34,030 - Models - INFO - loading the Main view model
+2023-02-17 12:11:34,030 - Models - INFO - loading the Trade tab model
+2023-02-17 12:12:14,803 - Models - INFO - loading the Exchange tab model
+2023-02-17 12:12:14,805 - Models - INFO - loading the Bot tab model
+2023-02-17 12:12:14,805 - Models - INFO - loading the Chart tab model
+2023-02-17 12:12:14,806 - Models - INFO - Finished loading the models
+2023-02-17 12:13:03,979 - Models - INFO - Creating a auto trading bot Autobot-Binance: ETH/USDT-1m-LinearRegression(n_jobs=-1)- Trades: 0 -> 
+2023-02-17 12:15:39,041 - Models - INFO - Starting loading the models
+2023-02-17 12:15:39,041 - Models - INFO - loading the Main view model
+2023-02-17 12:15:39,041 - Models - INFO - loading the Trade tab model
+2023-02-17 12:16:19,809 - Models - INFO - loading the Exchange tab model
+2023-02-17 12:16:19,809 - Models - INFO - loading the Bot tab model
+2023-02-17 12:16:19,810 - Models - INFO - loading the Chart tab model
+2023-02-17 12:16:19,810 - Models - INFO - Finished loading the models
+2023-02-17 12:17:43,831 - Models - INFO - Starting loading the models
+2023-02-17 12:17:43,832 - Models - INFO - loading the Main view model
+2023-02-17 12:17:43,832 - Models - INFO - loading the Trade tab model
+2023-02-17 12:18:24,599 - Models - INFO - loading the Exchange tab model
+2023-02-17 12:18:24,599 - Models - INFO - loading the Bot tab model
+2023-02-17 12:18:24,600 - Models - INFO - loading the Chart tab model
+2023-02-17 12:18:24,600 - Models - INFO - Finished loading the models
+2023-02-17 12:19:05,919 - Models - INFO - Creating a auto trading bot Autobot-Binance: ETH/USDT-1m-LinearRegression(n_jobs=-1)- Trades: 0 -> 
+2023-02-17 12:34:33,327 - Models - INFO - Starting loading the models
+2023-02-17 12:34:33,327 - Models - INFO - loading the Main view model
+2023-02-17 12:34:33,327 - Models - INFO - loading the Trade tab model
+2023-02-17 12:35:14,070 - Models - INFO - loading the Exchange tab model
+2023-02-17 12:35:14,070 - Models - INFO - loading the Bot tab model
+2023-02-17 12:35:14,070 - Models - INFO - loading the Chart tab model
+2023-02-17 12:35:14,071 - Models - INFO - Finished loading the models
+2023-02-17 12:37:50,329 - Models - INFO - Starting loading the models
+2023-02-17 12:37:50,329 - Models - INFO - loading the Main view model
+2023-02-17 12:37:50,330 - Models - INFO - loading the Trade tab model
+2023-02-17 12:38:31,058 - Models - INFO - loading the Exchange tab model
+2023-02-17 12:38:31,058 - Models - INFO - loading the Bot tab model
+2023-02-17 12:38:31,059 - Models - INFO - loading the Chart tab model
+2023-02-17 12:38:31,059 - Models - INFO - Finished loading the models
+2023-02-17 12:40:56,626 - Models - INFO - Creating a auto trading bot Autobot-Binance: ETH/USDT-1m-regression- Trades: 0 -> 
+2023-02-17 12:41:08,742 - Models - ERROR - Index 0 is out of bounds, the thread list only has 1 elements. creating a new thread
+2023-02-17 12:41:08,743 - Models - INFO - Starting a auto trading bot Autobot-Binance: ETH/USDT-1m-regression- Trades: 0 -> 
+2023-02-17 12:43:58,615 - Models - INFO - Starting loading the models
+2023-02-17 12:43:58,616 - Models - INFO - loading the Main view model
+2023-02-17 12:43:58,616 - Models - INFO - loading the Trade tab model
+2023-02-17 12:44:39,333 - Models - INFO - loading the Exchange tab model
+2023-02-17 12:44:39,333 - Models - INFO - loading the Bot tab model
+2023-02-17 12:44:39,334 - Models - INFO - loading the Chart tab model
+2023-02-17 12:44:39,334 - Models - INFO - Finished loading the models
+2023-02-17 12:45:53,834 - Models - INFO - Creating a auto trading bot Autobot-Binance: ETH/USDT-1m-LinearRegression(n_jobs=-1)- Trades: 0 -> 
+2023-02-17 12:46:02,693 - Models - ERROR - Index 0 is out of bounds, the thread list only has 1 elements. creating a new thread
+2023-02-17 12:46:02,694 - Models - INFO - Starting a auto trading bot Autobot-Binance: ETH/USDT-1m-LinearRegression(n_jobs=-1)- Trades: 0 -> 
+2023-02-17 12:48:30,038 - Models - INFO - Starting loading the models
+2023-02-17 12:48:30,038 - Models - INFO - loading the Main view model
+2023-02-17 12:48:30,039 - Models - INFO - loading the Trade tab model
+2023-02-17 13:03:07,533 - Models - INFO - Starting loading the models
+2023-02-17 13:03:07,533 - Models - INFO - loading the Main view model
+2023-02-17 13:03:07,534 - Models - INFO - loading the Trade tab model
