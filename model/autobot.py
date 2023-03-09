@@ -2,7 +2,7 @@ import time
 import re
 
 class AutoBot:
-    def __init__(self,exchange, symbol, amount, stop_loss, take_profit, model, time, ml, trade_x,logger):
+    def __init__(self,exchange, symbol, amount, stop_loss, take_profit, model, time, ml, trade_x,logger) -> None:
         # Initialize class variables as before
         self.exchange = exchange
         self.symbol = symbol
@@ -24,11 +24,11 @@ class AutoBot:
     def __str__(self):
         return f"Autobot-{self.exchange}: {self.symbol}-{self.time}-{self.model}- Trades: {len(self.open_orders)} -> "
     
-    def getnormal_symbol(self):
+    def getnormal_symbol(self) -> str:
         symbol = self.symbol.replace('/','').lower()
         return symbol
     
-    def getnormal_count(self):
+    def getnormal_count(self) -> int:
         if self.time == "1m":
             return 60
         if self.time == "5m":
@@ -40,7 +40,7 @@ class AutoBot:
         if self.time == "3h":
             return 10_800
         
-    def start_auto_trading(self, event):
+    def start_auto_trading(self, event) -> None:
         self.auto_trade = event
 
         if self.get_model_type(self.model) in ["classifier","Isolation Forest", "SVC"]:
@@ -51,11 +51,11 @@ class AutoBot:
         else:
             self.logger.error("no model to use!")
             
-    def stop_auto_trading(self, event):
+    def stop_auto_trading(self, event) -> None:
         self.auto_trade = event
        
         
-    def _run_auto_trading_classifier(self):
+    def _run_auto_trading_classifier(self) -> None:
         while self.auto_trade:
             if self.auto_trade == False:
                 break
@@ -117,7 +117,7 @@ class AutoBot:
                     
             time.sleep(self.getnormal_count())
     
-    def _run_auto_trading_regression(self):
+    def _run_auto_trading_regression(self) -> None:
         while self.auto_trade:
             if self.auto_trade == False:
                 break
@@ -176,7 +176,7 @@ class AutoBot:
 
             time.sleep(self.getnormal_count())
             
-    def check_order_status(self, order_id):
+    def check_order_status(self, order_id) -> bool:
         order = self.exchange.fetch_order(order_id, self.symbol)
         if order['status'] == 'closed' or order['status'] == 'filled':
             return True
@@ -187,7 +187,7 @@ class AutoBot:
     def orders(self, order):
         ...
         
-    def  get_model_type(self, model):
+    def  get_model_type(self, model) -> str:
         model_string = str(model)
         regex = r"(regression|classifier)"
         

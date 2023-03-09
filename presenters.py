@@ -9,14 +9,14 @@ MIN_STOP_LOSS_LEVEL = 0.10
 
 
 class Presenter:
-    def __init__(self, model, view):
+    def __init__(self, model, view) -> None:
         self._model = model
         self._view = view
         self.get_frames()
         self.bot_count = 0
         self.exchange_count = 0
         
-    def run(self):
+    def run(self) -> None:
         self._view.mainloop()
         
     def get_exchange(self):
@@ -53,7 +53,7 @@ class Presenter:
         
     
     #Main view  ----------------------------------------------------------------
-    def get_main_view(self):
+    def get_main_view(self) -> None:
         self.loginview.destroy()
         self.main_view = self._view.main_view(self._view)
         self._model.create_tabmodels(self)
@@ -86,17 +86,17 @@ class Presenter:
       
             
     # Trading tab     ----------------------------------------------------        
-    def update_stoploss(self):
+    def update_stoploss(self) -> None:
         trade_tab_view = self.trade_tab()
         stoploss_slider = trade_tab_view.stoploss_slider.get()
         self._model.tradetab_model.update_stoploss(stoploss_slider)
     
-    def update_takeprofit(self):
+    def update_takeprofit(self)-> None:
         trade_tab_view = self.trade_tab()
         takeprofit_slider = trade_tab_view.takeprofit_slider.get()
         self._model.tradetab_model.update_takeprofit(takeprofit_slider)
     
-    def place_trade(self):        
+    def place_trade(self)-> None:        
         trade_tab_view = self.trade_tab()
         
         # Get the trade type, amount, and price from the GUI
@@ -134,7 +134,7 @@ class Presenter:
         # Update the trade history list
         # self.trade_tab.update_history()
         
-    def get_balance(self):
+    def get_balance(self)-> None:
         usdt, btc = self._model.tradetab_model.get_balance()
         trade_tab = self.trade_tab()
         trade_tab.usdt_balance_label.config(text=f"{usdt}")
@@ -270,7 +270,7 @@ class Presenter:
         exchange = self._model.exchangetab_model.create_exchange(exchange_name,api_key,api_secret)
         exchange_tab.add_exchange_optionmenu(exchange)
     
-    def remove_exchange(self):
+    def remove_exchange(self) -> None:
         exchange_tab = self.exchange_tab_view()
         index = exchange_tab.remove_exchange_from_optionmenu()
         self._model.exchangetab_model.remove_exchange(index)

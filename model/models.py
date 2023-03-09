@@ -75,12 +75,12 @@ class Models:
     
     
 class LoginModel:
-    def __init__(self):
+    def __init__(self) -> None:
         self._username = None
         self._password = None
         self._table_name = "User"
 
-    def set_credentials(self, username: str, password: str):
+    def set_credentials(self, username: str, password: str) -> None:
         self._username = username
         self._password = password
 
@@ -134,13 +134,13 @@ class LoginModel:
 
 
 class MainviewModel:
-    def __init__(self, logger, presenter):
+    def __init__(self, logger, presenter)-> None:
         self.logger = logger
         self.presenter = presenter
         self.logger.info("loading the Main view model")
 
 class TradeTabModel:
-    def __init__(self, logger, presenter):
+    def __init__(self, logger, presenter)-> None:
         self.logger = logger
         self.presenter = presenter
         self.logger.info("loading the Trade tab model")
@@ -197,7 +197,7 @@ class TradeTabModel:
             trade_type, amount, price, takeprofit, stoploss, y_pred)
 
 class ExchangeTabModel:
-    def __init__(self, logger, presenter):
+    def __init__(self, logger, presenter) -> None:
         self.logger = logger
         self._presenter = presenter
         self.logger.info("loading the Exchange tab model")
@@ -232,7 +232,7 @@ class ExchangeTabModel:
         del self.exchange[index]
 
 class BotTabModel:
-    def __init__(self, logger, presenter):
+    def __init__(self, logger, presenter) -> None:
         self.logger = logger
         self._presenter = presenter
         self.logger.info("loading the Bot tab model")
@@ -335,7 +335,7 @@ class BotTabModel:
         return autobot
             
 class ChartTabModel:
-    def __init__(self, logger, presenter):
+    def __init__(self, logger, presenter) -> None:
         self.logger = logger
         self.presenter = presenter
         self.logger.info("loading the Chart tab model")

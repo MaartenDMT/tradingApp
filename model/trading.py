@@ -3,7 +3,7 @@ from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 class Trading:
     def __init__(self, exchange, symbol, position_size, max_drawdown,
-                 moving_average_period, decision_tree_depth, logger):
+                 moving_average_period, decision_tree_depth, logger) -> None:
 
         self.exchange = exchange 
         self.getBalancUSDT, self.getBalancBTC = self.getBalance()
@@ -24,7 +24,7 @@ class Trading:
         self.analyzer = SentimentIntensityAnalyzer()
 
         
-    def check_trade_status(self):
+    def check_trade_status(self) -> bool:
         if not self.in_trade:
             return False
         else:
@@ -41,7 +41,7 @@ class Trading:
             except Exception as e:
                 self.logger.error(f"in the check_trade_status Error: {e}")
 
-    def place_trade(self, side, trade_type, amount, price, takeprofit, stoploss):
+    def place_trade(self, side, trade_type, amount, price, takeprofit, stoploss) -> None:
 
         # Calculate the stop loss and take profit levels based on the current price and the maximum variance
         self.stoploss = price - stoploss if self.side == 'buy' else price + stoploss
@@ -66,13 +66,13 @@ class Trading:
         except Exception as e:
             self.logger.error(f"in the place_trade Error: {e}")
 
-    def scale_in_out(self, amount):
+    def scale_in_out(self, amount) -> None:
         # Check if we are in a trade
         if self.check_trade_status():
             # If we are, update the size of the trade
             self.exchange.update_order(self.trade_id, {'amount': amount})
 
-    def check_and_place_trade(self, trade_type, amount, price, takeprofit, stoploss, predict):
+    def check_and_place_trade(self, trade_type, amount, price, takeprofit, stoploss, predict) -> None:
 
         # Check if we are already in a trade
         if not self.check_trade_status():
@@ -107,7 +107,7 @@ class Trading:
                         self.logger.error(
                             f"in the check_and_place_trade (sell) Error: {e}")
 
-    def check_and_modify_trade(self, price):
+    def check_and_modify_trade(self, price) -> None:
 
         # Check if we are in a trade
         if self.check_trade_status():
@@ -160,7 +160,7 @@ class Trading:
         
         return bid, ask
 
-    def scale_in_out(self, amount):
+    def scale_in_out(self, amount) -> None:
         # Check if we are in a trade
         if self.check_trade_status():
             # If we are, update the size of the trade

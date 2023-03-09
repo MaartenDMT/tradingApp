@@ -10,13 +10,13 @@ import vectorbt as vbt
 
 class Tradex_indicator:
 
-    def __init__(self,symbol,t:None, get_data:False, data):
+    def __init__(self,symbol,t:None, get_data:False, data) -> None:
         self.symbol = symbol 
         self.data = self.changeTime(self.get_data(get_data, data), t)
         self.set_tradex(self.data)
        
     
-    def set_tradex(self, data):
+    def set_tradex(self, data) -> None:
         with ThreadPoolExecutor() as executor:
             trend = executor.submit(Trend,data)
             screener = executor.submit(Screener,data)
@@ -92,7 +92,7 @@ class Tradex_indicator:
 
 
 
-    def trade_x(self):
+    def trade_x(self)-> pd.DataFrame:
         
         # make the features of the trade-x screener and the trade-x trend
         self.create_signals_with_threading()
@@ -116,7 +116,7 @@ class Tradex_indicator:
         pool.join()
         return result
 
-    def create_signals_with_threading(self):
+    def create_signals_with_threading(self) -> None:
         print("Creating signals using multithreading")
         
         # Creating a list of threads
@@ -124,7 +124,7 @@ class Tradex_indicator:
         t.start()
         t.join()
 
-    def create_signals(self):
+    def create_signals(self) -> None:
         
         print('creating the signals from trade-x')
         
@@ -284,14 +284,14 @@ class Trend:
     '''
     TREND: visueel beeld van de market trend
     '''
-    def __init__(self, data):
+    def __init__(self, data) -> None:
         self.data = data
         self.df_trend = pd.DataFrame()
         self.get_trend()
         
     # TRADE - X TREND
     
-    def get_trend(self):
+    def get_trend(self) -> pd.DataFrame:
         print('init trade-x trend')
         
         #EMA channel 

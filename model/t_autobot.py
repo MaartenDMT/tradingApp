@@ -11,7 +11,7 @@ nest_asyncio.apply()
 
 
 class AutoBot:
-    def __init__(self,exchange, symbol, amount, stop_loss, take_profit, model, time, ml,logger):
+    def __init__(self,exchange, symbol, amount, stop_loss, take_profit, model, time, ml,logger) -> None:
         self.exchange = exchange
         self.symbol = symbol.replace('/','')
         self.amount = amount
@@ -32,7 +32,7 @@ class AutoBot:
         pred = self.ml.predict(self.model, self.time)
         return pred
         
-    def get_data(self):
+    def get_data(self) -> pd.DataFrame:
         # Retrieve historical data from the Binance API
         response = requests.get(f'https://api.binance.com/api/v3/klines?symbol={self.symbol}&interval={self.time}')
         historicalData = response.json()
@@ -86,6 +86,6 @@ class AutoBot:
                         self.logger.error(e)
                 time.sleep(1_800)
 
-    def start(self):
+    def start(self) -> None:
         loop = asyncio.get_event_loop()
         loop.run_until_complete(self.receive_data())
