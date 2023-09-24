@@ -82,20 +82,31 @@ class MachineLearning:
         return model
 
     def process_features(self, df):
-        rsi = ta.rsi(df.close)
-        moving_average = ta.sma(df.close, length=50)
-        return np.column_stack((
-            rsi.fillna(0), moving_average.fillna(0),
-            df.open.fillna(0), df.high.fillna(0),
-            df.low.fillna(0), df.volume.fillna(0)
-        ))
+        # Calculate RSI
+        rsi = ta.rsi(df['close'])
 
-    def process_labels(self, df, model):
+        # Calculate moving average
+        moving_average = ta.sma(df['close'], length=50)
+
+        # Combine all the selected features into a single DataFrame
+        processed_features = pd.concat(
+            [rsi, moving_average, df[['open', 'high', 'low', 'volume']]], axis=1)
+
+        # Fill missing values in the entire DataFrame
+        processed_features = processed_features.fillna(0)
+
+        # Return the processed features as a NumPy array
+        return processed_features.to_numpy()
+
+    def process_labels(self, df, model, n_candles=2):
         if model in ["SVC", "Random Forest Classifier", "Extra Tree Classifier",
                      "Logistic Regression", "MLPClassifier", "Gradient Boosting Classifier"]:
             # Shift closing prices by -2 to compare with the price two candles ahead
-            df['future_close'] = df['close'].shift(-2)
-            df['label'] = (df['future_close'] > df['close']).astype(int)
+            df['future_close'] = df['close'].shift(-n_candles)
+
+            # Define labels: 1 for long, 0 for do nothing, -1 for short
+            df['label'] = np.sign(df['future_close'] - df['close'])
+
             self.logger.info(df['label'])
             return df['label']
         else:
@@ -104,13 +115,13 @@ class MachineLearning:
     def train_evaluate_and_save_model(self, model: str):
         # Fetch and preprocess data
         data = self.exchange.fetch_ohlcv(
-            self.symbol, timeframe='1m', limit=5_000)
+            self.symbol, timeframe='30m', limit=5_000)
         df = pd.DataFrame(
             data, columns=['date', 'open', 'high', 'low', 'close', 'volume'])
         df = df[['open', 'high', 'low', 'close', 'volume']].astype(float)
 
         features = self.process_features(df)
-        labels = self.process_labels(df, model)
+        labels = self.process_labels(df, model, n_candles=5)
 
         # Drop the last two rows as they won't have valid labels
         features = features[:-2]
@@ -188,8 +199,9 @@ class MLModelTrainer:
         model, parameters = get_model(self.algorithm)
 
         # Create a scorer from the custom scoring function
-        monetary_scorer = make_scorer(
-            self.monetary_score, greater_is_better=True)
+        # Create a scorer from the custom scoring function using lambda to handle n_candles
+        monetary_scorer = make_scorer(lambda y_true, y_pred: self.future_score(
+            y_true, y_pred, n_candles=5), greater_is_better=True)
 
         best_estimator = self.parallelize_search(
             model, parameters, X, y, monetary_scorer)
@@ -207,35 +219,6 @@ class MLModelTrainer:
 
         # return the best model
         return best_estimator
-
-    @staticmethod
-    def monetary_score(y_true, y_pred):
-        total_return = 0
-        holding_stock = False
-        buy_price = 0
-
-        # Check the lengths of y_true and y_pred and adjust if necessary
-        length_to_iterate = min(len(y_pred), len(y_true) - 2)
-        if length_to_iterate < len(y_pred):
-            # Log a warning or adjust as necessary
-            ...
-
-        # Iterate only up to the length where we have enough future data
-        for i in range(length_to_iterate):
-            if holding_stock:
-                # Sell the stock after two candles and calculate the return
-                total_return += y_true[i + 2] - buy_price
-                holding_stock = False
-
-            if y_pred[i] == 1:  # Assuming 1 is a signal to buy, and 0 is a signal to hold/sell
-                buy_price = y_true[i]
-                holding_stock = True
-
-        # Check if we are holding any stock at the end
-        if holding_stock:
-            total_return += y_true[-1] - buy_price
-
-        return total_return
 
     def parallelize_search(self, estimator, param_grid, X, y, scorer):
         grid_search_estimator = GridSearchCV(
@@ -262,3 +245,61 @@ class MLModelTrainer:
         self.logger.info(best_estimator)
 
         return best_estimator
+
+    @staticmethod
+    def future_score(y_true, y_pred, n_candles=2):
+        total_return = 0
+        position = 0  # -1 for short, 0 for no position, 1 for long
+        entry_price = 0
+
+        # Check the lengths of y_true and y_pred and adjust if necessary
+        length_to_iterate = min(len(y_pred), len(y_true) - n_candles)
+        if length_to_iterate < len(y_pred):
+            # Log a warning or adjust as necessary
+            ...
+
+        # Iterate only up to the length where we have enough future data
+        for i in range(length_to_iterate):
+            if position != 0:  # if holding a position, long or short
+                total_return += (y_true[i + n_candles] -
+                                 entry_price) * position
+                position = 0  # close the position
+
+            if y_pred[i] != 0:  # 1 for long, -1 for short
+                entry_price = y_true[i]
+                position = y_pred[i]
+
+        # Check if we are holding any position at the end
+        if position != 0:
+            total_return += (y_true[-1] - entry_price) * position
+
+        return total_return
+
+    @staticmethod
+    def spot_score(y_true, y_pred, n_candles=2):
+        total_return = 0
+        holding_stock = False
+        buy_price = 0
+
+        # Check the lengths of y_true and y_pred and adjust if necessary
+        length_to_iterate = min(len(y_pred), len(y_true) - n_candles)
+        if length_to_iterate < len(y_pred):
+            # Log a warning or adjust as necessary
+            ...
+
+        # Iterate only up to the length where we have enough future data
+        for i in range(length_to_iterate):
+            if holding_stock:
+                # Sell the stock after two candles and calculate the return
+                total_return += y_true[i + n_candles] - buy_price
+                holding_stock = False
+
+            if y_pred[i] == 1:  # Assuming 1 is a signal to buy, and 0 is a signal to hold/sell
+                buy_price = y_true[i]
+                holding_stock = True
+
+        # Check if we are holding any stock at the end
+        if holding_stock:
+            total_return += y_true[-1] - buy_price
+
+        return total_return

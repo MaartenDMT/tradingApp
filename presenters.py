@@ -262,6 +262,8 @@ class Presenter:
     def save_first_exchange(self) -> None:
         exchange = self._model.exchangetab_model.set_first_exchange()
         exchange_tab = self.exchange_tab_view()
+        value = self.text_exchange_var.get()
+        exchange.set_sandbox_mode(value)
         exchange_tab.add_exchange_optionmenu(exchange)
         self.get_balance()
 

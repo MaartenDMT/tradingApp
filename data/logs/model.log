@@ -618,3 +618,700 @@ Name: label, Length: 1000, dtype: int32
 998    0
 999    0
 Name: label, Length: 1000, dtype: int32
+2023-09-24 18:09:47 - model - INFO - Starting loading the models
+2023-09-24 18:09:47 - model - INFO - loading the Main view model
+2023-09-24 18:09:47 - model - INFO - loading the Trade tab model
+2023-09-24 18:09:47 - model - INFO - loading the Exchange tab model
+2023-09-24 18:09:47 - model - INFO - loading the Bot tab model
+2023-09-24 18:09:47 - model - INFO - loading the Chart tab model
+2023-09-24 18:09:47 - model - INFO - Finished loading the models
+2023-09-24 18:10:26 - model - INFO - machine learning model Random Forest Classifier selected
+2023-09-24 18:10:27 - model - INFO - 0      1
+1      0
+2      0
+3      1
+4      1
+      ..
+995    1
+996    0
+997    0
+998    0
+999    0
+Name: label, Length: 1000, dtype: int32
+2023-09-24 18:10:36 - model - INFO - machine learning model SVC selected
+2023-09-24 18:10:37 - model - INFO - 0      1
+1      0
+2      0
+3      1
+4      1
+      ..
+995    1
+996    0
+997    0
+998    0
+999    0
+Name: label, Length: 1000, dtype: int32
+2023-09-24 18:10:40 - model - INFO - machine learning model SVR selected
+2023-09-24 18:11:19 - model - INFO - machine learning model Isolation Forest selected
+2023-09-24 18:12:16 - model - INFO - RandomizedSearchCV(cv=5, estimator=SVR(),
+                   param_distributions={'C': [0.1, 1.0, 10.0],
+                                        'degree': [2, 3, 4, 5],
+                                        'gamma': ['auto', 'scale'],
+                                        'kernel': ['linear', 'poly', 'rbf',
+                                                   'sigmoid']},
+                   scoring=make_scorer(monetary_score))
+2023-09-24 18:12:16 - model - INFO - the custom: parallelize search best params are {'kernel': 'linear', 'gamma': 'scale', 'degree': 3, 'C': 0.1}
+2023-09-24 18:12:16 - model - INFO - the custom: parallelize search best score is 0.0
+2023-09-24 18:12:16 - model - INFO - the custom: parallelize search best estimator is RandomizedSearchCV(cv=5, estimator=SVR(),
+                   param_distributions={'C': [0.1, 1.0, 10.0],
+                                        'degree': [2, 3, 4, 5],
+                                        'gamma': ['auto', 'scale'],
+                                        'kernel': ['linear', 'poly', 'rbf',
+                                                   'sigmoid']},
+                   scoring=make_scorer(monetary_score))
+2023-09-24 18:12:16 - model - INFO - The SVR model has been trained, evaluated 0.6446174870254203, and saved.
+2023-09-24 18:13:27 - model - INFO - RandomizedSearchCV(cv=5, estimator=SVC(),
+                   param_distributions={'C': [0.1, 1.0, 10.0],
+                                        'degree': [2, 3, 4, 5],
+                                        'gamma': ['auto', 'scale'],
+                                        'kernel': ['linear', 'poly', 'rbf',
+                                                   'sigmoid']},
+                   scoring=make_scorer(monetary_score))
+2023-09-24 18:13:27 - model - INFO - the custom: parallelize search best params are {'kernel': 'linear', 'gamma': 'scale', 'degree': 3, 'C': 0.1}
+2023-09-24 18:13:27 - model - INFO - the custom: parallelize search best score is 0.0
+2023-09-24 18:13:27 - model - INFO - the custom: parallelize search best estimator is RandomizedSearchCV(cv=5, estimator=SVC(),
+                   param_distributions={'C': [0.1, 1.0, 10.0],
+                                        'degree': [2, 3, 4, 5],
+                                        'gamma': ['auto', 'scale'],
+                                        'kernel': ['linear', 'poly', 'rbf',
+                                                   'sigmoid']},
+                   scoring=make_scorer(monetary_score))
+2023-09-24 18:13:27 - model - INFO - The SVC model has been trained, evaluated 0.59, and saved.
+2023-09-24 18:33:50 - model - INFO - Starting loading the models
+2023-09-24 18:33:50 - model - INFO - loading the Main view model
+2023-09-24 18:33:50 - model - INFO - loading the Trade tab model
+2023-09-24 18:33:50 - model - INFO - loading the Exchange tab model
+2023-09-24 18:33:50 - model - INFO - loading the Bot tab model
+2023-09-24 18:33:50 - model - INFO - loading the Chart tab model
+2023-09-24 18:33:50 - model - INFO - Finished loading the models
+2023-09-24 18:35:10 - model - INFO - machine learning model Isolation Forest selected
+2023-09-24 18:35:16 - model - INFO - machine learning model SVC selected
+2023-09-24 18:35:17 - model - INFO - 0      0
+1      1
+2      0
+3      1
+4      0
+      ..
+995    1
+996    1
+997    1
+998    0
+999    0
+Name: label, Length: 1000, dtype: int32
+2023-09-24 18:35:17 - model - INFO - machine learning model SVR selected
+2023-09-24 18:37:03 - model - INFO - RandomizedSearchCV(cv=5, estimator=SVR(),
+                   param_distributions={'C': [0.1, 1.0, 10.0],
+                                        'degree': [2, 3, 4, 5],
+                                        'gamma': ['auto', 'scale'],
+                                        'kernel': ['linear', 'poly', 'rbf',
+                                                   'sigmoid']},
+                   scoring=make_scorer(monetary_score))
+2023-09-24 18:37:03 - model - INFO - the custom: parallelize search best params are {'kernel': 'sigmoid', 'gamma': 'scale', 'degree': 4, 'C': 10.0}
+2023-09-24 18:37:03 - model - INFO - the custom: parallelize search best score is 0.0
+2023-09-24 18:37:03 - model - INFO - the custom: parallelize search best estimator is RandomizedSearchCV(cv=5, estimator=SVR(),
+                   param_distributions={'C': [0.1, 1.0, 10.0],
+                                        'degree': [2, 3, 4, 5],
+                                        'gamma': ['auto', 'scale'],
+                                        'kernel': ['linear', 'poly', 'rbf',
+                                                   'sigmoid']},
+                   scoring=make_scorer(monetary_score))
+2023-09-24 18:37:03 - model - INFO - The SVR model has been trained, evaluated 0.9327683007527171, and saved.
+2023-09-24 18:37:20 - model - INFO - GridSearchCV(cv=5, estimator=SVC(),
+             param_grid={'C': [0.1, 1.0, 10.0], 'degree': [2, 3, 4, 5],
+                         'gamma': ['auto', 'scale'],
+                         'kernel': ['linear', 'poly', 'rbf', 'sigmoid']},
+             scoring=make_scorer(monetary_score))
+2023-09-24 18:37:20 - model - INFO - the custom: parallelize search best params are {'C': 10.0, 'degree': 2, 'gamma': 'scale', 'kernel': 'sigmoid'}
+2023-09-24 18:37:20 - model - INFO - the custom: parallelize search best score is 5.4
+2023-09-24 18:37:20 - model - INFO - the custom: parallelize search best estimator is GridSearchCV(cv=5, estimator=SVC(),
+             param_grid={'C': [0.1, 1.0, 10.0], 'degree': [2, 3, 4, 5],
+                         'gamma': ['auto', 'scale'],
+                         'kernel': ['linear', 'poly', 'rbf', 'sigmoid']},
+             scoring=make_scorer(monetary_score))
+2023-09-24 18:37:20 - model - INFO - The SVC model has been trained, evaluated 0.565, and saved.
+2023-09-24 18:38:04 - model - INFO - machine learning model Isolation Forest selected
+2023-09-24 18:38:06 - model - INFO - machine learning model Gradient Boosting Classifier selected
+2023-09-24 18:38:07 - model - INFO - 0      1
+1      0
+2      0
+3      0
+4      0
+      ..
+995    0
+996    1
+997    1
+998    0
+999    0
+Name: label, Length: 1000, dtype: int32
+2023-09-24 18:44:25 - model - INFO - BayesSearchCV(cv=5, estimator=IsolationForest(),
+              scoring=make_scorer(monetary_score),
+              search_spaces={'contamination': [0.1, 0.2, 0.3, 0.4, 0.5],
+                             'max_samples': ['auto'],
+                             'n_estimators': [10, 50, 100, 200, 300]})
+2023-09-24 18:44:25 - model - INFO - the custom: parallelize search best params are OrderedDict([('contamination', 0.2), ('max_samples', 'auto'), ('n_estimators', 10)])
+2023-09-24 18:44:25 - model - INFO - the custom: parallelize search best score is 2324.2
+2023-09-24 18:44:25 - model - INFO - the custom: parallelize search best estimator is BayesSearchCV(cv=5, estimator=IsolationForest(),
+              scoring=make_scorer(monetary_score),
+              search_spaces={'contamination': [0.1, 0.2, 0.3, 0.4, 0.5],
+                             'max_samples': ['auto'],
+                             'n_estimators': [10, 50, 100, 200, 300]})
+2023-09-24 18:44:25 - model - INFO - The Isolation Forest model has been trained, evaluated 0.0, and saved.
+2023-09-24 18:46:13 - model - INFO - Starting loading the models
+2023-09-24 18:46:13 - model - INFO - loading the Main view model
+2023-09-24 18:46:13 - model - INFO - loading the Trade tab model
+2023-09-24 18:46:13 - model - INFO - loading the Exchange tab model
+2023-09-24 18:46:13 - model - INFO - loading the Bot tab model
+2023-09-24 18:46:13 - model - INFO - loading the Chart tab model
+2023-09-24 18:46:13 - model - INFO - Finished loading the models
+2023-09-24 18:46:20 - model - INFO - machine learning model Linear Regression selected
+2023-09-24 18:46:23 - model - INFO - machine learning model Logistic Regression selected
+2023-09-24 18:46:25 - model - INFO - 0      1
+1      1
+2      0
+3      0
+4      0
+      ..
+995    1
+996    1
+997    1
+998    0
+999    0
+Name: label, Length: 1000, dtype: int32
+2023-09-24 18:46:28 - model - INFO - machine learning model Decision Tree Classifier selected
+2023-09-24 18:46:29 - model - INFO - machine learning model Random Forest Classifier selected
+2023-09-24 18:46:31 - model - INFO - 0      1
+1      1
+2      0
+3      0
+4      0
+      ..
+995    1
+996    1
+997    1
+998    0
+999    0
+Name: label, Length: 1000, dtype: int32
+2023-09-24 18:47:52 - model - INFO - GridSearchCV(cv=5, estimator=LinearRegression(),
+             param_grid={'copy_X': [True, False],
+                         'fit_intercept': [True, False], 'n_jobs': [-1, 1]},
+             scoring=make_scorer(monetary_score))
+2023-09-24 18:47:52 - model - INFO - the custom: parallelize search best params are {'copy_X': True, 'fit_intercept': True, 'n_jobs': -1}
+2023-09-24 18:47:52 - model - INFO - the custom: parallelize search best score is 0.0
+2023-09-24 18:47:52 - model - INFO - the custom: parallelize search best estimator is GridSearchCV(cv=5, estimator=LinearRegression(),
+             param_grid={'copy_X': [True, False],
+                         'fit_intercept': [True, False], 'n_jobs': [-1, 1]},
+             scoring=make_scorer(monetary_score))
+2023-09-24 18:47:52 - model - INFO - The Linear Regression model has been trained, evaluated 0.8271098155729796, and saved.
+2023-09-24 18:48:28 - model - INFO - RandomizedSearchCV(cv=5, estimator=LogisticRegression(),
+                   param_distributions={'C': [0.1, 1.0, 10.0],
+                                        'max_iter': [1000, 1500, 2000],
+                                        'penalty': ['l2'],
+                                        'solver': ['newton-cg', 'lbfgs',
+                                                   'liblinear', 'sag',
+                                                   'saga']},
+                   scoring=make_scorer(monetary_score))
+2023-09-24 18:48:28 - model - INFO - the custom: parallelize search best params are {'solver': 'liblinear', 'penalty': 'l2', 'max_iter': 2000, 'C': 0.1}
+2023-09-24 18:48:28 - model - INFO - the custom: parallelize search best score is -0.8
+2023-09-24 18:48:28 - model - INFO - the custom: parallelize search best estimator is RandomizedSearchCV(cv=5, estimator=LogisticRegression(),
+                   param_distributions={'C': [0.1, 1.0, 10.0],
+                                        'max_iter': [1000, 1500, 2000],
+                                        'penalty': ['l2'],
+                                        'solver': ['newton-cg', 'lbfgs',
+                                                   'liblinear', 'sag',
+                                                   'saga']},
+                   scoring=make_scorer(monetary_score))
+2023-09-24 18:48:28 - model - INFO - The Logistic Regression model has been trained, evaluated 0.555, and saved.
+2023-09-24 18:49:34 - model - INFO - RandomizedSearchCV(cv=5, estimator=DecisionTreeClassifier(),
+                   param_distributions={'criterion': ['gini', 'entropy'],
+                                        'max_depth': [3, 5, 10],
+                                        'min_samples_leaf': [1, 2, 3, 4, 5],
+                                        'min_samples_split': [2, 5, 10]},
+                   scoring=make_scorer(monetary_score))
+2023-09-24 18:49:34 - model - INFO - the custom: parallelize search best params are {'min_samples_split': 5, 'min_samples_leaf': 5, 'max_depth': 10, 'criterion': 'entropy'}
+2023-09-24 18:49:34 - model - INFO - the custom: parallelize search best score is 32.4
+2023-09-24 18:49:34 - model - INFO - the custom: parallelize search best estimator is RandomizedSearchCV(cv=5, estimator=DecisionTreeClassifier(),
+                   param_distributions={'criterion': ['gini', 'entropy'],
+                                        'max_depth': [3, 5, 10],
+                                        'min_samples_leaf': [1, 2, 3, 4, 5],
+                                        'min_samples_split': [2, 5, 10]},
+                   scoring=make_scorer(monetary_score))
+2023-09-24 18:49:34 - model - INFO - The Decision Tree Classifier model has been trained, evaluated 0.29, and saved.
+2023-09-24 18:58:13 - model - INFO - machine learning model Gradient Boosting Classifier selected
+2023-09-24 18:58:14 - model - INFO - 0      0
+1      0
+2      0
+3      0
+4      0
+      ..
+995    1
+996    0
+997    0
+998    0
+999    0
+Name: label, Length: 1000, dtype: int32
+2023-09-24 18:58:15 - model - INFO - machine learning model Extra Tree Classifier selected
+2023-09-24 18:58:16 - model - INFO - 0      0
+1      0
+2      0
+3      0
+4      0
+      ..
+995    1
+996    0
+997    0
+998    0
+999    0
+Name: label, Length: 1000, dtype: int32
+2023-09-24 18:58:17 - model - INFO - machine learning model XGBoost Classifier selected
+2023-09-24 18:59:58 - model - INFO - GridSearchCV(cv=5, estimator=ExtraTreeClassifier(),
+             param_grid={'criterion': ['gini', 'entropy'],
+                         'max_depth': [2, 4, 6, 8, 10],
+                         'min_samples_leaf': [1, 2, 3, 4, 5],
+                         'min_samples_split': [2, 4, 6, 8, 10]},
+             scoring=make_scorer(monetary_score))
+2023-09-24 18:59:58 - model - INFO - the custom: parallelize search best params are {'criterion': 'gini', 'max_depth': 4, 'min_samples_leaf': 5, 'min_samples_split': 6}
+2023-09-24 18:59:58 - model - INFO - the custom: parallelize search best score is 1.4
+2023-09-24 18:59:58 - model - INFO - the custom: parallelize search best estimator is GridSearchCV(cv=5, estimator=ExtraTreeClassifier(),
+             param_grid={'criterion': ['gini', 'entropy'],
+                         'max_depth': [2, 4, 6, 8, 10],
+                         'min_samples_leaf': [1, 2, 3, 4, 5],
+                         'min_samples_split': [2, 4, 6, 8, 10]},
+             scoring=make_scorer(monetary_score))
+2023-09-24 18:59:58 - model - INFO - The Extra Tree Classifier model has been trained, evaluated 0.605, and saved.
+2023-09-24 19:07:46 - model - INFO - machine learning model Radius Neighbors Classifier selected
+2023-09-24 19:07:49 - model - INFO - machine learning model Gaussian Naive Bayes selected
+2023-09-24 19:09:41 - model - INFO - Starting loading the models
+2023-09-24 19:09:41 - model - INFO - loading the Main view model
+2023-09-24 19:09:41 - model - INFO - loading the Trade tab model
+2023-09-24 19:09:41 - model - INFO - loading the Exchange tab model
+2023-09-24 19:09:41 - model - INFO - loading the Bot tab model
+2023-09-24 19:09:41 - model - INFO - loading the Chart tab model
+2023-09-24 19:09:41 - model - INFO - Finished loading the models
+2023-09-24 19:09:49 - model - INFO - machine learning model Linear Regression selected
+2023-09-24 19:09:51 - model - INFO - machine learning model Logistic Regression selected
+2023-09-24 19:09:52 - model - INFO - 0      0
+1      0
+2      0
+3      0
+4      0
+      ..
+995    0
+996    0
+997    0
+998    0
+999    0
+Name: label, Length: 1000, dtype: int32
+2023-09-24 19:09:53 - model - INFO - machine learning model MLPClassifier selected
+2023-09-24 19:09:53 - model - INFO - 0      0
+1      0
+2      0
+3      0
+4      0
+      ..
+995    0
+996    0
+997    0
+998    0
+999    0
+Name: label, Length: 1000, dtype: int32
+2023-09-24 19:09:54 - model - INFO - machine learning model Decision Tree Classifier selected
+2023-09-24 19:09:56 - model - INFO - machine learning model Random Forest Classifier selected
+2023-09-24 19:09:57 - model - INFO - 0      0
+1      0
+2      0
+3      0
+4      0
+      ..
+995    0
+996    0
+997    0
+998    0
+999    0
+Name: label, Length: 1000, dtype: int32
+2023-09-24 19:10:00 - model - INFO - machine learning model SVC selected
+2023-09-24 19:10:01 - model - INFO - 0      0
+1      0
+2      0
+3      0
+4      0
+      ..
+995    0
+996    0
+997    0
+998    0
+999    0
+Name: label, Length: 1000, dtype: int32
+2023-09-24 19:10:03 - model - INFO - machine learning model SVR selected
+2023-09-24 19:10:05 - model - INFO - machine learning model Isolation Forest selected
+2023-09-24 19:10:10 - model - INFO - machine learning model Gradient Boosting Classifier selected
+2023-09-24 19:10:11 - model - INFO - 0      0
+1      0
+2      0
+3      0
+4      0
+      ..
+995    0
+996    0
+997    0
+998    0
+999    0
+Name: label, Length: 1000, dtype: int32
+2023-09-24 19:10:17 - model - INFO - machine learning model Extra Tree Classifier selected
+2023-09-24 19:10:18 - model - INFO - 0      0
+1      0
+2      0
+3      0
+4      0
+      ..
+995    0
+996    0
+997    0
+998    0
+999    0
+Name: label, Length: 1000, dtype: int32
+2023-09-24 19:10:19 - model - INFO - machine learning model Radius Neighbors Classifier selected
+2023-09-24 19:10:25 - model - INFO - machine learning model Gaussian Naive Bayes selected
+2023-09-24 19:10:35 - model - INFO - machine learning model XGBoost Classifier selected
+2023-09-24 19:12:54 - model - INFO - Starting loading the models
+2023-09-24 19:12:54 - model - INFO - loading the Main view model
+2023-09-24 19:12:54 - model - INFO - loading the Trade tab model
+2023-09-24 19:12:54 - model - INFO - loading the Exchange tab model
+2023-09-24 19:12:54 - model - INFO - loading the Bot tab model
+2023-09-24 19:12:54 - model - INFO - loading the Chart tab model
+2023-09-24 19:12:54 - model - INFO - Finished loading the models
+2023-09-24 19:13:00 - model - INFO - machine learning model Linear Regression selected
+2023-09-24 19:13:06 - model - INFO - machine learning model Logistic Regression selected
+2023-09-24 19:13:07 - model - INFO - 0      0
+1      0
+2      0
+3      0
+4      0
+      ..
+995    1
+996    1
+997    1
+998    0
+999    0
+Name: label, Length: 1000, dtype: int32
+2023-09-24 19:13:53 - model - INFO - GridSearchCV(cv=5, estimator=LinearRegression(),
+             param_grid={'copy_X': [True, False],
+                         'fit_intercept': [True, False], 'n_jobs': [-1, 1]},
+             scoring=make_scorer(monetary_score))
+2023-09-24 19:13:53 - model - INFO - the custom: parallelize search best params are {'copy_X': True, 'fit_intercept': True, 'n_jobs': -1}
+2023-09-24 19:13:53 - model - INFO - the custom: parallelize search best score is 0.0
+2023-09-24 19:13:53 - model - INFO - the custom: parallelize search best estimator is GridSearchCV(cv=5, estimator=LinearRegression(),
+             param_grid={'copy_X': [True, False],
+                         'fit_intercept': [True, False], 'n_jobs': [-1, 1]},
+             scoring=make_scorer(monetary_score))
+2023-09-24 19:13:53 - model - INFO - The Linear Regression model has been trained, evaluated 0.9162476206933892, and saved.
+2023-09-24 19:14:01 - model - INFO - machine learning model MLPClassifier selected
+2023-09-24 19:14:02 - model - INFO - 0      0
+1      0
+2      0
+3      0
+4      0
+      ..
+995    1
+996    1
+997    1
+998    0
+999    0
+Name: label, Length: 1000, dtype: int32
+2023-09-24 19:14:03 - model - INFO - machine learning model Decision Tree Classifier selected
+2023-09-24 19:14:04 - model - INFO - machine learning model Random Forest Classifier selected
+2023-09-24 19:14:05 - model - INFO - 0      0
+1      0
+2      0
+3      0
+4      0
+      ..
+995    1
+996    1
+997    1
+998    0
+999    0
+Name: label, Length: 1000, dtype: int32
+2023-09-24 19:14:06 - model - INFO - machine learning model SVC selected
+2023-09-24 19:14:07 - model - INFO - 0      0
+1      0
+2      0
+3      0
+4      0
+      ..
+995    1
+996    1
+997    1
+998    0
+999    0
+Name: label, Length: 1000, dtype: int32
+2023-09-24 19:14:07 - model - INFO - machine learning model SVR selected
+2023-09-24 19:15:45 - model - INFO - RandomizedSearchCV(cv=5, estimator=LogisticRegression(),
+                   param_distributions={'C': [0.1, 1.0, 10.0],
+                                        'max_iter': [1000, 1500, 2000],
+                                        'penalty': ['l2'],
+                                        'solver': ['newton-cg', 'lbfgs',
+                                                   'liblinear', 'sag',
+                                                   'saga']},
+                   scoring=make_scorer(monetary_score))
+2023-09-24 19:15:45 - model - INFO - the custom: parallelize search best params are {'solver': 'liblinear', 'penalty': 'l2', 'max_iter': 1500, 'C': 0.1}
+2023-09-24 19:15:45 - model - INFO - the custom: parallelize search best score is 0.0
+2023-09-24 19:15:45 - model - INFO - the custom: parallelize search best estimator is RandomizedSearchCV(cv=5, estimator=LogisticRegression(),
+                   param_distributions={'C': [0.1, 1.0, 10.0],
+                                        'max_iter': [1000, 1500, 2000],
+                                        'penalty': ['l2'],
+                                        'solver': ['newton-cg', 'lbfgs',
+                                                   'liblinear', 'sag',
+                                                   'saga']},
+                   scoring=make_scorer(monetary_score))
+2023-09-24 19:15:45 - model - INFO - The Logistic Regression model has been trained, evaluated 0.61, and saved.
+2023-09-24 19:16:20 - model - INFO - RandomizedSearchCV(cv=5, estimator=SVR(),
+                   param_distributions={'C': [0.1, 1.0, 10.0],
+                                        'degree': [2, 3, 4, 5],
+                                        'gamma': ['auto', 'scale'],
+                                        'kernel': ['linear', 'poly', 'rbf',
+                                                   'sigmoid']},
+                   scoring=make_scorer(monetary_score))
+2023-09-24 19:16:20 - model - INFO - the custom: parallelize search best params are {'kernel': 'rbf', 'gamma': 'scale', 'degree': 2, 'C': 0.1}
+2023-09-24 19:16:20 - model - INFO - the custom: parallelize search best score is 0.0
+2023-09-24 19:16:20 - model - INFO - the custom: parallelize search best estimator is RandomizedSearchCV(cv=5, estimator=SVR(),
+                   param_distributions={'C': [0.1, 1.0, 10.0],
+                                        'degree': [2, 3, 4, 5],
+                                        'gamma': ['auto', 'scale'],
+                                        'kernel': ['linear', 'poly', 'rbf',
+                                                   'sigmoid']},
+                   scoring=make_scorer(monetary_score))
+2023-09-24 19:16:20 - model - INFO - The SVR model has been trained, evaluated 0.09097883160922826, and saved.
+2023-09-24 19:17:01 - model - INFO - RandomizedSearchCV(cv=5, estimator=DecisionTreeClassifier(),
+                   param_distributions={'criterion': ['gini', 'entropy'],
+                                        'max_depth': [3, 5, 10],
+                                        'min_samples_leaf': [1, 2, 3, 4, 5],
+                                        'min_samples_split': [2, 5, 10]},
+                   scoring=make_scorer(monetary_score))
+2023-09-24 19:17:01 - model - INFO - the custom: parallelize search best params are {'min_samples_split': 5, 'min_samples_leaf': 1, 'max_depth': 10, 'criterion': 'entropy'}
+2023-09-24 19:17:01 - model - INFO - the custom: parallelize search best score is 0.0
+2023-09-24 19:17:01 - model - INFO - the custom: parallelize search best estimator is RandomizedSearchCV(cv=5, estimator=DecisionTreeClassifier(),
+                   param_distributions={'criterion': ['gini', 'entropy'],
+                                        'max_depth': [3, 5, 10],
+                                        'min_samples_leaf': [1, 2, 3, 4, 5],
+                                        'min_samples_split': [2, 5, 10]},
+                   scoring=make_scorer(monetary_score))
+2023-09-24 19:17:01 - model - INFO - The Decision Tree Classifier model has been trained, evaluated 0.305, and saved.
+2023-09-24 19:17:17 - model - INFO - GridSearchCV(cv=5, estimator=SVC(),
+             param_grid={'C': [0.1, 1.0, 10.0], 'degree': [2, 3, 4, 5],
+                         'gamma': ['auto', 'scale'],
+                         'kernel': ['linear', 'poly', 'rbf', 'sigmoid']},
+             scoring=make_scorer(monetary_score))
+2023-09-24 19:17:17 - model - INFO - the custom: parallelize search best params are {'C': 10.0, 'degree': 2, 'gamma': 'auto', 'kernel': 'sigmoid'}
+2023-09-24 19:17:17 - model - INFO - the custom: parallelize search best score is 1.0
+2023-09-24 19:17:17 - model - INFO - the custom: parallelize search best estimator is GridSearchCV(cv=5, estimator=SVC(),
+             param_grid={'C': [0.1, 1.0, 10.0], 'degree': [2, 3, 4, 5],
+                         'gamma': ['auto', 'scale'],
+                         'kernel': ['linear', 'poly', 'rbf', 'sigmoid']},
+             scoring=make_scorer(monetary_score))
+2023-09-24 19:17:17 - model - INFO - The SVC model has been trained, evaluated 0.52, and saved.
+2023-09-24 19:19:30 - model - INFO - machine learning model Isolation Forest selected
+2023-09-24 19:19:32 - model - INFO - machine learning model Gradient Boosting Classifier selected
+2023-09-24 19:19:32 - model - INFO - 0      0
+1      0
+2      0
+3      0
+4      0
+      ..
+995    1
+996    1
+997    1
+998    0
+999    0
+Name: label, Length: 1000, dtype: int32
+2023-09-24 19:19:34 - model - INFO - machine learning model Extra Tree Classifier selected
+2023-09-24 19:19:35 - model - INFO - 0      0
+1      0
+2      0
+3      0
+4      0
+      ..
+995    1
+996    1
+997    1
+998    0
+999    0
+Name: label, Length: 1000, dtype: int32
+2023-09-24 19:21:03 - model - INFO - Removing exchange Phemex
+2023-09-24 19:21:49 - model - INFO - GridSearchCV(cv=5, estimator=ExtraTreeClassifier(),
+             param_grid={'criterion': ['gini', 'entropy'],
+                         'max_depth': [2, 4, 6, 8, 10],
+                         'min_samples_leaf': [1, 2, 3, 4, 5],
+                         'min_samples_split': [2, 4, 6, 8, 10]},
+             scoring=make_scorer(monetary_score))
+2023-09-24 19:21:49 - model - INFO - the custom: parallelize search best params are {'criterion': 'gini', 'max_depth': 2, 'min_samples_leaf': 1, 'min_samples_split': 4}
+2023-09-24 19:21:49 - model - INFO - the custom: parallelize search best score is 1.6
+2023-09-24 19:21:49 - model - INFO - the custom: parallelize search best estimator is GridSearchCV(cv=5, estimator=ExtraTreeClassifier(),
+             param_grid={'criterion': ['gini', 'entropy'],
+                         'max_depth': [2, 4, 6, 8, 10],
+                         'min_samples_leaf': [1, 2, 3, 4, 5],
+                         'min_samples_split': [2, 4, 6, 8, 10]},
+             scoring=make_scorer(monetary_score))
+2023-09-24 19:21:49 - model - INFO - The Extra Tree Classifier model has been trained, evaluated 0.54, and saved.
+2023-09-24 19:25:11 - model - INFO - machine learning model XGBoost Classifier selected
+2023-09-24 19:33:54 - model - INFO - GridSearchCV(cv=5, estimator=IsolationForest(),
+             param_grid={'contamination': [0.1, 0.2, 0.3, 0.4, 0.5],
+                         'max_samples': ['auto'],
+                         'n_estimators': [10, 50, 100, 200, 300]},
+             scoring=make_scorer(monetary_score))
+2023-09-24 19:33:54 - model - INFO - the custom: parallelize search best params are {'contamination': 0.2, 'max_samples': 'auto', 'n_estimators': 50}
+2023-09-24 19:33:54 - model - INFO - the custom: parallelize search best score is 409.2
+2023-09-24 19:33:54 - model - INFO - the custom: parallelize search best estimator is GridSearchCV(cv=5, estimator=IsolationForest(),
+             param_grid={'contamination': [0.1, 0.2, 0.3, 0.4, 0.5],
+                         'max_samples': ['auto'],
+                         'n_estimators': [10, 50, 100, 200, 300]},
+             scoring=make_scorer(monetary_score))
+2023-09-24 19:33:54 - model - INFO - The Isolation Forest model has been trained, evaluated 0.0, and saved.
+2023-09-24 19:54:13 - model - INFO - Starting loading the models
+2023-09-24 19:54:13 - model - INFO - loading the Main view model
+2023-09-24 19:54:13 - model - INFO - loading the Trade tab model
+2023-09-24 19:54:13 - model - INFO - loading the Exchange tab model
+2023-09-24 19:54:13 - model - INFO - loading the Bot tab model
+2023-09-24 19:54:13 - model - INFO - loading the Chart tab model
+2023-09-24 19:54:13 - model - INFO - Finished loading the models
+2023-09-24 19:54:29 - model - INFO - machine learning model Linear Regression selected
+2023-09-24 19:54:45 - model - INFO - machine learning model Logistic Regression selected
+2023-09-24 19:54:46 - model - INFO - 0     -1.0
+1      1.0
+2     -1.0
+3      1.0
+4      1.0
+      ... 
+868    NaN
+869    NaN
+870    NaN
+871    NaN
+872    NaN
+Name: label, Length: 873, dtype: float64
+2023-09-24 19:54:55 - model - INFO - machine learning model MLPClassifier selected
+2023-09-24 19:54:56 - model - INFO - 0     -1.0
+1      1.0
+2     -1.0
+3      1.0
+4      1.0
+      ... 
+868    NaN
+869    NaN
+870    NaN
+871    NaN
+872    NaN
+Name: label, Length: 873, dtype: float64
+2023-09-24 19:54:57 - model - INFO - machine learning model Decision Tree Classifier selected
+2023-09-24 19:54:59 - model - INFO - machine learning model Random Forest Classifier selected
+2023-09-24 19:55:01 - model - INFO - machine learning model SVC selected
+2023-09-24 19:55:01 - model - INFO - 0     -1.0
+1      1.0
+2     -1.0
+3      1.0
+4      1.0
+      ... 
+868    NaN
+869    NaN
+870    NaN
+871    NaN
+872    NaN
+Name: label, Length: 873, dtype: float64
+2023-09-24 19:55:02 - model - INFO - 0     -1.0
+1      1.0
+2     -1.0
+3      1.0
+4      1.0
+      ... 
+868    NaN
+869    NaN
+870    NaN
+871    NaN
+872    NaN
+Name: label, Length: 873, dtype: float64
+2023-09-24 19:55:02 - model - INFO - machine learning model SVR selected
+2023-09-24 19:57:58 - model - INFO - GridSearchCV(cv=5, estimator=LinearRegression(),
+             param_grid={'copy_X': [True, False],
+                         'fit_intercept': [True, False], 'n_jobs': [-1, 1]},
+             scoring=make_scorer(<lambda>))
+2023-09-24 19:57:58 - model - INFO - the custom: parallelize search best params are {'copy_X': True, 'fit_intercept': False, 'n_jobs': -1}
+2023-09-24 19:57:58 - model - INFO - the custom: parallelize search best score is -5035465.262936967
+2023-09-24 19:57:58 - model - INFO - the custom: parallelize search best estimator is GridSearchCV(cv=5, estimator=LinearRegression(),
+             param_grid={'copy_X': [True, False],
+                         'fit_intercept': [True, False], 'n_jobs': [-1, 1]},
+             scoring=make_scorer(<lambda>))
+2023-09-24 19:57:58 - model - INFO - The Linear Regression model has been trained, evaluated -2.587195504598337, and saved.
+2023-09-24 19:58:07 - model - INFO - RandomizedSearchCV(cv=5, estimator=SVR(),
+                   param_distributions={'C': [0.1, 1.0, 10.0],
+                                        'degree': [2, 3, 4, 5],
+                                        'gamma': ['auto', 'scale'],
+                                        'kernel': ['linear', 'poly', 'rbf',
+                                                   'sigmoid']},
+                   scoring=make_scorer(<lambda>))
+2023-09-24 19:58:07 - model - INFO - the custom: parallelize search best params are {'kernel': 'rbf', 'gamma': 'auto', 'degree': 2, 'C': 0.1}
+2023-09-24 19:58:07 - model - INFO - the custom: parallelize search best score is 249063.2767821875
+2023-09-24 19:58:07 - model - INFO - the custom: parallelize search best estimator is RandomizedSearchCV(cv=5, estimator=SVR(),
+                   param_distributions={'C': [0.1, 1.0, 10.0],
+                                        'degree': [2, 3, 4, 5],
+                                        'gamma': ['auto', 'scale'],
+                                        'kernel': ['linear', 'poly', 'rbf',
+                                                   'sigmoid']},
+                   scoring=make_scorer(<lambda>))
+2023-09-24 19:58:07 - model - INFO - The SVR model has been trained, evaluated 0.02166961354410757, and saved.
+2023-09-24 19:58:23 - model - INFO - GridSearchCV(cv=5, estimator=SVC(),
+             param_grid={'C': [0.1, 1.0, 10.0], 'degree': [2, 3, 4, 5],
+                         'gamma': ['auto', 'scale'],
+                         'kernel': ['linear', 'poly', 'rbf', 'sigmoid']},
+             scoring=make_scorer(<lambda>))
+2023-09-24 19:58:23 - model - INFO - the custom: parallelize search best params are {'C': 10.0, 'degree': 2, 'gamma': 'auto', 'kernel': 'poly'}
+2023-09-24 19:58:23 - model - INFO - the custom: parallelize search best score is 2.4
+2023-09-24 19:58:23 - model - INFO - the custom: parallelize search best estimator is GridSearchCV(cv=5, estimator=SVC(),
+             param_grid={'C': [0.1, 1.0, 10.0], 'degree': [2, 3, 4, 5],
+                         'gamma': ['auto', 'scale'],
+                         'kernel': ['linear', 'poly', 'rbf', 'sigmoid']},
+             scoring=make_scorer(<lambda>))
+2023-09-24 19:58:23 - model - INFO - The SVC model has been trained, evaluated 0.5028571428571429, and saved.
+2023-09-24 19:58:24 - model - INFO - RandomizedSearchCV(cv=5, estimator=LogisticRegression(),
+                   param_distributions={'C': [0.1, 1.0, 10.0],
+                                        'max_iter': [1000, 1500, 2000],
+                                        'penalty': ['l2'],
+                                        'solver': ['newton-cg', 'lbfgs',
+                                                   'liblinear', 'sag',
+                                                   'saga']},
+                   scoring=make_scorer(<lambda>))
+2023-09-24 19:58:24 - model - INFO - the custom: parallelize search best params are {'solver': 'sag', 'penalty': 'l2', 'max_iter': 1500, 'C': 1.0}
+2023-09-24 19:58:24 - model - INFO - the custom: parallelize search best score is -4.4
+2023-09-24 19:58:24 - model - INFO - the custom: parallelize search best estimator is RandomizedSearchCV(cv=5, estimator=LogisticRegression(),
+                   param_distributions={'C': [0.1, 1.0, 10.0],
+                                        'max_iter': [1000, 1500, 2000],
+                                        'penalty': ['l2'],
+                                        'solver': ['newton-cg', 'lbfgs',
+                                                   'liblinear', 'sag',
+                                                   'saga']},
+                   scoring=make_scorer(<lambda>))
+2023-09-24 19:58:24 - model - INFO - The Logistic Regression model has been trained, evaluated 0.56, and saved.
+2023-09-24 20:30:49 - model - INFO - BayesSearchCV(cv=5, estimator=RandomForestClassifier(),
+              scoring=make_scorer(<lambda>),
+              search_spaces={'criterion': ['gini', 'entropy'],
+                             'max_depth': [2, 4, 6, 8, 10],
+                             'min_samples_leaf': [1, 2, 3, 4, 5],
+                             'min_samples_split': [2, 4, 6, 8, 10],
+                             'n_estimators': [10, 50, 100, 200, 300]})
+2023-09-24 20:30:49 - model - INFO - the custom: parallelize search best params are OrderedDict([('criterion', 'entropy'), ('max_depth', 2), ('min_samples_leaf', 4), ('min_samples_split', 10), ('n_estimators', 10)])
+2023-09-24 20:30:49 - model - INFO - the custom: parallelize search best score is -2.0
+2023-09-24 20:30:49 - model - INFO - the custom: parallelize search best estimator is BayesSearchCV(cv=5, estimator=RandomForestClassifier(),
+              scoring=make_scorer(<lambda>),
+              search_spaces={'criterion': ['gini', 'entropy'],
+                             'max_depth': [2, 4, 6, 8, 10],
+                             'min_samples_leaf': [1, 2, 3, 4, 5],
+                             'min_samples_split': [2, 4, 6, 8, 10],
+                             'n_estimators': [10, 50, 100, 200, 300]})
+2023-09-24 20:30:49 - model - INFO - The Random Forest Classifier model has been trained, evaluated 0.5942857142857143, and saved.

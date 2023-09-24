@@ -33,7 +33,7 @@ def get_model(algorithm):
         parameters = {
             "activation": ['relu', 'identity', 'logistic', 'tanh'],
             "hidden_layer_sizes": [(10,), (20,), (10, 10)],
-            "alpha": [0.1, 1.0, 10.0],
+            "alpha": [0.0001, 0.0002, 0.001],
             "solver": ["sgd", "adam"],
             "learning_rate_init": [0.001, 0.01, 0.1],
             "momentum": [0.9, 0.95, 0.99],
@@ -76,7 +76,7 @@ def get_model(algorithm):
         model = IsolationForest()
         parameters = {
             "n_estimators": [10, 50, 100, 200, 300],
-            "max_samples": ["auto", "None"],
+            "max_samples": ["auto"],
             "contamination": [0.1, 0.2, 0.3, 0.4, 0.5]
         }
     elif algorithm == "Gradient Boosting Classifier":
@@ -101,13 +101,13 @@ def get_model(algorithm):
             "max_depth": [2, 4, 6, 8, 10],
             "eta": [0.1, 0.2, 0.3, 0.4, 0.5],
             "objective": ["binary:logistic", "multi:softmax"],
-            "num_class": [1, 2, 3, 4]
+            "num_class": [1, 2, 3, 4],
+            "eval_metric": ["mlogloss"]
         }
     # TODO: refactor the errors
     elif algorithm == "Gaussian Naive Bayes":
         model = GaussianNB()
         parameters = {
-            'priors': [None, [0.1, 0.9], [0.2, 0.8]],
             'var_smoothing': [1e-9, 1e-8, 1e-7]
         }
     elif algorithm == "Radius Neighbors Classifier":
