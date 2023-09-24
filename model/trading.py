@@ -1,13 +1,18 @@
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
+import util.loggers as loggers
+
+logger = loggers.setup_loggers()
+manual_logger = logger['manual']
+
 
 class Trading:
     def __init__(self, exchange, symbol, position_size, max_drawdown,
-                 moving_average_period, decision_tree_depth, logger) -> None:
+                 moving_average_period, decision_tree_depth) -> None:
 
-        self.exchange = exchange 
+        self.exchange = exchange
         self.getBalancUSDT, self.getBalancBTC = self.getBalance()
-        self.logger = logger
+        self.logger = manual_logger
         self.symbol = symbol
         self.stoploss = 0
         self.takeprofit1 = 0
@@ -23,7 +28,6 @@ class Trading:
         self.decision_tree_depth = decision_tree_depth
         self.analyzer = SentimentIntensityAnalyzer()
 
-        
     def check_trade_status(self) -> bool:
         if not self.in_trade:
             return False
@@ -57,7 +61,7 @@ class Trading:
             order = self.exchange.create_order(symbol=self.symbol, type=trade_type, side=side, amount=amount, price=price, params={
                 'stopLoss': self.stoploss,
                 'takeProfit': self.takeprofit1})
-            
+
             self.logger.info(f"{self.symbol} {side} Order Placed with order Type: +\
                 {trade_type} {amount} at {price} with a stop at {self.stoploss}+\
                     and take profit {self.takeprofit1} | {self.takeprofit2} | {self.takeprofit2} ")
@@ -144,20 +148,22 @@ class Trading:
                         self.trade_id, {'stopLoss': price + self.trailing_stop})
 
     def getBalance(self):
-        
-        usdt = self.exchange.fetch_balance()['USDT']['total']
-        btc = self.exchange.fetch_balance()['BTC']['total']
+
+        usdt = 0  # self.exchange.fetch_balance()['USDT']['total']
+        btc = 0  # self.exchange.fetch_balance()['BTC']['total']
+        # manual_logger.info(len([coin for coin, balance in self.exchange.fetch_balance()
+        #                         ['total'].items() if balance > 0]))
 
         return usdt, btc
-    
+
     def getBidAsk(self):
-        
-        #get orderbook the bid/ask prices
+
+        # get orderbook the bid/ask prices
         orderbook = self.exchange.fetch_ticker(self.symbol)
-        
+
         bid = orderbook['bid']
         ask = orderbook['ask']
-        
+
         return bid, ask
 
     def scale_in_out(self, amount) -> None:

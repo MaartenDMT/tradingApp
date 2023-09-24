@@ -1,76 +1,89 @@
-import threading
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from multiprocessing import Pool, cpu_count
+import concurrent.futures
+import time
+from concurrent.futures import as_completed
 
 import numpy as np
 import pandas as pd
 import pandas_ta as ta
 import vectorbt as vbt
 
+import util.loggers as loggers
+
+logger = loggers.setup_loggers()
+tradex_logger = logger['tradex']
+
 
 class Tradex_indicator:
+    '''
+    This class applies various trading indicators on given data. The data can either be provided
+    during the initialization or fetched from an external source.
 
-    def __init__(self,symbol,t:None, get_data:False, data) -> None:
-        self.symbol = symbol 
-        self.data = self.changeTime(self.get_data(get_data, data), t)
-        self.set_tradex(self.data)
-       
-    
-    def set_tradex(self, data) -> None:
-        with ThreadPoolExecutor() as executor:
-            trend = executor.submit(Trend,data)
-            screener = executor.submit(Screener,data)
-            real_time = executor.submit(Real_time,data)
-            scanner = executor.submit(Scanner,data)
-        results = [result.result() for result in as_completed([trend, screener, real_time,scanner])]
-        for i in range(0, len(results)):
-            print(f"{i}: {results[i]}")
-            if str(results[i]) == "trend":
-                self.trend = results[i]
-            elif str(results[i]) == "screener":
-                self.screener = results[i]
-            elif str(results[i]) == "real_time":
-                self.real_time = results[i]   
-            elif str(results[i]) == "scanner":
-                self.scanner = results[i]
-            else:
-                print("error - not indicator found !")
-                
-        print(self.trend)
+    Attributes:
+        symbol (str): Symbol for which the data is to be processed
+        data (DataFrame): Data to be processed. The dataframe should contain the columns 'open', 'high', 'low', 'close' and 'volume'
+        trend (Trend): Trend object after processing the data
+        screener (type): Description of attribute `screener`.
+        real_time (type): Description of attribute `real_time`.
+        scanner (type): Description of attribute `scanner`.
+    '''
 
-        
+    def __init__(self, symbol, timeframe, t=None, get_data=False, data=None):
+        self.tradex_logger = tradex_logger
+        self.timeframe = timeframe
+        self.symbol = symbol
+        self.data = data if not get_data else self.get_data()
+        if t is not None:
+            self.changeTime(t)
+        self.trend = pd.DataFrame
+        self.screener = pd.DataFrame
+        self.real_time = pd.DataFrame
+        self.scanner = pd.DataFrame
 
-
-
-
-
-    def get_data(self, get_data, data) -> pd.DataFrame:
-        if get_data:
-            print('getting the data')
-            data_load=vbt.CCXTData.download([self.symbol], start='3 days ago', timeframe='1m')
-            df  = data_load.get()
+    def get_data(self) -> pd.DataFrame:
+        try:
+            self.tradex_logger.info('Getting the data')
+            data_load = vbt.CCXTData.download(
+                [self.symbol], start='3 days ago', timeframe=self.timeframe)
+            df = data_load.get()
             df = pd.DataFrame(df)
-            
-            # Convert the Open time column to a datetime object
-            df['date'] = pd.to_datetime(df.index)
 
-            # Set the Open time column as the index of the DataFrame
-            df.set_index('date', inplace=True)
+            df.index = pd.to_datetime(df.index)
             df['symbol'] = self.symbol
-            
-            # Rename the columns to match the desired column names
-            df.rename(columns={'Open': 'open', 'High': 'high', 'Low': 'low', 'Close': 'close', 'Volume': 'volume'}, inplace=True)
-            result = pd.concat([data,df])
-            result.dropna(inplace=True)
-            return result
-        
-        else:
-            return data
+            df.rename(columns={'Open': 'open', 'High': 'high', 'Low': 'low',
+                      'Close': 'close', 'Volume': 'volume'}, inplace=True)
 
-    def changeTime(self, data:pd.DataFrame, t) -> pd.DataFrame:
-        data.index = pd.to_datetime(data.index, utc=True)
-        if t != None:
-            print(f'getting the right timeframe {t}')
+        except vbt.errors.EmptyDatasetError:
+            self.tradex_logger.error(
+                f'No data found for the specified {self.symbol} and {self.timeframe}.')
+            return None
+
+        except vbt.errors.ExchangeError as e:
+            self.tradex_logger.error(f'Exchange error: {e}')
+            return None
+
+        except vbt.errors.RequestError as e:
+            self.tradex_logger.error(f'Request error: {e}')
+            return None
+
+        except pd.errors.EmptyDataError:
+            self.tradex_logger.error(
+                'Empty data received from the data source.')
+            return None
+
+        except pd.errors.ParserError:
+            self.tradex_logger.error('Error parsing the data.')
+            return None
+
+        except Exception as e:
+            self.tradex_logger.error(f'An unexpected error occurred: {e}')
+            return None
+
+        return df
+
+    def changeTime(self, t):
+        try:
+            self.data.index = pd.to_datetime(self.data.index, utc=True)
+            self.tradex_logger.info(f'Changing the {self.timeframe} to {t}')
             ohlc = {
                 'open': 'first',
                 'high': 'max',
@@ -78,55 +91,485 @@ class Tradex_indicator:
                 'close': 'last',
                 'volume': 'sum'
             }
-            df = data.resample(t, label='left', kind='timestamp').apply(ohlc)
-            df.dropna(inplace=True)
+            self.data = self.data.resample(
+                t, label='left', kind='timestamp').apply(ohlc).dropna()
 
-            #df=df.iloc[100:200]
-            df = df.reset_index()
-            df.index = pd.to_datetime(df.index)
-            df.set_index(['date'], inplace=True)
-        else:
-            df = data
+        except pd.errors.EmptyDataError:
+            self.tradex_logger.error(
+                'Empty data received while changing the timeframe.')
+            return None
 
-        return df
+        except pd.errors.OutOfBoundsDatetime:
+            self.tradex_logger.error(
+                'Error encountered in the datetime bounds while changing the timeframe.')
+            return None
+
+        except pd.errors.OutOfBoundsTimedelta:
+            self.tradex_logger.error(
+                'Error encountered in the timedelta bounds while changing the timeframe.')
+            return None
+
+        except pd.errors.ResampleError:
+            self.tradex_logger.error(
+                'Error encountered while resampling the data.')
+            return None
+
+        except Exception as e:
+            self.tradex_logger.error(
+                f'An unexpected error occurred while changing the timeframe: {e}')
+            return None
+
+    def run(self):
+        try:
+            start_time = time.time()
+
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                trend = executor.submit(Trend, self.data, self.tradex_logger)
+                screener = executor.submit(
+                    Screener, self.data, self.tradex_logger)
+                real_time = executor.submit(
+                    Real_time, self.data, self.tradex_logger)
+                scanner = executor.submit(
+                    Scanner, self.data, self.tradex_logger)
+
+            results = {result.result().__str__(): result.result()
+                       for result in as_completed([trend, screener, real_time, scanner])}
+
+            self.trend = results.get('trend', None)
+            self.screener = results.get('screener', None)
+            self.real_time = results.get('real_time', None)
+            self.scanner = results.get('scanner', None)
+
+            if not any([self.trend, self.screener, self.real_time, self.scanner]):
+                self.tradex_logger.info("Error - no indicator found!")
+
+            end_time = time.time()
+            self.tradex_logger.info(
+                f"Elapsed time: {end_time - start_time:.2f} seconds")
+            self.tradex_logger.info("_"*20)
+
+        except concurrent.futures.TimeoutError:
+            self.tradex_logger.error(
+                "Timeout occurred while executing the analysis threads.")
+            return None
+
+        except Exception as e:
+            self.tradex_logger.error(
+                f"An unexpected error occurred during the analysis: {e}")
+            return None
 
 
+class Trend:
+    '''
+    TREND: visueel beeld van de market trend
+    '''
 
-    def trade_x(self)-> pd.DataFrame:
-        
-        # make the features of the trade-x screener and the trade-x trend
-        self.create_signals_with_threading()
-        
-        return self.data
-    
-    
-    def create_signals_with_multiprocessing(self):
-        print("Creating signals using multiprocessing")
-        
-        # Creating a pool of processes
-        pool = Pool(int(cpu_count()*0.2))
-        
-        # Mapping the function to the pool of processes
-        result = pool.map(self.create_signals, None)
-        
-        # Closing the pool
-        pool.close()
-        
-        # Joining the processes
-        pool.join()
+    def __init__(self, data, tradex_logger) -> None:
+        self.tradex_logger = tradex_logger
+        self.data = data
+        self.df_trend = pd.DataFrame()
+        self.get_trend()
+
+    # TRADE - X TREND
+
+    def get_trend(self) -> pd.DataFrame:
+        self.tradex_logger.info('init trade-x trend')
+
+        # EMA channel
+        ema55H, ema55L = self.hlChannel()
+
+        # EMA trend lines
+        ema_200, ema_100 = self.ema()
+
+        # lsma and ema
+        lsma, ema_10 = self.lsma_()
+
+        # vwap and wma
+        vwap, wma = self.vwap_()
+
+        golden_signal = np.where(ta.cross(wma, vwap), 1, 0)
+        golden_signal = np.where(ta.cross(vwap, wma), -1, golden_signal)
+
+        # stoploss
+        stop_loss = self.stoploss()
+
+        # adding the data to the trend dataframe
+
+        self.df_trend['ema55H'] = ema55H
+        self.df_trend['ema55L'] = ema55L
+        self.df_trend['ema_100'] = ema_100
+        self.df_trend['ema_200'] = ema_200
+        self.df_trend['lsma'] = lsma
+        self.df_trend['ema_10'] = ema_10
+        self.df_trend['vwap'] = vwap
+        self.df_trend['wma'] = wma
+        self.df_trend['golden_signal'] = golden_signal
+
+        self.df_trend['stop_loss'] = stop_loss
+
+        # adding the data to the general dataframe
+        self.data['ema55H'] = self.df_trend.ema55H
+        self.data['ema55L'] = self.df_trend.ema55L
+        self.data['ema_100'] = self.df_trend.ema_100
+        self.data['ema_200'] = self.df_trend.ema_200
+        self.data['lsma'] = self.df_trend.lsma
+        self.data['ema_10'] = self.df_trend.ema_10
+        self.data['golden_signal'] = golden_signal
+        # self.data['vwap'] = trend.vwap
+        # self.data['wma'] = trend.wma
+
+        return self.df_trend
+
+    def hlChannel(self):
+        self.tradex_logger.info('- setting up High|Low channel')
+
+        # create the 55 ema channel
+        ema55H = ta.ema(self.data['high'], 55)
+        ema55L = ta.ema(self.data['low'], 55)
+
+        return ema55H, ema55L
+
+    def ema(self):
+        self.tradex_logger.info('- setting up EMA')
+
+        # create the ema trend
+        ema_200 = ta.ema(self.data['close'], 200)
+        ema_100 = ta.ema(self.data['close'], 100)
+
+        return ema_200, ema_100
+
+    def lsma_(self):
+        self.tradex_logger.info('- setting up LSMA')
+
+        lsma = ta.linreg(self.data['low'], 20, 8)
+        ema_10 = ta.ema(self.data['close'], 10)
+
+        return lsma, ema_10
+
+    def vwap_(self):
+        self.tradex_logger.info('- setting up VWAP')
+
+        vwma = ta.vwma(self.data['close'], self.data['volume'], 14)
+
+        wma = ta.wma(vwma, 21)
+
+        vwap = self.calculate_vwap(wma, self.data['volume'])
+
+        # Calculate the VWAP using the "price" and "volume" columns
+        # vwap = (df["price"] * df["volume"]).sum() / df["volume"].sum()
+
+        return vwap, wma
+
+    def get_tv_vwap(self, source, volume):
+        typical_price = np.divide(source, 1)
+        typical_price_volume = np.multiply(typical_price, volume)
+
+        cumulative_typical_price_volume = np.cumsum(typical_price_volume)
+        cumulative_volume = np.cumsum(volume)
+        vwap = np.divide(
+            cumulative_typical_price_volume[47:], cumulative_volume[47:])
+        vwap = vwap[:-1]
+        vwap = np.concatenate([np.full((48,), np.nan), vwap])
+        return vwap
+
+    def calculate_vwap(self, source, volume):
+        if source is None:
+            return None
+        typical_prices = np.divide(source, 1)
+        typical_prices_volume = typical_prices * volume
+        cumulative_typical_prices = np.cumsum(typical_prices_volume)
+        cumulative_volumes = np.cumsum(volume)
+        vwap = cumulative_typical_prices / cumulative_volumes
+        return vwap
+
+    def stoploss(self):
+        stop_loss_percent = 0.35
+        length_ = 55
+
+        emaC3_ = ta.ema(self.data.close, 50)
+        emaC100 = ta.ema(self.data.close, 100)
+
+        highest_low_range = ta.high_low_range(self.data.close, length_)
+        return highest_low_range
+        # stpLoss= emaC3_[1] > emaC100 and emaC3_ > emaC100  ? lowest : highest
+
+    def __str__(self):
+        return 'trend'
+
+
+class Screener:
+    '''
+
+    SCREENER: be a market maker
+    '''
+
+    def __init__(self, data, tradex_logger):
+        self.tradex_logger = tradex_logger
+        self.data = data
+        self.df_screener = pd.DataFrame()
+        self.get_screener()
+
+    def get_screener(self) -> pd.DataFrame:
+        self.tradex_logger.info('init trade-x screener')
+        wma, vwap = self.waves(self.data)
+
+        # moneyflow
+        mfi = self.moneyflow()
+
+        # adding the data to the screener DataFrame
+        # dots
+        dots = self.dots()
+        self.df_screener['s_wma'] = wma
+        self.df_screener['s_vwap'] = vwap
+        self.df_screener['mfi'] = mfi
+        self.df_screener['mfi_sum'] = self.mfi_sum
+        self.df_screener['dots'] = dots
+
+        # adding the data to the general dataframe
+        self.data['mfi'] = self.df_screener.mfi
+
+        # self.data['mfi_sum'] =  self.df_screener.mfi_sum
+        self.data['s_wma'] = self.df_screener.s_wma
+        self.data['s_vwap'] = self.df_screener.s_vwap
+
+        return self.df_screener
+
+    def waves(self, df):
+        self.tradex_logger.info('- make the waves')
+
+        df_temp = pd.DataFrame()
+        df_temp = df
+
+        n1 = 70
+        n2 = 55
+
+        ap = ta.hlc3(df.high, df.low, df.close)
+        esa = ta.vwma(ap, df.volume, n1)
+        d = ta.ema(abs(ap - esa), n1)
+        ci = (ap - esa) / (0.030 * d)
+        tci = ta.wma(ci, n2)  # , talib=True
+        wt1 = tci
+        df_temp['wt2'] = ta.ema(wt1, 4)
+        df_temp['s_vwap'] = self.calculate_vwap(df_temp)
+        df_temp['s_wma'] = wt1
+
+        return df_temp['s_wma'], df_temp['s_vwap']
+
+    def get_tv_vwap(self, data):
+        data['typicalPrice'] = np.divide(data.wt2, 1)
+        data['typicalPriceVolume'] = np.multiply(
+            data['typicalPrice'], data['volume'])
+        cumulative_typical_price_volume = np.cumsum(data['typicalPriceVolume'])
+        cumulative_volume = np.cumsum(data['volume'])
+        vwap = np.divide(
+            cumulative_typical_price_volume[47:], cumulative_volume[47:])
+        vwap = vwap[:-1]
+        data['vwap'] = np.concatenate([np.full((48,), np.nan), vwap])
+        return data['vwap']
+
+    def calculate_vwap(self, data):
+        typical_prices = np.divide(data.wt2, 3)
+        typical_prices_volume = typical_prices * data['volume']
+        cumulative_typical_prices = np.cumsum(typical_prices_volume)
+        cumulative_volumes = np.cumsum(data['volume'])
+        vwap = cumulative_typical_prices / cumulative_volumes
+        return vwap
+
+    def get_vwap2(self, df):
+        v = df['volume'].values
+        tp = df.wt2
+        return df.assign(vwap=(tp * v).cumsum() / v.cumsum())
+
+    def moneyflow(self):
+        self.tradex_logger.info('- getting the moneyflow')
+        period = 14
+
+        # Moneyflow
+        mfi = ta.mfi(self.data['high'], self.data['low'],
+                     self.data['close'], self.data['volume'])
+
+        hlc3 = ta.hlc3(self.data['high'], self.data['low'], self.data['close'])
+
+        volume = self.data['volume']
+
+        # Calculate mfi_upper and mfi_lower using rolling sum
+        change_hlc3 = np.where(np.diff(hlc3) <= 0, 0, hlc3[:-1])
+        mfi_upper = (volume[:-1] * change_hlc3).rolling(window=52).sum()
+        mfi_lower = (volume[:-1] * np.where(np.diff(hlc3) >=
+                     0, 0, hlc3[:-1])).rolling(window=52).sum()
+
+        # Calculate the Money Flow Index (MFI)
+        self.mfi_sum = self._mfi_rsi(mfi_upper, mfi_lower)
+
+        return mfi
+
+    def _mfi_rsi(self, mfi_upper, mfi_lower):
+        # Use boolean indexing to compare element-wise
+        result = 100.0 - 100.0 / (1.0 + mfi_upper / mfi_lower)
+
+        # Modify the result based on conditions
+        result[mfi_lower == 0.1] = 100
+        result[mfi_upper == 0.1] = 0
+
         return result
 
-    def create_signals_with_threading(self) -> None:
-        print("Creating signals using multithreading")
-        
-        # Creating a list of threads
-        t = threading.Thread(target=self.create_signals, daemon=True)
-        t.start()
-        t.join()
+    def dots(self):
+        self.tradex_logger.info('- getting the dots')
 
-    def create_signals(self) -> None:
+        df = self.data
+
+        # gets blue wave and ligth blue wave
+        wt1, wt2 = self.waves(df)
+
+        # get the green and red dot
+
+        # 1m
+        green_dot = np.where(ta.cross(wt1, wt2), 1, 0)
+        dots = np.where(ta.cross(wt2, wt1), -1, green_dot)
+
+        return dots
+
+    def __str__(self):
+        return 'screener'
+
+
+class Real_time:
+    '''
+    REAL TIME: the fastes way to get market updates
+
+    '''
+
+    def __init__(self, data, tradex_logger):
+        self.tradex_logger = tradex_logger
+        self.data = data
+        self.df_real_time = pd.DataFrame()
+        self.get_real_time()
+
+    # TRADE-X SCREENER
+    def get_real_time(self) -> pd.DataFrame:
+
+        self.tradex_logger.info('init trade-x Real time')
+
+        # light blue and blue waves
+        wt1, wt2 = self.waves(self.data)
+
+        # space between
+        space_waves = self.waves_space()
+
+        # dots from multiple time frames
+        dots = self.dots()
+
+        # adding the data to the real time DataFrame
+        self.df_real_time['b_wave'] = wt2
+        self.df_real_time['l_wave'] = wt1
+        self.df_real_time['wave_space'] = space_waves
+
+        # dots
+        self.df_real_time['dots'] = dots
+
+        # adding the data to the general dataframe
+        self.data['b_wave'] = self.df_real_time.b_wave
+        self.data['l_wave'] = self.df_real_time.l_wave
+        self.data['wave_space'] = self.df_real_time.wave_space
+
+        return self.df_real_time
+
+    def waves(self, data):
+        self.tradex_logger.info('- setting up the waves')
+
+        n1 = 10  # channel length
+        n2 = 21  # Average Length
+
+        ap = ta.hlc3(data['high'], data['low'], data['close'])
+        esa = ta.ema(ap, n1)
+        d = ta.ema(abs(ap - esa), n1)
+        ci = (ap - esa) / (0.015 * d)
+        tci = ta.ema(ci, n2)
+
+        # Light blue Waves
+        wt1 = tci
+        # blue Waves
+        wt2 = ta.sma(wt1, 4)
+
+        return wt1, wt2
+
+    def dots(self):
+        self.tradex_logger.info('- getting the dots')
+
+        wt1, wt2 = self.waves(self.data)
+
+        # get the green and red dot
+
+        # 1m
+        green_dot = np.where(ta.cross(wt1, wt2), 1, 0)
+        dots = np.where(ta.cross(wt2, wt1), -1, green_dot)
+
+        return dots
+
+    def waves_space(self):
+        self.tradex_logger.info('- setting up wave spaces')
+
+        # get the waves
+        wt1, wt2 = self.waves(self.data)
+
+        # get the space in between the two (when is there a dot comming)
+        space_between = wt1 - wt2
+
+        return space_between
+
+    def __str__(self):
+        return 'real_time'
+
+
+class Scanner:
+    '''
+    SCANNER: scan the market for traps and trends
+    '''
+
+    def __init__(self, data, tradex_logger):
+        self.tradex_logger = tradex_logger
+        self.data = data
+        self.df_scanner = pd.DataFrame()
+        self.get_scanner()
+
+    def get_scanner(self) -> pd.DataFrame:
+
+        self.tradex_logger.info('init trade-x scanner')
+        # the rsi 14 and 40
+        rsi14, rsi40 = self.rsis()
+
+        # adding the data to scanner dataframe
+        self.df_scanner['rsi14'] = rsi14
+        self.df_scanner['rsi40'] = rsi40
+
+        # adding the data to the general dataframe
+        self.data['rsi14'] = self.df_scanner.rsi14
+        self.data['rsi40'] = self.df_scanner.rsi40
+
+        return self.df_scanner
+
+    def rsis(self):
+        self.tradex_logger.info("- setting up the rsi's")
+
+        # make the rsi's
+        rsi14 = ta.rsi(self.data['close'], 14)
+        rsi40 = ta.rsi(self.data['close'], 40)
+        # rsi14.fillna(inplace=True, value=0)
+        # rsi40.fillna(inplace=True, value=0)
+
+        return rsi14, rsi40
+
+    def divergences(self):
+        pass
+
+    def __str__(self):
+        return 'scanner'
+
+
+'''
+def create_signals(self) -> None:
         
-        print('creating the signals from trade-x')
+        self.tradex_logger.info('creating the signals from trade-x')
         
         df10 = self.changeTime(self.data, '10min')
         df30 = self.changeTime(self.data, '30min')
@@ -276,366 +719,5 @@ class Tradex_indicator:
         
         #SC
     
-        
 
-
-
-class Trend:
-    '''
-    TREND: visueel beeld van de market trend
-    '''
-    def __init__(self, data) -> None:
-        self.data = data
-        self.df_trend = pd.DataFrame()
-        self.get_trend()
-        
-    # TRADE - X TREND
-    
-    def get_trend(self) -> pd.DataFrame:
-        print('init trade-x trend')
-        
-        #EMA channel 
-        ema55H, ema55L = self.hlChannel()
-        
-        #EMA trend lines
-        ema_200, ema_100 = self.ema()
-        
-        
-        #lsma and ema 
-        lsma, ema_10 = self.lsma_()
-        
-        #vwap and wma
-        vwap, wma = self.vwap_()
-        
-        #adding the data to the trend dataframe
-        
-        self.df_trend['ema55H'] = ema55H
-        self.df_trend['ema55L'] = ema55L
-        self.df_trend['ema_100'] = ema_100
-        self.df_trend['ema_200'] = ema_200
-        self.df_trend['lsma'] = lsma
-        self.df_trend['ema_10'] = ema_10
-        self.df_trend['vwap'] = vwap
-        self.df_trend['wma'] = wma
-    
-        #adding the data to the general dataframe
-        self.data['ema55H'] = self.df_trend.ema55H
-        self.data['ema55L'] = self.df_trend.ema55L
-        self.data['ema_100'] =self.df_trend.ema_100
-        self.data['ema_200'] = self.df_trend.ema_200
-        self.data['lsma'] = self.df_trend.lsma
-        self.data['ema_10'] = self.df_trend.ema_10
-        # self.data['vwap'] = trend.vwap
-        # self.data['wma'] = trend.wma
-        
-        return self.df_trend
-
-    def hlChannel(self):
-        print('- setting up High|Low channel')
-
-        #create the 55 ema channel
-        ema55H = ta.ema(self.data['high'], 55)
-        ema55L = ta.ema(self.data['low'], 55)
-
-        return ema55H, ema55L
-
-
-    def ema(self):
-        print('- setting up EMA')
-        
-
-        # create the ema trend
-        ema_200 = ta.ema(self.data['close'], 200)
-        ema_100 = ta.ema(self.data['close'], 100)
-
-        return ema_200, ema_100
-
-    def lsma_(self):
-        print('- setting up LSMA')
-        
-        lsma = ta.linreg(self.data['low'], 20, 8)
-        ema_10 = ta.ema(self.data['close'], 10)
-
-        return lsma, ema_10
-
-
-    def vwap_(self):
-        print('- setting up VWAP')
-        
-        vwma = ta.vwma(self.data['close'], self.data['volume'], 14)
-        wma = ta.wma(vwma, 21)
-        vwap = self.get_tv_vwap(wma, self.data)
-        # Calculate the VWAP using the "price" and "volume" columns
-        # vwap = (df["price"] * df["volume"]).sum() / df["volume"].sum()
-
-        return vwap, wma
-
-    def get_tv_vwap(self,source, data):
-        typical_price = np.divide(source, 1)
-        typical_price_volume = np.multiply(typical_price, data['volume'])
-        cumulative_typical_price_volume = np.cumsum(typical_price_volume.values)
-        cumulative_volume = np.cumsum(data['volume'].values)
-        vwap = np.divide(cumulative_typical_price_volume[47:], cumulative_volume[47:])
-        vwap = vwap[:-1]
-        data['vwap'] = np.concatenate([np.full((48,), np.nan), vwap])
-        return data['vwap']
-
-
-    def __str__(self):
-        return 'trend'
-
-class Screener:
-    '''
-
-    SCREENER: be a market maker
-    '''
-    def __init__(self, data):
-        self.data = data
-        self.df_screener = pd.DataFrame()
-        self.get_screener()
-        
-
-    def get_screener(self):
-        print('init trade-x screener')
-        wma, vwap = self.waves(self.data)
-        
-        #moneyflow
-        mfi = self.moneyflow()
-        
-        #adding the data to the screener DataFrame
-        #dots
-        dots = self.dots()
-        self.df_screener['s_wma'] = wma
-        self.df_screener['s_vwap'] = vwap
-        self.df_screener['dots'] = dots
-        
-        self.df_screener['mfi'] = mfi
-        # self.df_screener['mfi_sum'] = pd.Series(self.mfi_sum)
-        
-        
-        #adding the data to the general dataframe
-        self.data['mfi'] = self.df_screener.mfi
-        
-        # self.data['mfi_sum'] =  self.df_screener.mfi_sum
-        self.data['s_wma'] = self.df_screener.s_wma
-        self.data['s_vwap'] = self.df_screener.s_vwap
-        
-        return self.df_screener
-    
-    def waves(self, df):
-        print('- make the waves')
-       
-        n1 = 70 
-        n2 = 55
-
-        ap = ta.hlc3(df.high, df.low, df.close)
-        esa = ta.vwma(ap, df.volume, n1)
-        d = ta.ema(abs(ap - esa), n1)
-        ci = (ap - esa) / (0.030 * d)
-        tci = ta.wma(ci, n2) #, talib=True
-        wt1 = tci
-        v = ta.ema(wt1, 4)
-
-        df_temp = pd.DataFrame()
-        df_temp = df
-        df_temp['wt2'] = v
-        df_temp['volume'] = df.volume
-        df_temp['s_vwap'] = self.get_tv_vwap(df_temp)
-        df_temp['s_wma'] = wt1
-        
-        return df_temp['s_wma'] ,df_temp['s_vwap']
-    
-    def get_tv_vwap(self,data):
-        data['typicalPrice'] = np.divide(data.wt2,1)
-        data['typicalPriceVolume'] = np.multiply(data['typicalPrice'], data['volume'])
-        cumulative_typical_price_volume = np.cumsum(data['typicalPriceVolume'].values)
-        cumulative_volume = np.cumsum(data['volume'].values)
-        vwap = np.divide(cumulative_typical_price_volume[47:], cumulative_volume[47:])
-        vwap = vwap[:-1]
-        data['vwap'] = np.concatenate([np.full((48,), np.nan), vwap])
-        return data['vwap']
-    
-    def get_vwap2(self,df):
-        v = df['volume'].values
-        tp = df.wt2
-        return df.assign(vwap=(tp * v).cumsum() / v.cumsum())
-        
-    def moneyflow(self):
-        print('- getting the moneyflow')
-        
-        # Moneyflow
-        mfi = ta.mfi(self.data['high'], self.data['low'], self.data['close'], self.data['volume'])
-
-        #Money flow
-        ap = ta.hlc3(self.data['high'], self.data['low'], self.data['close'])
-        typical_price = ap
-        period = 14
-
-        money_flow = typical_price * self.data['volume']
-
-        # Get all of the positive and negative money flows
-        positive_flow = money_flow.where(typical_price > typical_price.shift(), 0)
-        negative_flow = money_flow.where(typical_price < typical_price.shift(), 0)
-
-        # Get all of the positive and negative money flows within the time period
-        positive_mf = positive_flow.rolling(period).sum()
-        negative_mf = negative_flow.rolling(period).sum()
-
-        self.mfi_sum = 100 * (positive_mf / (positive_mf + negative_mf))
-
-        return mfi
-
-    def dots(self):
-        print('- getting the dots')
-        
-
-        df = self.data
-        
-        #gets blue wave and ligth blue wave
-        wt1, wt2 = self.waves(df)
-       
-        #get the green and red dot
-
-        #1m
-        green_dot = np.where(ta.cross(wt1, wt2), 1, 0)
-        dots = np.where(ta.cross(wt2, wt1), -1, green_dot)
-
-
-        return dots
-    
-    def __str__(self):
-        return 'screener'
-
-class Real_time:
-    '''
-    REAL TIME: the fastes way to get market updates
-
-    '''
-    
-    def __init__(self, data):
-        self.data = data
-        self.df_real_time = pd.DataFrame()
-        self.get_real_time()
-    
-    # TRADE-X SCREENER
-    def get_real_time(self):
-        
-        print('init trade-x Real time')
-        
-        # light blue and blue waves
-        wt1, wt2 = self.waves(self.data)
-        
-        #space between
-        space_waves = self.waves_space()
-        
-        #dots from multiple time frames
-        dots = self.dots()
-        
-        #adding the data to the real time DataFrame
-        self.df_real_time['b_wave'] = wt2
-        self.df_real_time['l_wave'] = wt1
-        self.df_real_time['wave_space'] = space_waves
-        
-        #dots
-        self.df_real_time['dots'] = dots
-        
-        #adding the data to the general dataframe
-        self.data['b_wave'] = self.df_real_time.b_wave
-        self.data['l_wave'] = self.df_real_time.l_wave
-        self.data['wave_space'] = self.df_real_time.wave_space
-        
-        return self.df_real_time
-      
-
-    def waves(self, data):
-        print('- setting up the waves')
-        
-        n1 = 10  # channel length
-        n2 = 21  # Average Length
-
-        ap = ta.hlc3(data['high'], data['low'], data['close'])
-        esa = ta.ema(ap, n1)
-        d = ta.ema(abs(ap - esa), n1)
-        ci = (ap - esa) / (0.015 * d)
-        tci = ta.ema(ci, n2)
-
-
-        #Light blue Waves
-        wt1 = tci
-        #blue Waves
-        wt2 = ta.sma(wt1, 4)
-
-        return wt1, wt2
-    
-    def dots(self):
-        print('- getting the dots')
-        
-        wt1, wt2 = self.waves(self.data)
-
-        #get the green and red dot
-
-        #1m
-        green_dot = np.where(ta.cross(wt1, wt2), 1, 0)
-        dots = np.where(ta.cross(wt2, wt1), -1, green_dot)
-
-        return dots
-    
-    def waves_space(self):
-        print('- setting up wave spaces')
-        
-        #get the waves
-        wt1,wt2 = self.waves(self.data)
-
-        #get the space in between the two (when is there a dot comming)
-        space_between = wt1 - wt2
-
-        return space_between
-    
-    def __str__(self):
-        return 'real_time'
-
-
-    
-class Scanner:
-    '''
-    SCANNER: scan the market for traps and trends
-    '''
-    
-    def __init__(self, data):
-        self.data = data
-        self.df_scanner = pd.DataFrame()
-        self.get_scanner()
-        
-    def get_scanner(self):
-        
-        print('init trade-x scanner')
-        #the rsi 14 and 40
-        rsi14, rsi40 = self.rsis()
-        
-        #adding the data to scanner dataframe
-        self.df_scanner['rsi14'] = rsi14
-        self.df_scanner['rsi40']= rsi40
-        
-        
-        #adding the data to the general dataframe
-        self.data['rsi14'] = self.df_scanner.rsi14
-        self.data['rsi40'] = self.df_scanner.rsi40
-        
-        return self.df_scanner
-    
-    def rsis(self):
-        print("- setting up the rsi's")
-        
-        #make the rsi's
-        rsi14 = ta.rsi(self.data['close'], 14)
-        rsi40 = ta.rsi(self.data['close'], 40)
-        # rsi14.fillna(inplace=True, value=0)
-        # rsi40.fillna(inplace=True, value=0)
-
-        return rsi14, rsi40
-
-    def divergences(self):
-        pass
-
-    def __str__(self):
-        return 'scanner'
+'''

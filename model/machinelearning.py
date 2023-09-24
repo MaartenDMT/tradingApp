@@ -5,22 +5,14 @@ import joblib
 import numpy as np
 import pandas as pd
 import pandas_ta as ta
-from sklearn.ensemble import (GradientBoostingClassifier, IsolationForest,
-                              RandomForestClassifier)
-from sklearn.linear_model import LinearRegression, LogisticRegression
-from sklearn.metrics import accuracy_score, r2_score
+from sklearn.metrics import accuracy_score, make_scorer, r2_score
 from sklearn.model_selection import (GridSearchCV, RandomizedSearchCV,
                                      train_test_split)
-from sklearn.naive_bayes import GaussianNB
-from sklearn.neighbors import RadiusNeighborsClassifier
-from sklearn.neural_network import MLPClassifier
 from sklearn.preprocessing import LabelEncoder, StandardScaler
-from sklearn.svm import SVC, SVR
-from sklearn.tree import DecisionTreeClassifier, ExtraTreeClassifier
 from sklearn.utils import column_or_1d
 from skopt import BayesSearchCV
-from xgboost import XGBClassifier
 
+from util.ml_models import get_model
 from util.utils import array_min2d
 
 
@@ -29,42 +21,43 @@ class MachineLearning:
         self.exchange = exchange
         self.symbol = symbol
         self.logger = logger
-    
-    def predict(self, model, t='1m', symbol='BTC/USDT') -> int:
-        #TODO: ta.macd problem with the return wants to give 3 but you need only one
-        
+
+    def predict(self, model, t='30m', symbol='BTC/USDT') -> int:
+        # TODO: ta.macd problem with the return wants to give 3 but you need only one
+
         # Fetch the current data for the symbol
         data = self.exchange.fetch_ohlcv(symbol, timeframe=t, limit=100)
-        df = pd.DataFrame(data, columns=['date', 'open', 'high', 'low', 'close', 'volume'])
+        df = pd.DataFrame(
+            data, columns=['date', 'open', 'high', 'low', 'close', 'volume'])
         df = df[['open', 'high', 'low', 'close', 'volume']].astype(float)
         data = np.array(df)
-        
+
         # Calculate the technical indicators
         df['rsi'] = ta.rsi(df.close)
         df['moving_average'] = ta.sma(df.close, length=50)
-        
+
         # Create the features array
-        features = np.column_stack((df.rsi.fillna(0), df.moving_average.fillna(0), df.open.fillna(0), df.high.fillna(0), df.low.fillna(0), df.volume.fillna(0)))
-        
+        features = np.column_stack((df.rsi.fillna(0), df.moving_average.fillna(
+            0), df.open.fillna(0), df.high.fillna(0), df.low.fillna(0), df.volume.fillna(0)))
+
         # Make a prediction using the model
         prediction = model.predict(features[-1].reshape(1, -1))[0]
-        
+
         return prediction
-  
 
     def evaluate_model(self, name, model, X_test, y_test):
         # Make predictions on the test data
         y_pred = model.predict(X_test)
-        
+
         if name in ['Linear Regression', 'SVR']:
             accuracy = r2_score(y_test, y_pred)
         else:
             # Calculate the accuracy of the model
             accuracy = accuracy_score(y_test, y_pred)
-        
+
         # Print the accuracy of the model
         print(f"Accuracy: {accuracy} of model: {model}")
-        
+
         # Return the accuracy of the model
         return accuracy
 
@@ -72,8 +65,9 @@ class MachineLearning:
         # Save the model if it has high accuracy
         path = r'data/ml/'
         if accuracy > 0.7:
-            joblib.dump(model.best_estimator_, f'{path}trained_{model.best_estimator_.__class__.__name__}-{accuracy}.pkl')
-            
+            joblib.dump(model.best_estimator_,
+                        f'{path}trained_{model.best_estimator_.__class__.__name__}-{accuracy}.pkl')
+
     def load_model(self, filename):
         path = r'data/ml/'
         file = f'{path}{filename}'
@@ -87,95 +81,101 @@ class MachineLearning:
 
         return model
 
-
-
-    def train_evaluate_and_save_model(self, model:str):
-        # Fetch the historical data for the symbol
-        data = self.exchange.fetch_ohlcv(self.symbol, timeframe='1m', limit=500)
-        df = pd.DataFrame(data, columns=['date','open', 'high', 'low', 'close', 'volume'])
-        df = df[['open', 'high', 'low', 'close', 'volume']].astype(float)
-        # Calculate the technical indicators
+    def process_features(self, df):
         rsi = ta.rsi(df.close)
         moving_average = ta.sma(df.close, length=50)
-        # Create the features array
-        features = np.column_stack((rsi.fillna(0), moving_average.fillna(0), df.open.fillna(0), df.high.fillna(0), df.low.fillna(0), df.volume.fillna(0)))
-        
-        if model in ["SVC", "Random Forest Classifier", "Random Forest Classifier", 
-                     "Extra Tree Classifier", "Logistic Regression", "MLPClassifier", 
-                     "Gradient Boosting Classifier"]:
-            
-            #TODO: bins are not probably set 
-            # Divide labels into three categories: low, medium, and high
-            labels = ['low', 'medium','high']
-            df['label_category'] = pd.qcut(df['close'].astype(float), q=5, labels=labels, duplicates='drop')
-            self.logger.info(df['label_category'])
-            # Create labels using the label categories
-            labels = df['label_category']
+        return np.column_stack((
+            rsi.fillna(0), moving_average.fillna(0),
+            df.open.fillna(0), df.high.fillna(0),
+            df.low.fillna(0), df.volume.fillna(0)
+        ))
+
+    def process_labels(self, df, model):
+        if model in ["SVC", "Random Forest Classifier", "Extra Tree Classifier",
+                     "Logistic Regression", "MLPClassifier", "Gradient Boosting Classifier"]:
+            # Shift closing prices by -2 to compare with the price two candles ahead
+            df['future_close'] = df['close'].shift(-2)
+            df['label'] = (df['future_close'] > df['close']).astype(int)
+            self.logger.info(df['label'])
+            return df['label']
         else:
-            labels = df['close']
+            return df['close']
 
-        # Initialize the scaler
+    def train_evaluate_and_save_model(self, model: str):
+        # Fetch and preprocess data
+        data = self.exchange.fetch_ohlcv(
+            self.symbol, timeframe='1m', limit=5_000)
+        df = pd.DataFrame(
+            data, columns=['date', 'open', 'high', 'low', 'close', 'volume'])
+        df = df[['open', 'high', 'low', 'close', 'volume']].astype(float)
+
+        features = self.process_features(df)
+        labels = self.process_labels(df, model)
+
+        # Drop the last two rows as they won't have valid labels
+        features = features[:-2]
+        labels = labels[:-2]
+
+        # Scale features and labels
         scaler = StandardScaler()
-        scaler.fit(features)
-        features_scaled = scaler.transform(features)
-        
+        features_scaled = scaler.fit_transform(features)
+
         label_scaler = LabelEncoder()
-        label_scaler.fit(labels)
+        labels_scaled = label_scaler.fit_transform(labels)
 
-        labels_scaled = label_scaler.transform(labels)
-        
-        # Split the data into training and test sets
-        X_train, X_test, y_train, y_test = train_test_split(features_scaled, labels_scaled, test_size=0.2)
-        
+        # Split data
+        X_train, X_test, y_train, y_test = train_test_split(
+            features_scaled, labels_scaled, test_size=0.2)
 
-        if model in ["Random Forest Classifier","Gradient Boosting Classifier","SVC", 
-                     "Logistic Regression","Decision Tree Classifier","MLPClassifier",
-                     "SVR", "Extra Tree Classifier", "XGBoost Classifier", 
-                     "Linear Regression", "Radius Neighbors Classifier"]:
-            
+        models_needing_1d = ["Random Forest Classifier", "Gradient Boosting Classifier", "SVC",
+                             "Logistic Regression", "Decision Tree Classifier", "MLPClassifier",
+                             "SVR", "Extra Tree Classifier", "XGBoost Classifier",
+                             "Linear Regression", "Radius Neighbors Classifier"]
+
+        if model in models_needing_1d:
             y_train = column_or_1d(y_train, warn=True)
             y_test = column_or_1d(y_test, warn=True)
-                
         else:
             y_train = array_min2d(y_train)
             y_test = array_min2d(y_test)
-            
-        # Train the model
+
+        # # MLPCLASSEFIER
+        # if model == "MLPClassifier":
+        #     X_train = np.asarray(X_train, dtype=object)
+
+        # Train, evaluate, and save the model
         trainer = MLModelTrainer(model, self.logger)
         trained_model = trainer.train(X_train, y_train)
-            
-        # Evaluate the model
-        accuracy = self.evaluate_model(model , trained_model, X_test, y_test)
 
-        
-        #save the model
-        self.save_model(trained_model,accuracy)
-        self.logger.info(f"the {model} model has been trained evaluated {accuracy} and saved selected")
-        
-        
+        accuracy = self.evaluate_model(model, trained_model, X_test, y_test)
+
+        self.save_model(trained_model, accuracy)
+        self.logger.info(
+            f"The {model} model has been trained, evaluated {accuracy}, and saved.")
+
         return trained_model
-      
-    def selected_labels_features_train(self, model:str, X, y):
+
+    def selected_labels_features_train(self, model: str, X, y):
         trainer = MLModelTrainer(model, self.logger)
         trained_model = trainer.train(X, y)
-        
+
         return trained_model
-    
-    def train_evaluate_and_save_model_thread(self, model:str) -> None:
-        # Create a new thread
-        t = threading.Thread(target=self.train_evaluate_and_save_model, args=(model,))
-        t.setDaemon(True)
-        # Start the thread
-        t.start()
-        
 
-    def selected_labels_features_train_thread(self, model:str, X, y)-> None:
+    def train_evaluate_and_save_model_thread(self, model: str) -> None:
         # Create a new thread
-        t = threading.Thread(target=self.selected_labels_features_train, args=(model,X,y,))
+        t = threading.Thread(
+            target=self.train_evaluate_and_save_model, args=(model,))
         t.setDaemon(True)
         # Start the thread
         t.start()
 
+    def selected_labels_features_train_thread(self, model: str, X, y) -> None:
+        # Create a new thread
+        t = threading.Thread(
+            target=self.selected_labels_features_train, args=(model, X, y,))
+        t.setDaemon(True)
+        # Start the thread
+        t.start()
 
 
 class MLModelTrainer:
@@ -184,141 +184,81 @@ class MLModelTrainer:
         self.logger = logger
 
     def train(self, X, y):
-        if self.algorithm == "Linear Regression":
-            model = LinearRegression()
-            parameters = {
-                "fit_intercept": [True, False],
-                "copy_X": [True, False],
-                "n_jobs": [-1, 1]
-            }
-        elif self.algorithm == "Logistic Regression":
-            model = LogisticRegression()
-            parameters = {
-                "penalty": ["l2"],
-                "C": [0.1, 1.0, 10.0],
-                "solver": ["newton-cg", "lbfgs", "liblinear", "sag", "saga"],
-                "max_iter": [300, 400, 500, 600]
-            }
-        elif self.algorithm == "MLPClassifier":
-            model = MLPClassifier()
-            parameters = {
-                "hidden_layer_sizes": [(10,), (20,), (10, 10)],
-                "alpha": [0.1, 1.0, 10.0],
-                "solver": ["sgd", "adam", "lbfgs"],
-                "learning_rate_init": [0.001, 0.01, 0.1],
-                "momentum": [0.9, 0.95, 0.99],
-            }
-        elif self.algorithm == "Decision Tree Classifier":
-            model = DecisionTreeClassifier()
-            parameters = {
-                "max_depth": [3, 5, 10],
-                "min_samples_split": [2, 5, 10],
-                "min_samples_leaf": [1, 2, 3, 4, 5],
-                "criterion": ["gini", "entropy"]
-            }
-        elif self.algorithm == "Random Forest Classifier":
-            model = RandomForestClassifier()
-            parameters = {
-                "n_estimators": [10, 50, 100, 200, 300],
-                "max_depth": [2, 4, 6, 8, 10],
-                "min_samples_split": [2, 4, 6, 8, 10],
-                "min_samples_leaf": [1, 2, 3, 4, 5],
-                "criterion": ["gini", "entropy"]
-            }
-        elif self.algorithm == "SVC":
-                model = SVC()
-                parameters = {
-                    "C": [0.1, 1.0, 10.0],
-                    "kernel": ["linear", "poly", "rbf", "sigmoid"],
-                    "degree": [2, 3, 4, 5],
-                    "gamma": ["auto", "scale"]
-            }
-        elif self.algorithm == "SVR":
-            model = SVR()
-            parameters = {
-                "C": [0.1, 1.0, 10.0],
-                "kernel": ["linear", "poly", "rbf", "sigmoid"],
-                "degree": [2, 3, 4, 5],
-                "gamma": ["auto", "scale"]
-            }
-        elif self.algorithm == "Isolation Forest":
-            model = IsolationForest()
-            parameters = {
-                "n_estimators": [10, 50, 100, 200, 300],
-                "max_samples": ["auto", "None"],
-                "contamination": [0.1, 0.2, 0.3, 0.4, 0.5]
-            }
-        elif self.algorithm == "Gradient Boosting Classifier":
-            model = GradientBoostingClassifier()
-            parameters = {
-                "loss": ["deviance", "exponential"],
-                "learning_rate": [0.1, 0.01, 0.001],
-                "n_estimators": [10, 50, 100, 200, 300],
-                "max_depth": [2, 4, 6, 8, 10]
-            }
-        elif self.algorithm == "Extra Tree Classifier":
-            model = ExtraTreeClassifier ()
-            parameters = {
-                "max_depth": [2, 4, 6, 8, 10],
-                "min_samples_split": [2, 4, 6, 8, 10],
-                "min_samples_leaf": [1, 2, 3, 4, 5],
-                "criterion": ["gini", "entropy"]
-            }
-        elif self.algorithm == "XGBoost Classifier":
-            model = XGBClassifier()
-            parameters = {
-                "max_depth": [2, 4, 6, 8, 10],
-                "eta": [0.1,0.2,0.3,0.4,0.5],
-                "objective": ["binary:logistic","multi:softmax"],
-                "num_class": [1,2,3,4]
-            }
-        # TODO: refactor the errors 
-        elif self.algorithm == "Gaussian Naive Bayes":
-            model = GaussianNB()
-            parameters = {
-                'priors': [None, [0.1, 0.9], [0.2, 0.8]],
-                'var_smoothing': [1e-9, 1e-8, 1e-7]
-            }
-        elif self.algorithm == "Radius Neighbors Classifier":
-            model = RadiusNeighborsClassifier()
-            parameters = {
-                'radius': [1, 2, 3, 4, 5,6,7,8,9,10],
-                'weights': ['uniform', 'distance'],
-                'algorithm': ['auto', 'ball_tree', 'kd_tree', 'brute'],
-                'leaf_size': [30, 40, 50],
-                'p': [1, 2],
-                'outlier_label': ['outliners']
-            }
-        else:
-            raise ValueError("Invalid algorithm: {}".format(self.algorithm))
-            
-        best_estimator = self.parallelize_search(model, parameters, X, y)
-            
+
+        model, parameters = get_model(self.algorithm)
+
+        # Create a scorer from the custom scoring function
+        monetary_scorer = make_scorer(
+            self.monetary_score, greater_is_better=True)
+
+        best_estimator = self.parallelize_search(
+            model, parameters, X, y, monetary_scorer)
+
         best_params = best_estimator.best_params_
         best_f1_score = best_estimator.best_score_
 
         # print the best parameters and best score
-        self.logger.info(f"the custom: parallelize search best params are {best_params}")
-        self.logger.info(f"the custom: parallelize search best score is {best_f1_score}")
-        self.logger.info(f"the custom: parallelize search best estimator is {best_estimator}")
+        self.logger.info(
+            f"the custom: parallelize search best params are {best_params}")
+        self.logger.info(
+            f"the custom: parallelize search best score is {best_f1_score}")
+        self.logger.info(
+            f"the custom: parallelize search best estimator is {best_estimator}")
 
         # return the best model
         return best_estimator
 
-    def parallelize_search(self, estimator, param_grid, X, y):
-        grid_search_estimator = GridSearchCV(estimator, param_grid, cv=5)
-        random_search_estimator = RandomizedSearchCV(estimator, param_grid, cv=5)
-        bayes_search_estimator = BayesSearchCV(estimator, param_grid, cv=5)
-        
+    @staticmethod
+    def monetary_score(y_true, y_pred):
+        total_return = 0
+        holding_stock = False
+        buy_price = 0
+
+        # Check the lengths of y_true and y_pred and adjust if necessary
+        length_to_iterate = min(len(y_pred), len(y_true) - 2)
+        if length_to_iterate < len(y_pred):
+            # Log a warning or adjust as necessary
+            ...
+
+        # Iterate only up to the length where we have enough future data
+        for i in range(length_to_iterate):
+            if holding_stock:
+                # Sell the stock after two candles and calculate the return
+                total_return += y_true[i + 2] - buy_price
+                holding_stock = False
+
+            if y_pred[i] == 1:  # Assuming 1 is a signal to buy, and 0 is a signal to hold/sell
+                buy_price = y_true[i]
+                holding_stock = True
+
+        # Check if we are holding any stock at the end
+        if holding_stock:
+            total_return += y_true[-1] - buy_price
+
+        return total_return
+
+    def parallelize_search(self, estimator, param_grid, X, y, scorer):
+        grid_search_estimator = GridSearchCV(
+            estimator, param_grid, cv=5, scoring=scorer)
+        random_search_estimator = RandomizedSearchCV(
+            estimator, param_grid, cv=5, scoring=scorer)
+        bayes_search_estimator = BayesSearchCV(
+            estimator, param_grid, cv=5, scoring=scorer)
+
         with ThreadPoolExecutor() as executor:
-            grid_search = executor.submit(grid_search_estimator.fit, X, y)
-            random_search = executor.submit(random_search_estimator.fit, X, y)
-            bayes_search = executor.submit(bayes_search_estimator.fit, X, y)
-        
-            results = [result.result() for result in as_completed([grid_search, random_search, bayes_search])]
-       
-        best_estimator = max(results, key=lambda x: x.best_score_ if isinstance(x, (GridSearchCV, RandomizedSearchCV, BayesSearchCV)) else x.best_score)
-        
-        print(best_estimator)
-        
+            grid_search = executor.submit(
+                grid_search_estimator.fit, X, y)
+            random_search = executor.submit(
+                random_search_estimator.fit, X, y)
+            bayes_search = executor.submit(
+                bayes_search_estimator.fit, X, y)
+
+            results = [result.result() for result in as_completed(
+                [grid_search, random_search, bayes_search])]
+
+        best_estimator = max(results, key=lambda x: x.best_score_ if isinstance(
+            x, (GridSearchCV, RandomizedSearchCV, BayesSearchCV)) else x.best_score)
+
+        self.logger.info(best_estimator)
+
         return best_estimator
