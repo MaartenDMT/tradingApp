@@ -2,10 +2,16 @@ import re
 import time
 
 import util.loggers as loggers
+from util.ml_util import regression, classifier
 
 logger = loggers.setup_loggers()
 autobot_logger = logger['autobot']
+'''
+#TODO: Make when you start a bot, 
+that you automatically get data loaded, after the data is loaded.
+you make the
 
+'''
 
 class AutoBot:
     def __init__(self, exchange, symbol, amount, stop_loss, take_profit, model, time, ml, trade_x, logger) -> None:
@@ -49,10 +55,10 @@ class AutoBot:
     def start_auto_trading(self, event) -> None:
         self.auto_trade = event
 
-        if self.get_model_type(self.model) in ["classifier", "Isolation Forest", "SVC"]:
+        if self.get_model_type(self.model) in ["classifier"] or classifier:
             self._run_auto_trading_classifier()
 
-        elif self.get_model_type(self.model) in ["regression", "SVR"]:
+        elif self.get_model_type(self.model) in ["regression"] or regression:
             self._run_auto_trading_regression()
         else:
             self.logger.error("no model to use!")
@@ -68,12 +74,14 @@ class AutoBot:
             current_price = self.exchange.fetch_ticker(self.symbol)['last']
 
             # Use the model to predict the next price
-            prediction = self.ml.predict(self.model, self.time, self.symbol)
+            prediction = self.ml.predict(
+                self.model, self.time, self.symbol) - 1
+
             autobot_logger.info(
                 f"{self.exchange} exchange, the {self.model} predicted:{prediction}")
 
             # Use the trade_x to get the signal
-            trade_x_signal = self.trade_x.trade_x()
+            trade_x_signal = self.trade_x.run()
             autobot_logger.info(trade_x_signal)
 
             # Check if the prediction is above the take profit or below the stop loss

@@ -1,0 +1,19 @@
+2023-09-26 23:28:27 - tradex - INFO - Getting the data
+2023-09-26 23:43:18 - tradex - INFO - Getting the data
+2023-09-26 23:52:27 - tradex - INFO - Getting the data
+2023-09-26 23:53:07 - tradex - INFO - init trade-x trend
+2023-09-26 23:53:07 - tradex - INFO - - setting up High|Low channel
+2023-09-26 23:53:07 - tradex - INFO - init trade-x screener
+2023-09-26 23:53:07 - tradex - INFO - - setting up EMA
+2023-09-26 23:53:07 - tradex - INFO - init trade-x Real time
+2023-09-26 23:53:07 - tradex - INFO - - make the waves
+2023-09-26 23:53:07 - tradex - INFO - - setting up LSMA
+2023-09-26 23:53:07 - tradex - INFO - init trade-x scanner
+2023-09-26 23:53:07 - tradex - INFO - - setting up the waves
+2023-09-26 23:53:07 - tradex - INFO - - setting up VWAP
+2023-09-26 23:53:07 - tradex - INFO - - setting up the rsi's
+2023-09-26 23:53:07 - tradex - INFO - - setting up wave spaces
+2023-09-26 23:53:07 - tradex - INFO - - setting up the waves
+2023-09-26 23:53:07 - tradex - INFO - - getting the dots
+2023-09-26 23:53:07 - tradex - INFO - - setting up the waves
+2023-09-26 23:53:07 - tradex - ERROR - An unexpected error occurred during the analysis: inputs are all NaN

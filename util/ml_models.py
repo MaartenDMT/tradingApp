@@ -4,7 +4,6 @@ from sklearn.ensemble import (AdaBoostClassifier, GradientBoostingClassifier,
                               GradientBoostingRegressor, IsolationForest,
                               RandomForestClassifier)
 from sklearn.gaussian_process import GaussianProcessClassifier
-from sklearn.gaussian_process.kernels import RBF, Matern
 from sklearn.linear_model import (BayesianRidge, ElasticNet, Lasso,
                                   LinearRegression, LogisticRegression, Ridge,
                                   SGDClassifier, SGDRegressor)
@@ -101,7 +100,7 @@ def get_model(algorithm):
         parameters = {
             "loss": ["squared_loss", "huber", "epsilon_insensitive", "squared_epsilon_insensitive"],
             "penalty": ["l2", "l1", "elasticnet"],
-            "alpha": [0.0001, 0.001, 0.01],
+            "alpha": np.logspace(-3, -1, 4),
             "l1_ratio": [0.15, 0.3, 0.5],
             "learning_rate": ["constant", "optimal", "invscaling", "adaptive"],
             "eta0": [0.01, 0.1, 0.5],
@@ -124,9 +123,9 @@ def get_model(algorithm):
         parameters = {
             "activation": ['relu', 'identity', 'logistic', 'tanh'],
             "hidden_layer_sizes": [(10,), (20,), (10, 10)],
-            "alpha": [0.0001, 0.0002, 0.001],
+            "alpha": np.logspace(-3, 1, 4),
             "solver": ["sgd", "adam"],
-            "learning_rate_init": [0.001, 0.01, 0.1],
+            "learning_rate_init": np.logspace(-3, 1, 4),
             "momentum": [0.9, 0.95, 0.99],
             "max_iter": np.arange(500, 2000, 500)
         }
@@ -168,7 +167,7 @@ def get_model(algorithm):
     elif algorithm == "Gradient Boosting Classifier":
         model = GradientBoostingClassifier()
         parameters = {
-            "loss": ["deviance", "exponential"],
+            "loss": ["deviance"],
             "learning_rate": [0.1, 0.01, 0.001],
             "n_estimators": np.arange(100, 1000, 100),
             "max_depth": [3, 4, 6, 8, 10]
@@ -218,39 +217,48 @@ def get_model(algorithm):
         model = AdaBoostClassifier()
         parameters = {
             "n_estimators": np.arange(10, 310, 50),
-            "learning_rate": [0.01, 0.1, 1.0],
+            "learning_rate": np.logspace(-3, 1, 4),
             "algorithm": ["SAMME", "SAMME.R"]
         }
     elif algorithm == "Gradient Boosting Regressor":
         model = GradientBoostingRegressor()
         parameters = {
-            "loss": ["ls", "lad", "huber", "quantile"],
+            "loss": ["huber", "quantile"],
             "learning_rate": [0.01, 0.1, 0.2],
             "n_estimators": np.arange(10, 310, 50),
             "subsample": [1.0, 0.9, 0.8],
-            "criterion": ["friedman_mse", "mse", "mae"],
+            "criterion": ["friedman_mse", "squared_error", "absolute error"],
             "max_depth": [3, 5, 7],
         }
     elif algorithm == "Gaussian Process Classifier":
+        from sklearn.gaussian_process.kernels import RBF, Matern
         model = GaussianProcessClassifier()
+        Rbf_ = 1.0 * RBF(length_scale=1.0)
+        Mattern_ = 1.0 * Matern(length_scale=1.0)
         parameters = {
-            "kernel": ["RBF", "Matern"],
+            "kernel": [Rbf_, Mattern_],
             "n_restarts_optimizer": [0, 1, 2],
             "max_iter_predict": np.arange(100, 500, 100),
+            "optimizer": ["fmin_l_bfgs_b"],
+            "n_jobs": [-1],
+            "copy_X_train": [True, False],
+            "multi_class": ["one_vs_rest", "one_vs_one"],
+            # None for no seed, 42 for a specific seed
+            "random_state": [0, 10, 20, 50]
         }
     elif algorithm == "Quadratic Discriminant Analysis":
         model = QuadraticDiscriminantAnalysis()
         parameters = {
-            "reg_param": [0.0, 0.1, 0.2],
+            "reg_param": np.arange(0.0, 0.10, 0.1),
             "store_covariance": [True, False],
-            "tol": [0.0001, 0.001, 0.01],
+            "tol": np.logspace(-3, -1, 6),
         }
     elif algorithm == "SGD Classifier":
         model = SGDClassifier()
         parameters = {
             "loss": ["hinge", "log", "modified_huber", "squared_hinge", "perceptron"],
             "penalty": ["l2", "l1", "elasticnet"],
-            "alpha": [0.0001, 0.001, 0.01],
+            "alpha": np.logspace(-3, -1, 4),
             "l1_ratio": [0.15, 0.3, 0.5],
             "learning_rate": ["constant", "optimal", "invscaling", "adaptive"],
             "eta0": [0.01, 0.1, 0.5],

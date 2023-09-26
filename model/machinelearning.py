@@ -323,7 +323,7 @@ class MachineLearning:
         t.start()
 
     def load_pretrained_scaler(self):
-        return joblib.load('data/scaler.pkl')
+        return joblib.load('data/scaler/scaler.pkl')
 
 
 class MLModelTrainer:
@@ -389,6 +389,7 @@ class MLModelTrainer:
 
         results = []
         with ThreadPoolExecutor() as executor:
+            futures = []
             try:
                 grid_search = executor.submit(grid_search_estimator.fit, X, y)
                 random_search = executor.submit(
@@ -406,6 +407,10 @@ class MLModelTrainer:
             except Exception as e:
                 self.logger.error(
                     f"Exception occurred during model search: {e}")
+            finally:
+                for future in futures:
+                    if not future.done():
+                        future.cancel()
 
         if not results:
             raise ValueError("All searches failed!")

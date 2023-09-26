@@ -34,10 +34,10 @@ class Tradex_indicator:
         self.data = data if not get_data else self.get_data()
         if t is not None:
             self.changeTime(t)
-        self.trend = pd.DataFrame
-        self.screener = pd.DataFrame
-        self.real_time = pd.DataFrame
-        self.scanner = pd.DataFrame
+        self.trend = Trend
+        self.screener = Screener
+        self.real_time = Real_time
+        self.scanner = Scanner
 
     def get_data(self) -> pd.DataFrame:
         try:

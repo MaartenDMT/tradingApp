@@ -2777,3 +2777,731 @@ Name: label, Length: 924, dtype: int32
 923    0
 Name: label, Length: 924, dtype: int32
 2023-09-26 20:28:27 - model - ERROR - Exception occurred during model search: ExponentialLoss requires 2 classes; got 3 class(es)
+2023-09-26 20:31:58 - model - INFO - Starting loading the models
+2023-09-26 20:31:58 - model - INFO - loading the Main view model
+2023-09-26 20:31:58 - model - INFO - loading the Trade tab model
+2023-09-26 20:31:58 - model - INFO - loading the Exchange tab model
+2023-09-26 20:31:58 - model - INFO - loading the Bot tab model
+2023-09-26 20:31:58 - model - INFO - loading the Chart tab model
+2023-09-26 20:31:58 - model - INFO - Finished loading the models
+2023-09-26 20:32:11 - model - INFO - machine learning model Logistic Regression selected
+2023-09-26 20:32:11 - model - INFO - 0     -1
+1      1
+2     -1
+3      1
+4      1
+      ..
+919    0
+920    0
+921    0
+922    0
+923    0
+Name: label, Length: 924, dtype: int32
+2023-09-26 20:32:21 - model - INFO - machine learning model Random Forest Classifier selected
+2023-09-26 20:32:22 - model - INFO - 0     -1
+1      1
+2     -1
+3      1
+4      1
+      ..
+919    0
+920    0
+921    0
+922    0
+923    0
+Name: label, Length: 924, dtype: int32
+2023-09-26 20:32:26 - model - INFO - machine learning model MLPClassifier selected
+2023-09-26 20:32:26 - model - INFO - 0     -1
+1      1
+2     -1
+3      1
+4      1
+      ..
+919    0
+920    0
+921    0
+922    0
+923    0
+Name: label, Length: 924, dtype: int32
+2023-09-26 20:32:30 - model - ERROR - Exception occurred during model search: Not all points are within the bounds of the space.
+2023-09-26 20:34:21 - model - INFO - GridSearchCV(cv=5, estimator=LogisticRegression(),
+             param_grid={'C': array([  0.1,   1. ,  10. , 100. ]),
+                         'max_iter': array([1000, 1500]), 'penalty': ['l2'],
+                         'solver': ['newton-cg', 'lbfgs', 'liblinear', 'sag',
+                                    'saga'],
+                         'tol': array([0.001     , 0.00464159, 0.02154435, 0.1       ])},
+             scoring=make_scorer(<lambda>))
+2023-09-26 20:34:21 - model - INFO - Model training successful.
+2023-09-26 20:34:21 - model - INFO - the custom: parallelize search best params are {'C': 100.0, 'max_iter': 1000, 'penalty': 'l2', 'solver': 'lbfgs', 'tol': 0.1}
+2023-09-26 20:34:21 - model - INFO - the custom: parallelize search best score is 0.528
+2023-09-26 20:34:21 - model - INFO - the custom: parallelize search best estimator is GridSearchCV(cv=5, estimator=LogisticRegression(),
+             param_grid={'C': array([  0.1,   1. ,  10. , 100. ]),
+                         'max_iter': array([1000, 1500]), 'penalty': ['l2'],
+                         'solver': ['newton-cg', 'lbfgs', 'liblinear', 'sag',
+                                    'saga'],
+                         'tol': array([0.001     , 0.00464159, 0.02154435, 0.1       ])},
+             scoring=make_scorer(<lambda>))
+2023-09-26 20:34:21 - model - INFO - Accuracy: 0.4594594594594595
+2023-09-26 20:34:21 - model - INFO - AUC-ROC: Not Applicable
+2023-09-26 20:34:21 - model - INFO - Classification Report:
+              precision    recall  f1-score   support
+
+          -1       0.53      0.43      0.47        75
+           0       0.36      0.30      0.33        46
+           1       0.45      0.61      0.52        64
+
+    accuracy                           0.46       185
+   macro avg       0.45      0.45      0.44       185
+weighted avg       0.46      0.46      0.45       185
+
+2023-09-26 20:34:21 - model - INFO - The Logistic Regression model has been trained, evaluated 0.4594594594594595, and saved.
+2023-09-26 20:38:54 - model - INFO - machine learning model Decision Tree Classifier selected
+2023-09-26 20:38:54 - model - INFO - 0     -1
+1      1
+2     -1
+3      1
+4      1
+      ..
+919    0
+920    0
+921    0
+922    0
+923    0
+Name: label, Length: 924, dtype: int32
+2023-09-26 20:39:04 - model - INFO - machine learning model SVC selected
+2023-09-26 20:39:04 - model - INFO - 0     -1
+1      1
+2     -1
+3      1
+4      1
+      ..
+919    0
+920    0
+921    0
+922    0
+923    0
+Name: label, Length: 924, dtype: int32
+2023-09-26 20:41:12 - model - INFO - RandomizedSearchCV(cv=5, estimator=DecisionTreeClassifier(),
+                   param_distributions={'criterion': ['gini', 'entropy'],
+                                        'max_depth': [3, 5, 10],
+                                        'min_samples_leaf': [1, 2, 3, 4, 5],
+                                        'min_samples_split': [3, 5, 10]},
+                   scoring=make_scorer(<lambda>))
+2023-09-26 20:41:12 - model - INFO - Model training successful.
+2023-09-26 20:41:12 - model - INFO - the custom: parallelize search best params are {'min_samples_split': 5, 'min_samples_leaf': 2, 'max_depth': 5, 'criterion': 'gini'}
+2023-09-26 20:41:12 - model - INFO - the custom: parallelize search best score is 0.582
+2023-09-26 20:41:12 - model - INFO - the custom: parallelize search best estimator is RandomizedSearchCV(cv=5, estimator=DecisionTreeClassifier(),
+                   param_distributions={'criterion': ['gini', 'entropy'],
+                                        'max_depth': [3, 5, 10],
+                                        'min_samples_leaf': [1, 2, 3, 4, 5],
+                                        'min_samples_split': [3, 5, 10]},
+                   scoring=make_scorer(<lambda>))
+2023-09-26 20:41:12 - model - INFO - Accuracy: 0.42702702702702705
+2023-09-26 20:41:12 - model - INFO - AUC-ROC: Not Applicable
+2023-09-26 20:41:12 - model - INFO - Classification Report:
+              precision    recall  f1-score   support
+
+          -1       0.47      0.48      0.47        84
+           0       0.45      0.31      0.37        42
+           1       0.37      0.44      0.40        59
+
+    accuracy                           0.43       185
+   macro avg       0.43      0.41      0.41       185
+weighted avg       0.43      0.43      0.43       185
+
+2023-09-26 20:41:12 - model - INFO - The Decision Tree Classifier model has been trained, evaluated 0.42702702702702705, and saved.
+2023-09-26 20:41:54 - model - INFO - BayesSearchCV(cv=5, estimator=SVC(), scoring=make_scorer(<lambda>),
+              search_spaces={'C': [0.1, 1.0, 10.0],
+                             'cache_size': array([200, 300, 400]),
+                             'degree': [2, 3, 4, 5], 'gamma': ['auto', 'scale'],
+                             'kernel': ['linear', 'poly', 'rbf', 'sigmoid'],
+                             'tol': array([0.001     , 0.00464159, 0.02154435, 0.1       ])})
+2023-09-26 20:41:54 - model - INFO - Model training successful.
+2023-09-26 20:41:54 - model - INFO - the custom: parallelize search best params are OrderedDict([('C', 10.0), ('cache_size', 200), ('degree', 3), ('gamma', 'auto'), ('kernel', 'sigmoid'), ('tol', 0.021544346900318832)])
+2023-09-26 20:41:54 - model - INFO - the custom: parallelize search best score is 0.696
+2023-09-26 20:41:54 - model - INFO - the custom: parallelize search best estimator is BayesSearchCV(cv=5, estimator=SVC(), scoring=make_scorer(<lambda>),
+              search_spaces={'C': [0.1, 1.0, 10.0],
+                             'cache_size': array([200, 300, 400]),
+                             'degree': [2, 3, 4, 5], 'gamma': ['auto', 'scale'],
+                             'kernel': ['linear', 'poly', 'rbf', 'sigmoid'],
+                             'tol': array([0.001     , 0.00464159, 0.02154435, 0.1       ])})
+2023-09-26 20:41:54 - model - INFO - Accuracy: 0.3783783783783784
+2023-09-26 20:41:54 - model - INFO - AUC-ROC: Not Applicable
+2023-09-26 20:41:54 - model - INFO - Classification Report:
+              precision    recall  f1-score   support
+
+          -1       0.45      0.29      0.35        69
+           0       0.27      0.32      0.29        44
+           1       0.40      0.50      0.44        72
+
+    accuracy                           0.38       185
+   macro avg       0.38      0.37      0.36       185
+weighted avg       0.39      0.38      0.38       185
+
+2023-09-26 20:41:54 - model - INFO - The SVC model has been trained, evaluated 0.3783783783783784, and saved.
+2023-09-26 20:54:07 - model - INFO - machine learning model Isolation Forest selected
+2023-09-26 20:54:07 - model - INFO - 0     -1
+1      1
+2     -1
+3      1
+4      1
+      ..
+919    0
+920    0
+921    0
+922    0
+923    0
+Name: label, Length: 924, dtype: int32
+2023-09-26 20:54:17 - model - INFO - machine learning model Gradient Boosting Classifier selected
+2023-09-26 20:54:17 - model - INFO - 0     -1
+1      1
+2     -1
+3      1
+4      1
+      ..
+919    0
+920    0
+921    0
+922    0
+923    0
+Name: label, Length: 924, dtype: int32
+2023-09-26 20:54:18 - model - ERROR - Exception occurred during model search: ExponentialLoss requires 2 classes; got 3 class(es)
+2023-09-26 20:56:09 - model - INFO - Starting loading the models
+2023-09-26 20:56:09 - model - INFO - loading the Main view model
+2023-09-26 20:56:09 - model - INFO - loading the Trade tab model
+2023-09-26 20:56:09 - model - INFO - loading the Exchange tab model
+2023-09-26 20:56:09 - model - INFO - loading the Bot tab model
+2023-09-26 20:56:09 - model - INFO - loading the Chart tab model
+2023-09-26 20:56:09 - model - INFO - Finished loading the models
+2023-09-26 20:56:16 - model - INFO - machine learning model Random Forest Classifier selected
+2023-09-26 20:56:16 - model - INFO - 0     -1
+1      1
+2     -1
+3      1
+4      1
+      ..
+919    0
+920    0
+921    0
+922    0
+923    0
+Name: label, Length: 924, dtype: int32
+2023-09-26 20:56:23 - model - INFO - machine learning model Isolation Forest selected
+2023-09-26 20:56:23 - model - INFO - 0     -1
+1      1
+2     -1
+3      1
+4      1
+      ..
+919    0
+920    0
+921    0
+922    0
+923    0
+Name: label, Length: 924, dtype: int32
+2023-09-26 20:56:26 - model - INFO - machine learning model Gradient Boosting Classifier selected
+2023-09-26 20:56:26 - model - INFO - 0     -1
+1      1
+2     -1
+3      1
+4      1
+      ..
+919    0
+920    0
+921    0
+922    0
+923    0
+Name: label, Length: 924, dtype: int32
+2023-09-26 20:56:30 - model - INFO - machine learning model Extra Tree Classifier selected
+2023-09-26 20:56:30 - model - INFO - 0     -1
+1      1
+2     -1
+3      1
+4      1
+      ..
+919    0
+920    0
+921    0
+922    0
+923    0
+Name: label, Length: 924, dtype: int32
+2023-09-26 20:58:41 - model - INFO - GridSearchCV(cv=5, estimator=ExtraTreeClassifier(),
+             param_grid={'criterion': ['gini', 'entropy'],
+                         'max_depth': [3, 4, 6, 8, 10],
+                         'min_samples_leaf': [1, 2, 3, 4, 5],
+                         'min_samples_split': [3, 4, 6, 8, 10]},
+             scoring=make_scorer(<lambda>))
+2023-09-26 20:58:41 - model - INFO - Model training successful.
+2023-09-26 20:58:41 - model - INFO - the custom: parallelize search best params are {'criterion': 'entropy', 'max_depth': 6, 'min_samples_leaf': 4, 'min_samples_split': 4}
+2023-09-26 20:58:41 - model - INFO - the custom: parallelize search best score is 0.514
+2023-09-26 20:58:41 - model - INFO - the custom: parallelize search best estimator is GridSearchCV(cv=5, estimator=ExtraTreeClassifier(),
+             param_grid={'criterion': ['gini', 'entropy'],
+                         'max_depth': [3, 4, 6, 8, 10],
+                         'min_samples_leaf': [1, 2, 3, 4, 5],
+                         'min_samples_split': [3, 4, 6, 8, 10]},
+             scoring=make_scorer(<lambda>))
+2023-09-26 20:58:41 - model - INFO - Accuracy: 0.42162162162162165
+2023-09-26 20:58:41 - model - INFO - AUC-ROC: Not Applicable
+2023-09-26 20:58:41 - model - INFO - Classification Report:
+              precision    recall  f1-score   support
+
+          -1       0.49      0.30      0.37        73
+           0       0.00      0.00      0.00        44
+           1       0.40      0.82      0.54        68
+
+    accuracy                           0.42       185
+   macro avg       0.30      0.37      0.30       185
+weighted avg       0.34      0.42      0.35       185
+
+2023-09-26 20:58:42 - model - INFO - The Extra Tree Classifier model has been trained, evaluated 0.42162162162162165, and saved.
+2023-09-26 21:18:03 - model - INFO - machine learning model XGBoost Classifier selected
+2023-09-26 21:18:03 - model - INFO - 0     -1
+1      1
+2     -1
+3      1
+4      1
+      ..
+919    0
+920    0
+921    0
+922    0
+923    0
+Name: label, Length: 924, dtype: int32
+2023-09-26 21:18:13 - model - INFO - machine learning model Gaussian Naive Bayes selected
+2023-09-26 21:18:13 - model - INFO - 0     -1
+1      1
+2     -1
+3      1
+4      1
+      ..
+919    0
+920    0
+921    0
+922    0
+923    0
+Name: label, Length: 924, dtype: int32
+2023-09-26 21:18:21 - model - INFO - machine learning model Radius Neighbors Classifier selected
+2023-09-26 21:18:21 - model - INFO - 0     -1
+1      1
+2     -1
+3      1
+4      1
+      ..
+919    0
+920    0
+921    0
+922    0
+923    0
+Name: label, Length: 924, dtype: int32
+2023-09-26 21:18:26 - model - ERROR - Exception occurred during model search: No neighbors found for test samples array([ 81, 112], dtype=int64), you can try using larger radius, giving a label for outliers, or considering removing them from your dataset.
+2023-09-26 21:19:07 - model - INFO - RandomizedSearchCV(cv=5, estimator=GaussianNB(),
+                   param_distributions={'var_smoothing': [1e-09, 1e-08, 1e-07]},
+                   scoring=make_scorer(<lambda>))
+2023-09-26 21:19:07 - model - INFO - Model training successful.
+2023-09-26 21:19:07 - model - INFO - the custom: parallelize search best params are {'var_smoothing': 1e-09}
+2023-09-26 21:19:07 - model - INFO - the custom: parallelize search best score is 0.8880000000000001
+2023-09-26 21:19:07 - model - INFO - the custom: parallelize search best estimator is RandomizedSearchCV(cv=5, estimator=GaussianNB(),
+                   param_distributions={'var_smoothing': [1e-09, 1e-08, 1e-07]},
+                   scoring=make_scorer(<lambda>))
+2023-09-26 21:19:07 - model - INFO - Accuracy: 0.34594594594594597
+2023-09-26 21:19:07 - model - INFO - AUC-ROC: Not Applicable
+2023-09-26 21:19:07 - model - INFO - Classification Report:
+              precision    recall  f1-score   support
+
+          -1       0.47      0.14      0.22        64
+           0       0.27      0.90      0.42        40
+           1       0.56      0.23      0.33        81
+
+    accuracy                           0.35       185
+   macro avg       0.44      0.43      0.32       185
+weighted avg       0.47      0.35      0.31       185
+
+2023-09-26 21:19:08 - model - INFO - The Gaussian Naive Bayes model has been trained, evaluated 0.34594594594594597, and saved.
+2023-09-26 21:19:53 - model - INFO - machine learning model K-Nearest Neighbors selected
+2023-09-26 21:19:53 - model - INFO - 0     -1
+1      1
+2     -1
+3      1
+4      1
+      ..
+919    0
+920    0
+921    0
+922    0
+923    0
+Name: label, Length: 924, dtype: int32
+2023-09-26 21:20:03 - model - INFO - machine learning model AdaBoost Classifier selected
+2023-09-26 21:20:03 - model - INFO - 0     -1
+1      1
+2     -1
+3      1
+4      1
+      ..
+919    0
+920    0
+921    0
+922    0
+923    0
+Name: label, Length: 924, dtype: int32
+2023-09-26 21:22:08 - model - ERROR - Model training failed: All searches failed!
+2023-09-26 21:24:43 - model - INFO - GridSearchCV(cv=5, estimator=KNeighborsClassifier(),
+             param_grid={'algorithm': ['auto', 'ball_tree', 'kd_tree', 'brute'],
+                         'leaf_size': [30, 40, 50],
+                         'n_neighbors': [3, 5, 11, 19], 'p': [1, 2],
+                         'weights': ['uniform', 'distance']},
+             scoring=make_scorer(<lambda>))
+2023-09-26 21:24:43 - model - INFO - Model training successful.
+2023-09-26 21:24:43 - model - INFO - the custom: parallelize search best params are {'algorithm': 'auto', 'leaf_size': 30, 'n_neighbors': 5, 'p': 2, 'weights': 'uniform'}
+2023-09-26 21:24:43 - model - INFO - the custom: parallelize search best score is 0.508
+2023-09-26 21:24:43 - model - INFO - the custom: parallelize search best estimator is GridSearchCV(cv=5, estimator=KNeighborsClassifier(),
+             param_grid={'algorithm': ['auto', 'ball_tree', 'kd_tree', 'brute'],
+                         'leaf_size': [30, 40, 50],
+                         'n_neighbors': [3, 5, 11, 19], 'p': [1, 2],
+                         'weights': ['uniform', 'distance']},
+             scoring=make_scorer(<lambda>))
+2023-09-26 21:24:44 - model - INFO - Accuracy: 0.4918918918918919
+2023-09-26 21:24:44 - model - INFO - AUC-ROC: Not Applicable
+2023-09-26 21:24:44 - model - INFO - Classification Report:
+              precision    recall  f1-score   support
+
+          -1       0.55      0.55      0.55        84
+           0       0.37      0.38      0.37        40
+           1       0.50      0.49      0.50        61
+
+    accuracy                           0.49       185
+   macro avg       0.47      0.47      0.47       185
+weighted avg       0.49      0.49      0.49       185
+
+2023-09-26 21:24:44 - model - INFO - The K-Nearest Neighbors model has been trained, evaluated 0.4918918918918919, and saved.
+2023-09-26 21:26:05 - model - INFO - GridSearchCV(cv=5,
+             estimator=XGBClassifier(base_score=None, booster=None,
+                                     colsample_bylevel=None,
+                                     colsample_bynode=None,
+                                     colsample_bytree=None,
+                                     enable_categorical=False, gamma=None,
+                                     gpu_id=None, importance_type=None,
+                                     interaction_constraints=None,
+                                     learning_rate=None, max_delta_step=None,
+                                     max_depth=None, min_child_weight=None,
+                                     missing=nan, monotone_constraints=None,...
+                                     num_parallel_tree=None, predictor=None,
+                                     random_state=None, reg_alpha=None,
+                                     reg_lambda=None, scale_pos_weight=None,
+                                     subsample=None, tree_method=None,
+                                     validate_parameters=None, verbosity=None),
+             param_grid={'eta': [0.1, 0.2, 0.3, 0.4, 0.5],
+                         'eval_metric': ['mlogloss'],
+                         'max_depth': [3, 4, 6, 8, 10], 'num_class': [3],
+                         'objective': ['binary:logistic', 'multi:softmax']},
+             scoring=make_scorer(<lambda>))
+2023-09-26 21:26:05 - model - INFO - Model training successful.
+2023-09-26 21:26:05 - model - INFO - the custom: parallelize search best params are {'eta': 0.3, 'eval_metric': 'mlogloss', 'max_depth': 3, 'num_class': 3, 'objective': 'binary:logistic'}
+2023-09-26 21:26:05 - model - INFO - the custom: parallelize search best score is 0.48599999999999993
+2023-09-26 21:26:05 - model - INFO - the custom: parallelize search best estimator is GridSearchCV(cv=5,
+             estimator=XGBClassifier(base_score=None, booster=None,
+                                     colsample_bylevel=None,
+                                     colsample_bynode=None,
+                                     colsample_bytree=None,
+                                     enable_categorical=False, gamma=None,
+                                     gpu_id=None, importance_type=None,
+                                     interaction_constraints=None,
+                                     learning_rate=None, max_delta_step=None,
+                                     max_depth=None, min_child_weight=None,
+                                     missing=nan, monotone_constraints=None,...
+                                     num_parallel_tree=None, predictor=None,
+                                     random_state=None, reg_alpha=None,
+                                     reg_lambda=None, scale_pos_weight=None,
+                                     subsample=None, tree_method=None,
+                                     validate_parameters=None, verbosity=None),
+             param_grid={'eta': [0.1, 0.2, 0.3, 0.4, 0.5],
+                         'eval_metric': ['mlogloss'],
+                         'max_depth': [3, 4, 6, 8, 10], 'num_class': [3],
+                         'objective': ['binary:logistic', 'multi:softmax']},
+             scoring=make_scorer(<lambda>))
+2023-09-26 21:26:05 - model - INFO - Accuracy: 0.5081081081081081
+2023-09-26 21:26:05 - model - INFO - AUC-ROC: Not Applicable
+2023-09-26 21:26:05 - model - INFO - Classification Report:
+              precision    recall  f1-score   support
+
+          -1       0.51      0.51      0.51        67
+           0       0.33      0.37      0.35        41
+           1       0.62      0.58      0.60        77
+
+    accuracy                           0.51       185
+   macro avg       0.49      0.49      0.49       185
+weighted avg       0.51      0.51      0.51       185
+
+2023-09-26 21:26:05 - model - INFO - The XGBoost Classifier model has been trained, evaluated 0.5081081081081081, and saved.
+2023-09-26 21:26:15 - model - INFO - BayesSearchCV(cv=5, estimator=IsolationForest(), scoring=make_scorer(<lambda>),
+              search_spaces={'contamination': [0.1, 0.2, 0.3, 0.4, 0.5],
+                             'max_samples': ['auto'],
+                             'n_estimators': array([100, 200, 300, 400, 500, 600, 700, 800, 900])})
+2023-09-26 21:26:15 - model - INFO - Model training successful.
+2023-09-26 21:26:15 - model - INFO - the custom: parallelize search best params are OrderedDict([('contamination', 0.1), ('max_samples', 'auto'), ('n_estimators', 200)])
+2023-09-26 21:26:15 - model - INFO - the custom: parallelize search best score is 0.676
+2023-09-26 21:26:15 - model - INFO - the custom: parallelize search best estimator is BayesSearchCV(cv=5, estimator=IsolationForest(), scoring=make_scorer(<lambda>),
+              search_spaces={'contamination': [0.1, 0.2, 0.3, 0.4, 0.5],
+                             'max_samples': ['auto'],
+                             'n_estimators': array([100, 200, 300, 400, 500, 600, 700, 800, 900])})
+2023-09-26 21:27:25 - model - INFO - GridSearchCV(cv=5, estimator=AdaBoostClassifier(),
+             param_grid={'algorithm': ['SAMME', 'SAMME.R'],
+                         'learning_rate': [0.01, 0.1, 1.0],
+                         'n_estimators': array([ 10,  60, 110, 160, 210, 260])},
+             scoring=make_scorer(<lambda>))
+2023-09-26 21:27:25 - model - INFO - Model training successful.
+2023-09-26 21:27:25 - model - INFO - the custom: parallelize search best params are {'algorithm': 'SAMME.R', 'learning_rate': 1.0, 'n_estimators': 10}
+2023-09-26 21:27:25 - model - INFO - the custom: parallelize search best score is 0.564
+2023-09-26 21:27:25 - model - INFO - the custom: parallelize search best estimator is GridSearchCV(cv=5, estimator=AdaBoostClassifier(),
+             param_grid={'algorithm': ['SAMME', 'SAMME.R'],
+                         'learning_rate': [0.01, 0.1, 1.0],
+                         'n_estimators': array([ 10,  60, 110, 160, 210, 260])},
+             scoring=make_scorer(<lambda>))
+2023-09-26 21:27:25 - model - INFO - Accuracy: 0.4
+2023-09-26 21:27:25 - model - INFO - AUC-ROC: Not Applicable
+2023-09-26 21:27:25 - model - INFO - Classification Report:
+              precision    recall  f1-score   support
+
+          -1       0.41      0.32      0.36        74
+           0       0.41      0.30      0.35        43
+           1       0.39      0.54      0.45        68
+
+    accuracy                           0.40       185
+   macro avg       0.40      0.39      0.39       185
+weighted avg       0.40      0.40      0.39       185
+
+2023-09-26 21:27:25 - model - INFO - The AdaBoost Classifier model has been trained, evaluated 0.4, and saved.
+2023-09-26 22:19:42 - model - INFO - GridSearchCV(cv=5, estimator=RandomForestClassifier(),
+             param_grid={'criterion': ['gini', 'entropy'],
+                         'max_depth': array([ 10,  60, 110, 160, 210, 260]),
+                         'min_samples_leaf': array([1, 2, 3, 4, 5]),
+                         'min_samples_split': array([ 2,  4,  6,  8, 10]),
+                         'n_estimators': array([ 10,  60, 110, 160, 210, 260])},
+             scoring=make_scorer(<lambda>))
+2023-09-26 22:19:42 - model - INFO - Model training successful.
+2023-09-26 22:19:42 - model - INFO - the custom: parallelize search best params are {'criterion': 'gini', 'max_depth': 260, 'min_samples_leaf': 5, 'min_samples_split': 4, 'n_estimators': 10}
+2023-09-26 22:19:42 - model - INFO - the custom: parallelize search best score is 0.48200000000000004
+2023-09-26 22:19:42 - model - INFO - the custom: parallelize search best estimator is GridSearchCV(cv=5, estimator=RandomForestClassifier(),
+             param_grid={'criterion': ['gini', 'entropy'],
+                         'max_depth': array([ 10,  60, 110, 160, 210, 260]),
+                         'min_samples_leaf': array([1, 2, 3, 4, 5]),
+                         'min_samples_split': array([ 2,  4,  6,  8, 10]),
+                         'n_estimators': array([ 10,  60, 110, 160, 210, 260])},
+             scoring=make_scorer(<lambda>))
+2023-09-26 22:19:43 - model - INFO - Accuracy: 0.5297297297297298
+2023-09-26 22:19:43 - model - INFO - AUC-ROC: Not Applicable
+2023-09-26 22:19:43 - model - INFO - Classification Report:
+              precision    recall  f1-score   support
+
+          -1       0.49      0.52      0.51        67
+           0       0.44      0.40      0.42        42
+           1       0.61      0.61      0.61        76
+
+    accuracy                           0.53       185
+   macro avg       0.51      0.51      0.51       185
+weighted avg       0.53      0.53      0.53       185
+
+2023-09-26 22:19:46 - model - INFO - The Random Forest Classifier model has been trained, evaluated 0.5297297297297298, and saved.
+2023-09-26 22:41:37 - model - INFO - machine learning model Gradient Boosting Regressor selected
+2023-09-26 22:41:37 - model - INFO - 0     -1
+1      1
+2     -1
+3      1
+4      1
+      ..
+919    0
+920    0
+921    0
+922    0
+923    0
+Name: label, Length: 924, dtype: int32
+2023-09-26 22:41:39 - model - INFO - machine learning model Gaussian Process Classifier selected
+2023-09-26 22:41:39 - model - INFO - 0     -1
+1      1
+2     -1
+3      1
+4      1
+      ..
+919    0
+920    0
+921    0
+922    0
+923    0
+Name: label, Length: 924, dtype: int32
+2023-09-26 22:41:39 - model - ERROR - Exception occurred during model search: 'str' object has no attribute 'requires_vector_input'
+2023-09-26 22:41:39 - model - ERROR - Model training failed: All searches failed!
+2023-09-26 22:43:02 - model - INFO - machine learning model Quadratic Discriminant Analysis selected
+2023-09-26 22:43:02 - model - INFO - 0     -1
+1      1
+2     -1
+3      1
+4      1
+      ..
+919    0
+920    0
+921    0
+922    0
+923    0
+Name: label, Length: 924, dtype: int32
+2023-09-26 22:47:21 - model - INFO - Starting loading the models
+2023-09-26 22:47:21 - model - INFO - loading the Main view model
+2023-09-26 22:47:21 - model - INFO - loading the Trade tab model
+2023-09-26 22:47:21 - model - INFO - loading the Exchange tab model
+2023-09-26 22:47:21 - model - INFO - loading the Bot tab model
+2023-09-26 22:47:21 - model - INFO - loading the Chart tab model
+2023-09-26 22:47:21 - model - INFO - Finished loading the models
+2023-09-26 22:47:43 - model - INFO - machine learning model Gradient Boosting Regressor selected
+2023-09-26 22:47:43 - model - INFO - 0     -1
+1      1
+2     -1
+3      1
+4      1
+      ..
+919    0
+920    0
+921    0
+922    0
+923    0
+Name: label, Length: 924, dtype: int32
+2023-09-26 22:52:22 - model - INFO - machine learning model Gaussian Process Classifier selected
+2023-09-26 22:52:22 - model - INFO - 0     -1
+1      1
+2     -1
+3      1
+4      1
+      ..
+919    0
+920    0
+921    0
+922    0
+923    0
+Name: label, Length: 924, dtype: int32
+2023-09-26 22:52:22 - model - ERROR - Model training failed: Invalid dimension [1**2 * RBF(length_scale=1), 1**2 * Matern(length_scale=1, nu=1.5)]. Read the documentation for supported types.
+2023-09-26 22:54:54 - model - INFO - machine learning model Quadratic Discriminant Analysis selected
+2023-09-26 22:54:54 - model - INFO - 0     -1
+1      1
+2     -1
+3      1
+4      1
+      ..
+919    0
+920    0
+921    0
+922    0
+923    0
+Name: label, Length: 924, dtype: int32
+2023-09-26 22:55:57 - model - INFO - RandomizedSearchCV(cv=5, estimator=QuadraticDiscriminantAnalysis(),
+                   param_distributions={'reg_param': [0.0, 0.1, 0.2],
+                                        'store_covariance': [True, False],
+                                        'tol': [0.0001, 0.001, 0.01]},
+                   scoring=make_scorer(<lambda>))
+2023-09-26 22:55:57 - model - INFO - Model training successful.
+2023-09-26 22:55:57 - model - INFO - the custom: parallelize search best params are {'tol': 0.01, 'store_covariance': True, 'reg_param': 0.0}
+2023-09-26 22:55:57 - model - INFO - the custom: parallelize search best score is 0.8859999999999999
+2023-09-26 22:55:57 - model - INFO - the custom: parallelize search best estimator is RandomizedSearchCV(cv=5, estimator=QuadraticDiscriminantAnalysis(),
+                   param_distributions={'reg_param': [0.0, 0.1, 0.2],
+                                        'store_covariance': [True, False],
+                                        'tol': [0.0001, 0.001, 0.01]},
+                   scoring=make_scorer(<lambda>))
+2023-09-26 22:55:57 - model - INFO - Accuracy: 0.32432432432432434
+2023-09-26 22:55:57 - model - INFO - AUC-ROC: Not Applicable
+2023-09-26 22:55:57 - model - INFO - Classification Report:
+              precision    recall  f1-score   support
+
+          -1       0.54      0.11      0.18        66
+           0       0.28      0.96      0.44        45
+           1       0.50      0.14      0.21        74
+
+    accuracy                           0.32       185
+   macro avg       0.44      0.40      0.28       185
+weighted avg       0.46      0.32      0.25       185
+
+2023-09-26 22:55:57 - model - INFO - The Quadratic Discriminant Analysis model has been trained, evaluated 0.32432432432432434, and saved.
+2023-09-26 22:58:23 - model - INFO - machine learning model SGD Classifier selected
+2023-09-26 22:58:23 - model - INFO - 0     -1
+1      1
+2     -1
+3      1
+4      1
+      ..
+919    0
+920    0
+921    0
+922    0
+923    0
+Name: label, Length: 924, dtype: int32
+2023-09-26 23:00:31 - model - INFO - GridSearchCV(cv=5, estimator=SGDClassifier(),
+             param_grid={'alpha': [0.0001, 0.001, 0.01],
+                         'eta0': [0.01, 0.1, 0.5], 'l1_ratio': [0.15, 0.3, 0.5],
+                         'learning_rate': ['constant', 'optimal', 'invscaling',
+                                           'adaptive'],
+                         'loss': ['hinge', 'log', 'modified_huber',
+                                  'squared_hinge', 'perceptron'],
+                         'penalty': ['l2', 'l1', 'elasticnet']},
+             scoring=make_scorer(<lambda>))
+2023-09-26 23:00:31 - model - INFO - Model training successful.
+2023-09-26 23:00:31 - model - INFO - the custom: parallelize search best params are {'alpha': 0.01, 'eta0': 0.01, 'l1_ratio': 0.15, 'learning_rate': 'adaptive', 'loss': 'perceptron', 'penalty': 'l1'}
+2023-09-26 23:00:31 - model - INFO - the custom: parallelize search best score is 0.8300000000000001
+2023-09-26 23:00:31 - model - INFO - the custom: parallelize search best estimator is GridSearchCV(cv=5, estimator=SGDClassifier(),
+             param_grid={'alpha': [0.0001, 0.001, 0.01],
+                         'eta0': [0.01, 0.1, 0.5], 'l1_ratio': [0.15, 0.3, 0.5],
+                         'learning_rate': ['constant', 'optimal', 'invscaling',
+                                           'adaptive'],
+                         'loss': ['hinge', 'log', 'modified_huber',
+                                  'squared_hinge', 'perceptron'],
+                         'penalty': ['l2', 'l1', 'elasticnet']},
+             scoring=make_scorer(<lambda>))
+2023-09-26 23:00:31 - model - INFO - Accuracy: 0.44324324324324327
+2023-09-26 23:00:31 - model - INFO - AUC-ROC: Not Applicable
+2023-09-26 23:00:31 - model - INFO - Classification Report:
+              precision    recall  f1-score   support
+
+          -1       0.40      0.67      0.50        60
+           0       0.00      0.00      0.00        52
+           1       0.50      0.58      0.54        73
+
+    accuracy                           0.44       185
+   macro avg       0.30      0.41      0.34       185
+weighted avg       0.33      0.44      0.37       185
+
+2023-09-26 23:00:31 - model - INFO - The SGD Classifier model has been trained, evaluated 0.44324324324324327, and saved.
+2023-09-26 23:25:45 - model - INFO - Starting loading the models
+2023-09-26 23:25:45 - model - INFO - loading the Main view model
+2023-09-26 23:25:45 - model - INFO - loading the Trade tab model
+2023-09-26 23:25:45 - model - INFO - loading the Exchange tab model
+2023-09-26 23:25:45 - model - INFO - loading the Bot tab model
+2023-09-26 23:25:45 - model - INFO - loading the Chart tab model
+2023-09-26 23:25:45 - model - INFO - Finished loading the models
+2023-09-26 23:27:48 - model - INFO - Starting loading the models
+2023-09-26 23:27:48 - model - INFO - loading the Main view model
+2023-09-26 23:27:48 - model - INFO - loading the Trade tab model
+2023-09-26 23:27:48 - model - INFO - loading the Exchange tab model
+2023-09-26 23:27:48 - model - INFO - loading the Bot tab model
+2023-09-26 23:27:48 - model - INFO - loading the Chart tab model
+2023-09-26 23:27:48 - model - INFO - Finished loading the models
+2023-09-26 23:28:29 - model - INFO - Creating a auto trading bot Autobot-Phemex: BTC/USDT-30m-BayesianRidge(alpha_1=0.0001, alpha_2=0.0001, lambda_1=1e-05, lambda_2=1e-05,
+              n_iter=100, tol=0.01)- Trades: 0 -> 
+2023-09-26 23:29:15 - model - INFO - Creating a new thread for index 0
+2023-09-26 23:29:15 - model - INFO - Starting a auto trading bot Autobot-Phemex: BTC/USDT-30m-BayesianRidge(alpha_1=0.0001, alpha_2=0.0001, lambda_1=1e-05, lambda_2=1e-05,
+              n_iter=100, tol=0.01)- Trades: 0 -> 
+2023-09-26 23:42:17 - model - INFO - Starting loading the models
+2023-09-26 23:42:17 - model - INFO - loading the Main view model
+2023-09-26 23:42:17 - model - INFO - loading the Trade tab model
+2023-09-26 23:42:17 - model - INFO - loading the Exchange tab model
+2023-09-26 23:42:17 - model - INFO - loading the Bot tab model
+2023-09-26 23:42:17 - model - INFO - loading the Chart tab model
+2023-09-26 23:42:17 - model - INFO - Finished loading the models
+2023-09-26 23:43:20 - model - INFO - Creating a auto trading bot Autobot-Phemex: BTC/USDT-30m-BayesianRidge(alpha_1=1e-05, alpha_2=1e-05, lambda_1=1e-05, n_iter=1000)- Trades: 0 -> 
+2023-09-26 23:43:40 - model - INFO - Creating a new thread for index 0
+2023-09-26 23:43:40 - model - INFO - Starting a auto trading bot Autobot-Phemex: BTC/USDT-30m-BayesianRidge(alpha_1=1e-05, alpha_2=1e-05, lambda_1=1e-05, n_iter=1000)- Trades: 0 -> 
+2023-09-26 23:43:48 - model - ERROR - Error during prediction: [Errno 2] No such file or directory: 'data/scaler.pkl'
+2023-09-26 23:50:22 - model - INFO - Starting loading the models
+2023-09-26 23:50:22 - model - INFO - loading the Main view model
+2023-09-26 23:50:22 - model - INFO - loading the Trade tab model
+2023-09-26 23:50:22 - model - INFO - loading the Exchange tab model
+2023-09-26 23:50:22 - model - INFO - loading the Bot tab model
+2023-09-26 23:50:22 - model - INFO - loading the Chart tab model
+2023-09-26 23:50:22 - model - INFO - Finished loading the models
+2023-09-26 23:52:28 - model - INFO - Creating a auto trading bot Autobot-Phemex: BTC/USDT-30m-BayesianRidge(alpha_1=1e-05, alpha_2=1e-05, lambda_1=1e-05, n_iter=1000)- Trades: 0 -> 
+2023-09-26 23:52:58 - model - INFO - Creating a new thread for index 0
+2023-09-26 23:52:58 - model - INFO - Starting a auto trading bot Autobot-Phemex: BTC/USDT-30m-BayesianRidge(alpha_1=1e-05, alpha_2=1e-05, lambda_1=1e-05, n_iter=1000)- Trades: 0 -> 
+2023-09-26 23:53:07 - model - ERROR - Error during prediction: [Errno 2] No such file or directory: 'data/scaler.pkl'
