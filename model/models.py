@@ -319,7 +319,7 @@ class BotTabModel:
         # # Make predictions using the scaled test data
         # y_pred = ml.predict(model)
         autobot = AutoBot(exchange, symbol, amount, stop_loss,
-                          take_profit, model, time, ml, trade_x, self.model_logger)
+                          take_profit, model, time, ml, trade_x, df)
         # self._presenter.save_autobot(autobot)
         return autobot
 
