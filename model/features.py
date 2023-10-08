@@ -2,10 +2,10 @@ import concurrent.futures
 import time
 from concurrent.futures import as_completed
 
+import ccxt
 import numpy as np
 import pandas as pd
 import pandas_ta as ta
-import vectorbt as vbt
 
 import util.loggers as loggers
 
@@ -29,6 +29,7 @@ class Tradex_indicator:
 
     def __init__(self, symbol, timeframe, t=None, get_data=False, data=None):
         self.tradex_logger = tradex_logger
+        self.ccxt_exchange = ccxt.binance()  # Change this to your desired exchange
         self.timeframe = timeframe
         self.symbol = symbol
         self.data = data if not get_data else self.get_data()
@@ -42,36 +43,23 @@ class Tradex_indicator:
     def get_data(self) -> pd.DataFrame:
         try:
             self.tradex_logger.info('Getting the data')
-            data_load = vbt.CCXTData.download(
-                [self.symbol], start='3 days ago', timeframe=self.timeframe)
-            df = data_load.get()
-            df = pd.DataFrame(df)
+            since = self.ccxt_exchange.parse8601(
+                (pd.Timestamp('3 days ago')).isoformat())
+            data_load = self.ccxt_exchange.fetch_ohlcv(
+                self.symbol, timeframe=self.timeframe, since=since)
 
-            df.index = pd.to_datetime(df.index)
+            df = pd.DataFrame(data_load, columns=[
+                              'date', 'open', 'high', 'low', 'close', 'volume'])
+            df['date'] = pd.to_datetime(df['date'], unit='ms')
+            df.set_index('date', inplace=True)
             df['symbol'] = self.symbol
-            df.rename(columns={'Open': 'open', 'High': 'high', 'Low': 'low',
-                      'Close': 'close', 'Volume': 'volume'}, inplace=True)
 
-        except vbt.errors.EmptyDatasetError:
-            self.tradex_logger.error(
-                f'No data found for the specified {self.symbol} and {self.timeframe}.')
+        except ccxt.NetworkError as e:
+            self.tradex_logger.error(f'Network error: {e}')
             return None
 
-        except vbt.errors.ExchangeError as e:
+        except ccxt.ExchangeError as e:
             self.tradex_logger.error(f'Exchange error: {e}')
-            return None
-
-        except vbt.errors.RequestError as e:
-            self.tradex_logger.error(f'Request error: {e}')
-            return None
-
-        except pd.errors.EmptyDataError:
-            self.tradex_logger.error(
-                'Empty data received from the data source.')
-            return None
-
-        except pd.errors.ParserError:
-            self.tradex_logger.error('Error parsing the data.')
             return None
 
         except Exception as e:
@@ -164,7 +152,7 @@ class Trend:
     TREND: visueel beeld van de market trend
     '''
 
-    def __init__(self, data, tradex_logger) -> None:
+    def __init__(self, data, tradex_logger):
         self.tradex_logger = tradex_logger
         self.data = data
         self.df_trend = pd.DataFrame()
@@ -209,14 +197,14 @@ class Trend:
 
         # adding the data to the general dataframe
         self.data['ema55H'] = self.df_trend.ema55H
-        self.data['ema55L'] = self.df_trend.ema55L
+        self.data['ema55H'] = self.df_trend.ema55L
         self.data['ema_100'] = self.df_trend.ema_100
         self.data['ema_200'] = self.df_trend.ema_200
         self.data['lsma'] = self.df_trend.lsma
         self.data['ema_10'] = self.df_trend.ema_10
         self.data['golden_signal'] = golden_signal
-        # self.data['vwap'] = trend.vwap
-        # self.data['wma'] = trend.wma
+        self.data['vwap'] = vwap
+        self.data['wma'] = wma
 
         return self.df_trend
 
@@ -446,6 +434,7 @@ class Real_time:
         self.get_real_time()
 
     # TRADE-X SCREENER
+
     def get_real_time(self) -> pd.DataFrame:
 
         self.tradex_logger.info('init trade-x Real time')

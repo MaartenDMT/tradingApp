@@ -6,9 +6,9 @@ import traceback
 import websocket
 
 import util.loggers as loggers
-from util.ml_util import regression, classifier
-from util.candlestick_parser import *
 from model.features import Tradex_indicator
+from util.candlestick_parser import *
+from util.ml_util import classifier, regression
 
 logger = loggers.setup_loggers()
 autobot_logger = logger['autobot']
@@ -172,8 +172,8 @@ class AutoBot:
         current_price = self.exchange.fetch_ticker(self.symbol)['last']
 
         # Use the model to predict the next price
-        prediction = self.ml.predict(
-            self.model, self.time, self.symbol) - 1
+        prediction = self.ml.predict(self.df,
+                                     self.model, self.time, self.symbol) - 1
 
         autobot_logger.info(
             f"{self.exchange} exchange, the {self.model} predicted:{prediction}")

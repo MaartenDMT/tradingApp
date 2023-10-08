@@ -26,7 +26,7 @@ class MLTab(Frame):
             "Gradient Boosting Regressor", "Gaussian Process Classifier", "Quadratic Discriminant Analysis", "SGD Classifier",
         )
         self.select_ml_button = Button(self, text="Select ML",
-                                       command=self._presenter.get_ML_model)
+                                       command=self._presenter.ml_tab.get_ML_model)
 
         # the selected model
         self.show_ml_label = Label(
@@ -38,7 +38,7 @@ class MLTab(Frame):
         self.evaluate_save_label = Label(
             self, text='train evaluate en save the selected model', font=('Arial', 12))
         self.evaluate_save_button = Button(self, text="Select ML",
-                                           command=self._presenter.train_evaluate_save_model)
+                                           command=self._presenter.ml_tab.train_evaluate_save_model)
 
         # Put the elements on the grid
         self.select_ml_label.grid(row=0, column=0)

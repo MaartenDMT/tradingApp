@@ -13,8 +13,7 @@ class Presenter:
         self._model = model
         self._view = view
         self.get_frames()
-        self.bot_count = 0
-        self.exchange_count = 0
+
 
     def run(self) -> None:
         self._view.mainloop()
@@ -26,8 +25,8 @@ class Presenter:
     # Login view -------------------------------------------------------------------
 
     def on_login_button_clicked(self) -> None:
-        username = self.loginview.get_username()
-        password = self.loginview.get_password()
+        username = self.loginview.get_username() or 'test'
+        password = self.loginview.get_password() or 't'
         self._model.login_model.set_credentials(username, password)
 
         if username == 'test' or self._model.login_model.check_credentials():
@@ -57,34 +56,29 @@ class Presenter:
         self.loginview.destroy()
         self.main_view = self._view.main_view(self._view)
         self._model.create_tabmodels(self)
+        self.get_tabs(self.main_view)
         self._view.show_frame(self.main_view, self)
+        # print(dir(self.main_view))
 
-        # self.exchange_tab_view = self.main_view.exchange_tab
-        # self.bot_tab_view = self.main_view.bot_tab
-        # self.chart_tab_view = self.main_view.chart_tab
-        # self.ml_tab_view = self.main_view.ml_tab
+    def get_tabs(self, main_view) -> None:
+        self.trading_presenter = TradePresenter(self._model, main_view, self)
+        self.bot_tab = BotPresenter(self._model, main_view, self)
+        self.chart_tab = ChartPresenter(self._model, main_view, self)
+        self.exchange_tab = ExchangePresenter(self._model, main_view, self)
+        self.ml_tab = MLPresenter(self._model, main_view, self)
+        self.rl_tab = RLPresenter(self._model, main_view, self)
+
+
+class TradePresenter:
+    def __init__(self, model, view, presenter) -> None:
+        self._model = model
+        self.main_view = view
+        self.presenter = presenter
+    # Implement the methods related to the Trade Tab here
 
     def trade_tab(self) -> Frame:
         trade_tab_view = self.main_view.trade_tab
         return trade_tab_view
-
-    def exchange_tab_view(self) -> Frame:
-        exchange_tab_view = self.main_view.exchange_tab
-        return exchange_tab_view
-
-    def bot_tab_view(self) -> Frame:
-        bot_tab_view = self.main_view.bot_tab
-        return bot_tab_view
-
-    def chart_tab_view(self) -> Frame:
-        chart_tab_view = self.main_view.chart_tab
-        return chart_tab_view
-
-    def ml_tab_view(self) -> Frame:
-        ml_tab_view = self.main_view.ml_tab
-        return ml_tab_view
-
-    # Trading tab     ----------------------------------------------------
 
     def update_stoploss(self) -> None:
         trade_tab_view = self.trade_tab()
@@ -142,7 +136,19 @@ class Presenter:
         trade_tab.usdt_balance_label.config(text=f"{usdt}")
         trade_tab.btc_balance_label.config(text=f"{btc}")
 
-    # Bot tab  ----------------------------------------------------------------------
+
+class BotPresenter:
+    def __init__(self, model, view, presenter) -> None:
+        self._model = model
+        self.main_view = view
+        self.presenter = presenter
+        self.bot_count = 0
+        self.exchange_count = 0
+    # Implement the methods related to the Bot Tab here
+
+    def bot_tab_view(self) -> Frame:
+        bot_tab_view = self.main_view.bot_tab
+        return bot_tab_view
 
     def start_bot(self, index: int) -> None:
         started = self._model.bottab_model.start_bot(index)
@@ -208,8 +214,8 @@ class Presenter:
         return bot_tab.bot_names[index]
 
     def get_autobot_exchange(self):
-        exchange = self.select_exchange()
-        exchange_tab = self.exchange_tab_view()
+        exchange = self.presenter.exchange_tab.select_exchange()
+        exchange_tab = self.presenter.exchange_tab.exchange_tab_view()
         l = exchange_tab.text_exchange_var.get()
 
         if exchange == None:
@@ -223,7 +229,18 @@ class Presenter:
 
         return exchange
 
-    # Chart tab  -------------------------------------------------------------------
+
+class ChartPresenter:
+    def __init__(self, model, view, presenter) -> None:
+        self._model = model
+        self.main_view = view
+        self.presenter = presenter
+    # Implement the methods related to the Chart Tab here
+
+    def chart_tab_view(self) -> Frame:
+        chart_tab_view = self.main_view.chart_tab
+        return chart_tab_view
+
     def update_chart(self, stop_event) -> None:
         # Check if the stop event has been set
         if not stop_event.is_set():
@@ -238,7 +255,7 @@ class Presenter:
             # Redraw the canvas
             self.chart_tab.canvas.draw()
             # Call the update_chart function again after 5 seconds
-            self._view.after(60_000, self.update_chart, stop_event)
+            self.main_view.after(60_000, self.update_chart, stop_event)
 
     def toggle_auto_charting(self) -> None:
         self.auto_chart = self._model.charttab_model.toggle_auto_charting()
@@ -257,7 +274,17 @@ class Presenter:
             self.chart_tab.start_autochart_button.config(
                 text="Start Auto Charting")
 
-    # Exchange tab --------------------------------------------------------------------------
+
+class ExchangePresenter:
+    def __init__(self, model, view, presenter) -> None:
+        self._model = model
+        self.main_view = view
+        self.presenter = presenter
+    # Implement the methods related to the Exchange Tab here
+
+    def exchange_tab_view(self) -> Frame:
+        exchange_tab_view = self.main_view.exchange_tab
+        return exchange_tab_view
 
     def save_first_exchange(self) -> None:
         exchange = self._model.exchangetab_model.set_first_exchange()
@@ -265,7 +292,7 @@ class Presenter:
         value = exchange_tab.text_exchange_var.get()
         exchange.set_sandbox_mode(value)
         exchange_tab.add_exchange_optionmenu(exchange)
-        self.get_balance()
+        self.presenter.trading_presenter.get_balance()
 
     def create_exchange(self) -> None:
         exchange_tab = self.exchange_tab_view()
@@ -287,7 +314,17 @@ class Presenter:
         exchange = self._model.exchangetab_model.get_exchange(index)
         return exchange
 
-    # ML tab -------------------------------------------------------------------
+
+class MLPresenter:
+    def __init__(self, model, view, presenter) -> None:
+        self._model = model
+        self.main_view = view
+        self.presenter = presenter
+    # Implement the methods related to the ML Tab here
+
+    def ml_tab_view(self) -> Frame:
+        ml_tab_view = self.main_view.ml_tab
+        return ml_tab_view
 
     def get_ML_model(self) -> str:
         self.ml_tab = self.ml_tab_view()
@@ -314,3 +351,22 @@ class Presenter:
     def get_ml(self):
         ml = self._model.get_ML()
         return ml
+
+
+class RLPresenter:
+    def __init__(self, model, view, presenter) -> None:
+        self._model = model
+        self.main_view = view
+        self.presenter = presenter
+
+    # Implement the methods related to the ML Tab here
+
+    def rl_tab_view(self) -> Frame:
+        rl_tab_view = self.main_view.rl_tab
+        return rl_tab_view
+
+    def train_evaluate_save_rlmodel(self) -> None:
+        pass
+
+    def start_rlmodel(self) -> None:
+        pass

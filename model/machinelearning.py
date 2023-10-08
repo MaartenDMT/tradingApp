@@ -1,16 +1,14 @@
 import os
-import pickle
-import sys
 import threading
-import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import joblib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import pandas_ta as ta
+# import pandas_ta as ta
 import seaborn as sns
+from joblib import dump, load
 from sklearn.metrics import (accuracy_score, classification_report,
                              confusion_matrix, explained_variance_score,
                              make_scorer, mean_absolute_error,
@@ -21,8 +19,11 @@ from sklearn.model_selection import (GridSearchCV, RandomizedSearchCV,
 from sklearn.preprocessing import StandardScaler
 from skopt import BayesSearchCV
 
+from model.features import Tradex_indicator
 from util.ml_models import get_model
-from util.ml_util import classifier, column_1d, regression
+from util.ml_util import (classifier, column_1d, future_score_clas,
+                          future_score_reg, regression, spot_score_clas,
+                          spot_score_reg)
 from util.utils import array_min2d
 
 
@@ -32,12 +33,12 @@ class MachineLearning:
         self.symbol = symbol
         self.logger = logger
 
-    def predict(self, model, t='30m', symbol='BTC/USDT') -> int:
+    def predict(self, model, df=None, t='30m', symbol='BTC/USDT') -> int:
         # TODO: predict(self, model, features)
         # the features needs to be a from my trade-x thingy
         try:
             # Fetch the current data for the symbol
-            data = self.exchange.fetch_ohlcv(symbol, timeframe=t, limit=100)
+            data = self.exchange.fetch_ohlcv(symbol, timeframe=t, limit=500)
             df = pd.DataFrame(
                 data, columns=['date', 'open', 'high', 'low', 'close', 'volume'])
             df = df[['open', 'high', 'low', 'close', 'volume']].astype(float)
@@ -153,12 +154,12 @@ class MachineLearning:
 
     def save_model(self, model, accuracy, score=None):
         # Save the model if it has high accuracy
-        path = r'data/ml/'
+        path = r'data/ml/2020/'
         params_path = r'data/csv/params_accuracy.csv'
 
         if accuracy > 0.62:
             joblib.dump(model.best_estimator_,
-                        f'{path}trained_{model.best_estimator_.__class__.__name__}-{accuracy}.pkl')
+                        f'{path}trained_{model.best_estimator_.__class__.__name__}{accuracy*100}.p')
 
         # Save the parameters and accuracy
         model_params_accuracy = {
@@ -194,15 +195,25 @@ class MachineLearning:
         return model
 
     def process_features(self, df):
-        # Calculate RSI
-        rsi = ta.rsi(df['close'])
 
-        # Calculate moving average
-        moving_average = ta.sma(df['close'], length=50)
+        self.tradex = Tradex_indicator(
+            symbol=self.symbol, timeframe='1h', t=None, get_data=False, data=df.copy())
+        self.tradex.run()
+        trend = self.tradex.trend.get_trend()
+        screener = self.tradex.screener.get_screener()
+        real_time = self.tradex.real_time.get_real_time()
+        scanner = self.tradex.scanner.get_scanner()
 
-        # Combine all the selected features into a single DataFrame
+        # # Calculate RSI
+        # rsi = ta.rsi(df['close'])
+
+        # # Calculate moving average
+        # moving_average = ta.sma(df['close'], length=50)
+
         processed_features = pd.concat(
-            [rsi, moving_average, df[['open', 'high', 'low', 'volume']]], axis=1)
+            [df[['open', 'high', 'low', 'volume']], trend, screener, real_time, scanner], axis=1)
+
+        self.column_names = processed_features.columns.tolist()
 
         # Fill missing values in the entire DataFrame
         processed_features = processed_features.fillna(0)
@@ -236,13 +247,12 @@ class MachineLearning:
 
     def train_evaluate_and_save_model(self, model: str):
         # Define the path of the pickle file
-        pickle_file_path = 'data/pickle/preprocessed_data.pkl'
+        pickle_file_path = 'data/pickle/2020/3h_data.pkl'
 
         # Check if the pickle file exists
         if os.path.exists(pickle_file_path):
             # If it exists, load the data from the pickle file
-            with open(pickle_file_path, 'rb') as file:
-                df = pickle.load(file)
+            df = load(pickle_file_path)
         else:
             # If it does not exist, fetch and preprocess the data
             data = self.exchange.fetch_ohlcv(
@@ -253,7 +263,7 @@ class MachineLearning:
 
             # Save the preprocessed data as a pickle file for future use
             with open(pickle_file_path, 'wb') as file:
-                pickle.dump(df, file)
+                dump(df, file)
 
         features = self.process_features(df)
         labels = self.process_labels(df, model, n_candles=5)
@@ -267,7 +277,7 @@ class MachineLearning:
         features_scaled = scaler.fit_transform(features)
 
         # Save the fitted scaler for future use
-        joblib.dump(scaler, 'data/scaler/scaler.pkl')
+        joblib.dump(scaler, 'data/scaler/scaler.p', protocol=4)
 
         # only needed when you use strings
         # label_scaler = LabelEncoder()
@@ -290,7 +300,8 @@ class MachineLearning:
 
         # Train, evaluate, and save the model
         trainer = MLModelTrainer(model, self.logger)
-        trained_model, score = trainer.train(X_train, y_train)
+        trained_model, score = trainer.train(
+            X_train, y_train, self.column_names)
 
         accuracy = self.evaluate_model(model, trained_model, X_test, y_test)
 
@@ -339,7 +350,7 @@ class MLModelTrainer:
         self.logger = logger
         self.stop_loading = False
 
-    def train(self, X, y):
+    def train(self, X, y, feature_names):
         """
         Train the model using the given features X and target y.
 
@@ -350,18 +361,19 @@ class MLModelTrainer:
         model, parameters = get_model(self.algorithm)
         if model in classifier:
             # Create a scorer from the custom scoring function using lambda to handle n_candles
-            monetary_scorer = make_scorer(lambda y_true, y_pred: self.future_score_clas(
+            monetary_scorer = make_scorer(lambda y_true, y_pred: future_score_clas(
                 y_true, y_pred, n_candles=5), greater_is_better=True)
         else:
             # Create a scorer from the custom scoring function using lambda to handle n_candles
-            monetary_scorer = make_scorer(lambda y_true, y_pred: self.future_score_reg(
+            monetary_scorer = make_scorer(lambda y_true, y_pred: future_score_reg(
                 y_true, y_pred, n_candles=5), greater_is_better=True)
 
         try:
             # Assuming parallelize_search is a method defined elsewhere in your class
             best_estimator = self.parallelize_search(
-                model, parameters, X, y, monetary_scorer)
+                model, parameters, X, y, monetary_scorer, feature_names)
             self.logger.info("Model training successful.")
+
         except Exception as e:
             self.logger.error(f"Model training failed: {e}")
 
@@ -379,7 +391,7 @@ class MLModelTrainer:
         # return the best model
         return best_estimator, best_f1_score
 
-    def parallelize_search(self, estimator, param_grid, X, y, scorer):
+    def parallelize_search(self, estimator, param_grid, X, y, scorer, feature_names):
         grid_search_estimator = GridSearchCV(
             estimator, param_grid, cv=5, scoring=scorer)
         random_search_estimator = RandomizedSearchCV(
@@ -417,132 +429,35 @@ class MLModelTrainer:
 
         best_estimator = max(results, key=lambda x: x.best_score_)
         self.logger.info(best_estimator)
+
+        # Get the best model from the tuned estimator
+        best_model = best_estimator.best_estimator_
+
+        # Perform feature importance analysis
+        feature_importances = None
+        if feature_names is not None:
+            try:
+                if hasattr(best_model, 'feature_importances_'):
+                    feature_importances = best_model.feature_importances_
+                elif hasattr(best_model, 'coef_'):
+                    feature_importances = best_model.coef_.flatten()
+            except Exception as e:
+                self.logger.error(
+                    f"Error calculating feature importances: {e}")
+
+        output_csv = 'data/csv/feature_importances.csv'
+        # Save feature importances to a CSV file
+        if feature_importances is not None and output_csv is not None:
+            try:
+                feature_importance_df = pd.DataFrame({
+                    'model': best_model,
+                    'Feature': feature_names,
+                    'Importance': feature_importances
+                })
+                feature_importance_df.to_csv(output_csv, index=False)
+                self.logger.info(f"Feature importances saved to {output_csv}")
+            except Exception as e:
+                self.logger.error(
+                    f"Error saving feature importances to CSV: {e}")
+
         return best_estimator
-
-    @staticmethod
-    def future_score_clas(y_true, y_pred, n_candles=2, starting_capital=10000):
-        total_return = 0
-        position = 0  # -1 for short, 0 for no position, 1 for long
-        entry_price = 0
-
-        # Check the lengths of y_true and y_pred and adjust if necessary
-        length_to_iterate = min(len(y_pred), len(y_true) - n_candles)
-        if length_to_iterate < len(y_pred):
-            # Log a warning or adjust as necessary
-            ...
-
-        # Iterate only up to the length where we have enough future data
-        for i in range(length_to_iterate):
-            if position != 0:  # if holding a position, long or short
-                total_return += (y_true[i + n_candles] -
-                                 entry_price) * position
-                position = 0  # close the position
-
-            if y_pred[i] != 0:  # 1 for long, -1 for short
-                entry_price = y_true[i]
-                position = y_pred[i]
-
-        # Check if we are holding any position at the end
-        if position != 0:
-            total_return += (y_true[-1] - entry_price) * position
-
-         # Calculate the return as a percentage of the starting capital
-        return_percentage = (total_return / starting_capital) * 100
-
-        return return_percentage
-
-    @staticmethod
-    def future_score_reg(y_true, y_pred, n_candles=2, starting_capital=10000):
-        total_return = 0
-        position = 0  # -1 for short, 0 for no position, 1 for long
-        entry_price = 0
-
-        # Check the lengths of y_true and y_pred and adjust if necessary
-        length_to_iterate = min(len(y_pred), len(y_true) - n_candles)
-        if length_to_iterate < len(y_pred):
-            # Log a warning or adjust as necessary
-            ...
-
-        # Iterate only up to the length where we have enough future data
-        for i in range(length_to_iterate):
-            if position != 0:  # if holding a position, long or short
-                total_return += (y_true[i + n_candles] -
-                                 entry_price) * position
-                position = 0  # close the position
-
-            predicted_return = y_pred[i] - y_true[i]
-            if predicted_return > 0:  # Predicted price increase -> go long
-                entry_price = y_true[i]
-                position = 1
-            elif predicted_return < 0:  # Predicted price decrease -> go short
-                entry_price = y_true[i]
-                position = -1
-
-        # Check if we are holding any position at the end
-        if position != 0:
-            total_return += (y_true[-1] - entry_price) * position
-
-        # Calculate the return as a percentage of the starting capital
-        return_percentage = (total_return / starting_capital) * 100
-
-        return return_percentage
-
-    @staticmethod
-    def spot_score_clas(y_true, y_pred, n_candles=2):
-        total_return = 0
-        holding_stock = False
-        buy_price = 0
-
-        # Check the lengths of y_true and y_pred and adjust if necessary
-        length_to_iterate = min(len(y_pred), len(y_true) - n_candles)
-        if length_to_iterate < len(y_pred):
-            # Log a warning or adjust as necessary
-            ...
-
-        # Iterate only up to the length where we have enough future data
-        for i in range(length_to_iterate):
-            if holding_stock:
-                # Sell the stock after two candles and calculate the return
-                total_return += y_true[i + n_candles] - buy_price
-                holding_stock = False
-
-            if y_pred[i] == 1:  # Assuming 1 is a signal to buy, and 0 is a signal to hold/sell
-                buy_price = y_true[i]
-                holding_stock = True
-
-        # Check if we are holding any stock at the end
-        if holding_stock:
-            total_return += y_true[-1] - buy_price
-
-        return total_return
-
-    @staticmethod
-    def spot_score_reg(y_true, y_pred, n_candles=2):
-        total_return = 0
-        holding_stock = False
-        buy_price = 0
-
-        # Check the lengths of y_true and y_pred and adjust if necessary
-        length_to_iterate = min(len(y_pred), len(y_true) - n_candles)
-        if length_to_iterate < len(y_pred):
-            # Log a warning or adjust as necessary
-            ...
-
-        # Iterate only up to the length where we have enough future data
-        for i in range(length_to_iterate):
-            if holding_stock:
-                # Sell the stock after two candles and calculate the return
-                total_return += y_true[i + n_candles] - buy_price
-                holding_stock = False
-
-            predicted_return = y_pred[i] - y_true[i]
-            if predicted_return > 0:  # Predicted price increase -> buy
-                buy_price = y_true[i]
-                holding_stock = True
-            # No need for else condition as we do not buy if the predicted return is not positive
-
-        # Check if we are holding any stock at the end
-        if holding_stock:
-            total_return += y_true[-1] - buy_price
-
-        return total_return

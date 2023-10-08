@@ -18,6 +18,10 @@ from xgboost import XGBClassifier
 model = None
 parameters = {}
 
+max_iter = np.arange(1000, 10_000, 1000)
+n_estimators = np.arange(500, 5000, 500)
+learning_rate = np.logspace(-3, 1, 4)
+tol = np.logspace(-3, -1, 4)
 
 def get_model(algorithm):
 
@@ -36,7 +40,7 @@ def get_model(algorithm):
             "kernel": ["linear", "poly", "rbf", "sigmoid"],
             "degree": np.arange(2, 8),
             "gamma": ["auto", "scale"],
-            "tol": np.logspace(-3, -1, 4),
+            "tol":tol,
             "epsilon":  np.logspace(-3, 2, 6)
         }
     elif algorithm == "Ridge Regression":
@@ -45,9 +49,9 @@ def get_model(algorithm):
             "alpha": np.logspace(-3, 3, 6),
             "fit_intercept": [True, False],
             "solver": ["auto", "svd", "cholesky", "lsqr", "sparse_cg", "sag", "saga"],
-            "positive": [True, False],
-            "tol": np.logspace(-3, -1, 4),
-            "max_iter": np.arange(1000, 2000, 500)
+            "positive": [False],
+            "tol":tol,
+            "max_iter": max_iter
         }
     elif algorithm == "Lasso Regression":
         model = Lasso()
@@ -57,20 +61,20 @@ def get_model(algorithm):
             "precompute": [True, False],
             "positive": [True, False],
             "selection": ["cyclic", "random"],
-            "tol": np.logspace(-3, -1, 4),
-            "max_iter": np.arange(1000, 2000, 500)
+            "tol":tol,
+            "max_iter": max_iter
         }
     elif algorithm == "Elastic Net Regression":
         model = ElasticNet()
         parameters = {
             "alpha": np.logspace(-3, 3, 6),
-            "l1_ratio": np.arange(0.5, 5, 1.5),
+            "l1_ratio": np.arange(0.1, 1, 0.1),
             "fit_intercept": [True, False],
             "precompute": [True, False],
             "positive": [True, False],
             "selection": ["cyclic", "random"],
-            "tol": np.logspace(-3, -1, 4),
-            "max_iter": np.arange(1000, 2000, 500)
+            "tol":tol,
+            "max_iter": max_iter
         }
     elif algorithm == "Decision Tree Regressor":
         model = DecisionTreeRegressor()
@@ -81,7 +85,7 @@ def get_model(algorithm):
             "min_samples_split": [2, 5, 10],
             "min_samples_leaf": [1, 2, 4],
             "random_state": np.arange(1, 5, 1),
-            "max_leaf_nodes": np.arange(1, 5, 1),
+            "max_leaf_nodes": [None, np.arange(2, 5, 1)],
             "min_impurity_decrease": np.logspace(-1, 2, 4),
             "ccp_alpha": np.logspace(-3, 1, 4)
         }
@@ -101,10 +105,10 @@ def get_model(algorithm):
             "loss": ["squared_loss", "huber", "epsilon_insensitive", "squared_epsilon_insensitive"],
             "penalty": ["l2", "l1", "elasticnet"],
             "alpha": np.logspace(-3, -1, 4),
-            "l1_ratio": [0.15, 0.3, 0.5],
+            "l1_ratio": np.arange(0.1, 1, 0.1),
             "learning_rate": ["constant", "optimal", "invscaling", "adaptive"],
             "eta0": [0.01, 0.1, 0.5],
-            "max_iter": np.arange(1000, 2000, 500),
+            "max_iter": max_iter,
             "shuffle": [True, False]
         }
 
@@ -115,8 +119,8 @@ def get_model(algorithm):
             "penalty": ['l2'],
             "C":  np.logspace(-1, 2, 4),
             "solver": ["newton-cg", "lbfgs", "liblinear", "sag", "saga"],
-            "max_iter": np.arange(1000, 2000, 500),
-            "tol": np.logspace(-3, -1, 4),
+            "max_iter": max_iter,
+            "tol":tol
         }
     elif algorithm == "MLPClassifier":
         model = MLPClassifier()
@@ -153,14 +157,14 @@ def get_model(algorithm):
             "kernel": ["linear", "poly", "rbf", "sigmoid"],
             "degree": [2, 3, 4, 5],
             "gamma": ["auto", "scale"],
-            "tol": np.logspace(-3, -1, 4),
+            "tol":tol,
             "cache_size": np.arange(200, 500, 100),
         }
 
     elif algorithm == "Isolation Forest":
         model = IsolationForest()
         parameters = {
-            "n_estimators": np.arange(100, 1000, 100),
+            "n_estimators": n_estimators,
             "max_samples": ["auto"],
             "contamination": [0.1, 0.2, 0.3, 0.4, 0.5]
         }
@@ -169,7 +173,7 @@ def get_model(algorithm):
         parameters = {
             "loss": ["deviance"],
             "learning_rate": [0.1, 0.01, 0.001],
-            "n_estimators": np.arange(100, 1000, 100),
+            "n_estimators": n_estimators,
             "max_depth": [3, 4, 6, 8, 10]
         }
     elif algorithm == "Extra Tree Classifier":
@@ -217,14 +221,14 @@ def get_model(algorithm):
         model = AdaBoostClassifier()
         parameters = {
             "n_estimators": np.arange(10, 310, 50),
-            "learning_rate": np.logspace(-3, 1, 4),
+            "learning_rate": learning_rate,
             "algorithm": ["SAMME", "SAMME.R"]
         }
     elif algorithm == "Gradient Boosting Regressor":
         model = GradientBoostingRegressor()
         parameters = {
             "loss": ["huber", "quantile"],
-            "learning_rate": [0.01, 0.1, 0.2],
+            "learning_rate": learning_rate,
             "n_estimators": np.arange(10, 310, 50),
             "subsample": [1.0, 0.9, 0.8],
             "criterion": ["friedman_mse", "squared_error", "absolute error"],
@@ -259,7 +263,7 @@ def get_model(algorithm):
             "loss": ["hinge", "log", "modified_huber", "squared_hinge", "perceptron"],
             "penalty": ["l2", "l1", "elasticnet"],
             "alpha": np.logspace(-3, -1, 4),
-            "l1_ratio": [0.15, 0.3, 0.5],
+            "l1_ratio": np.arange(0.1, 1, 0.1),
             "learning_rate": ["constant", "optimal", "invscaling", "adaptive"],
             "eta0": [0.01, 0.1, 0.5],
         }

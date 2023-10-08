@@ -23,7 +23,7 @@ class BotTab(Frame):
         # Machine learning
         self.optionmenu_var = StringVar(self.options_ml_frame)
         self.optionmenu_var.set('Select a file')
-        files = self._presenter.get_data_ml_files()
+        files = self._presenter.bot_tab.get_data_ml_files()
         self.options_ml_model = OptionMenu(
             self.options_ml_frame, self.optionmenu_var, *files)
 
@@ -33,7 +33,7 @@ class BotTab(Frame):
             self.bot_frame, text='Trading Bot', font=('Arial', 16))
         # # Add a button for enabling and disabling automatic trading
         self.auto_trade_button = Button(
-            self.bot_frame, text="Start Auto Trade", command=lambda: self._presenter.toggle_auto_trade(index))
+            self.bot_frame, text="Start Auto Trade", command=lambda: self._presenter.bot_tab.toggle_auto_trade(index))
 
         # Create a dropdown menu for selecting the exchange
         list_time = ['1m', '5m', '30m', '1h', '3h']
@@ -125,11 +125,11 @@ class BotTab(Frame):
 
     def start_bot(self):
         selection = int(self.bot_select_var.get()) - 1
-        print("start bot:",selection)
+        print("start bot:", selection)
         if selection == None:
             messagebox.showerror("Error", "there is no bot selected!")
         if isinstance(selection, int):
-            self._presenter.start_bot(selection)
+            self._presenter.bot_tab.start_bot(selection)
         else:
             messagebox.showerror("Error", "you need to select a bot to start")
 
@@ -139,18 +139,18 @@ class BotTab(Frame):
         if selection == None:
             messagebox.showerror("Error", "there is no bot selected!")
         if isinstance(selection, int):
-            self._presenter.stop_bot(selection)
+            self._presenter.bot_tab.stop_bot(selection)
         else:
             messagebox.showerror("Error", "there is no bot to stop")
 
     def create_bot(self) -> None:
-        self._presenter.threading_createbot()
+        self._presenter.bot_tab.threading_createbot()
 
     def destroy_bot(self) -> None:
         selection = int(self.bot_select_var.get()) - 1
         print(selection)
         if isinstance(selection, int):
-            self._presenter.destroy_bot(selection)
+            self._presenter.bot_tab.destroy_bot(selection)
         else:
             messagebox.showerror("Error", "there is no bot to destroy")
 

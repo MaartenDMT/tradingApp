@@ -1,10 +1,10 @@
-import logging
 import os
 import pickle
 import threading
 import traceback
 
 import ccxt
+import numpy as np
 import pandas as pd
 import psycopg2
 from dotenv import load_dotenv
@@ -13,6 +13,9 @@ import util.loggers as loggers
 from model.autobot import AutoBot
 from model.features import Tradex_indicator
 from model.machinelearning import MachineLearning
+from model.reinforcement.agent import DQLAgent
+from model.reinforcement.env import Environment
+from model.reinforcement.rl_visual import plotting
 from model.trading import Trading
 
 # Set the path to the .env file
@@ -39,6 +42,8 @@ class Models:
             self.model_logger, self._presenter)
         self.bottab_model = BotTabModel(self.model_logger, self._presenter)
         self.charttab_model = ChartTabModel(self.model_logger, self._presenter)
+        self.rltab_model = ReinforcementTabModel(
+            self.model_logger, self._presenter)
         self.model_logger.info("Finished loading the models")
 
     def get_ML(self) -> MachineLearning:
@@ -73,6 +78,7 @@ class LoginModel:
         self._username = None
         self._password = None
         self._table_name = "User"
+        self.logged_in = False  # Initialize the logged_in attribute
 
     def set_credentials(self, username: str, password: str) -> None:
         self._username = username
@@ -125,6 +131,12 @@ class LoginModel:
             self.cursor = self.conn.cursor()
         except Exception as e:
             print(e)
+
+    def set_logged_in(self, value):
+        self.logged_in = value
+
+    def get_logged_in_status(self):
+        return self.logged_in
 
 
 class MainviewModel:
@@ -181,7 +193,7 @@ class TradeTabModel:
             self.model_logger.error(f"in the modify_take_profit Error: {e}")
 
     def place_trade(self, trade_type, amount, price, stoploss, takeprofit, file) -> None:
-        ml = self.presenter.get_ml()
+        ml = self.presenter.ml_tab.get_ml()
         model = ml.load_model(file)
 
         # Make predictions using the scaled test data
@@ -289,7 +301,7 @@ class BotTabModel:
             return False
 
     def create_bot(self) -> None:
-        bot = self._presenter.get_auto_bot()
+        bot = self._presenter.bot_tab.get_auto_bot()
         self.bots.append(bot)
         print(f"name of the bot: {self.bots.__iter__}")
         self.model_logger.info(f"Creating a auto trading bot {bot}")
@@ -315,7 +327,7 @@ class BotTabModel:
             df = pickle.load(f)
         df = df.dropna()
         trade_x = Tradex_indicator(
-            symbol=symbol, timeframe=time, t=None, get_data=True, data=df.copy())
+            symbol=symbol, timeframe=time, t=None, get_data=False, data=df.copy())
         # # Make predictions using the scaled test data
         # y_pred = ml.predict(model)
         autobot = AutoBot(exchange, symbol, amount, stop_loss,
@@ -383,3 +395,59 @@ class ChartTabModel:
             f"getting data to plot the chart symbol {self.bot.symbol}")
 
         return df
+
+
+class ReinforcementTabModel:
+    def __init__(self, model_logger, presenter) -> None:
+        self.model_logger = model_logger
+        self.presenter = presenter
+        self.model_logger.info("loading the reinforcement tab model")
+
+        # Define a parameter grid with hyperparameters and their possible values
+        self.param_grid = {
+            'gamma': 0.95,
+            'hidden_units': 24,
+            'learning_rate': 0.01,
+            'batch_size': 16,
+            'episodes': 100,
+            'epsilon_min': 0.01,
+            'epsilon_decay': 0.995,
+            'dropout': 0.25,
+            'action': 'softmax',  # softmax, argmax
+            'm_activation': 'tanh'  # linear, tanh
+        }
+
+    # Define a function for training and evaluating the DQL agent
+
+    def train_and_evaluate(self, params):
+        # Initialize Environment and Agent with specific hyperparameters
+        env = Environment(symbol='BTCUSDT', features=[
+            'close'], limit=300, time="30m", actions=3, min_acc=0.55)
+        fn = env.get_feature_names()
+
+        self.model_logger.info(
+            f"Performance with data {env.data}")
+        self.model_logger.info(
+            f"observation space: {env.observation_space.shape}")
+        self.model_logger.info(
+            f"look back: {env.look_back}")
+        self.model_logger.info(self.param_grid)
+
+        agent = DQLAgent(gamma=params['gamma'], hu=params['hidden_units'], lr=params['learning_rate'], env=env,
+                         epsilon_min=params['epsilon_min'], epsilon_decay=params['epsilon_decay'], dropout=params['dropout'], act=params['action'], m_activation=params['m_activation'])
+        agent.batch_size = params['batch_size']
+
+        # Train the agent
+        agent.learn(episodes=params['episodes'])
+
+        # Evaluate the agent's performance (you can use your custom evaluation metric)
+        performance = agent.test(1)
+
+        # plot everything & save everything
+        plotting(agent, env, fn)
+
+        # Return the mean performance (customize this based on your evaluation metric)
+        return np.mean(performance)
+
+    def start(self):
+        score = self.train_and_evaluate(self.param_grid)

@@ -36,14 +36,15 @@ class TradeTab(Frame):
         self.takeprofit_slider.config(value=10)
 
         # Add a button for placing the trade
+        print(dir(self._presenter))
         self.trade_button = Button(
-            self, text="Trade", command=self._presenter.place_trade)
+            self, text="Trade", command=self._presenter.trading_presenter.place_trade)
 
         # # Add buttons for modifying the stop loss and take profit levels
         self.stop_loss_button = Button(self, text="Modify Stop Loss",
-                                       command=self._presenter.update_stoploss)
+                                       command=self._presenter.trading_presenter.update_stoploss)
         self.take_profit_button = Button(self, text="Modify Take Profit",
-                                         command=self._presenter.update_takeprofit)
+                                         command=self._presenter.trading_presenter.update_takeprofit)
         # Add text boxes for entering the trade amount and price
         self.amount_label = Label(
             self, text='Amount', font=('Arial', 12))
@@ -90,4 +91,3 @@ class TradeTab(Frame):
 
         self.btc_label.grid(row=5, column=2, pady=5)
         self.btc_balance_label.grid(row=6, column=2, pady=5)
-
