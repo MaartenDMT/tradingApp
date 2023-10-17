@@ -3,6 +3,7 @@ import time
 from concurrent.futures import as_completed
 
 import ccxt
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pandas_ta as ta
@@ -40,6 +41,17 @@ class Tradex_indicator:
         self.real_time = Real_time
         self.scanner = Scanner
 
+    @staticmethod
+    def convert_df(df):
+        # List of columns to be converted to float
+        columns_to_convert = ['open', 'high', 'low', 'close', 'volume']
+
+        # Apply the conversion to the specified columns
+        df[columns_to_convert] = df[columns_to_convert].astype(np.int64)
+        df[columns_to_convert] = df[columns_to_convert].round(6)
+
+        return df
+
     def get_data(self) -> pd.DataFrame:
         try:
             self.tradex_logger.info('Getting the data')
@@ -50,6 +62,7 @@ class Tradex_indicator:
 
             df = pd.DataFrame(data_load, columns=[
                               'date', 'open', 'high', 'low', 'close', 'volume'])
+            df = pd.to_numeric(df, errors='coerce')
             df['date'] = pd.to_datetime(df['date'], unit='ms')
             df.set_index('date', inplace=True)
             df['symbol'] = self.symbol
@@ -281,6 +294,29 @@ class Trend:
         return highest_low_range
         # stpLoss= emaC3_[1] > emaC100 and emaC3_ > emaC100  ? lowest : highest
 
+    @staticmethod
+    def plot_indicators(self):
+        plt.figure(figsize=(10, 6))
+
+        # Plot the indicators
+        plt.plot(self.df_trend['ema55H'], label='EMA 55 High', color='blue')
+        plt.plot(self.df_trend['ema55L'], label='EMA 55 Low', color='green')
+        plt.plot(self.df_trend['ema_100'], label='EMA 100', color='red')
+        plt.plot(self.df_trend['ema_200'], label='EMA 200', color='purple')
+        plt.plot(self.df_trend['lsma'], label='LSMA', color='orange')
+        plt.plot(self.df_trend['ema_10'], label='EMA 10', color='pink')
+        plt.plot(self.df_trend['vwap'], label='VWAP', color='brown')
+        plt.plot(self.df_trend['wma'], label='WMA', color='gray')
+        plt.scatter(self.df_trend['golden_signal'])
+
+        # Add titles and legend
+        plt.title('Trebd')
+        plt.xlabel('Date')
+        plt.ylabel('Close')
+        plt.legend()
+
+        plt.show()
+
     def __str__(self):
         return 'trend'
 
@@ -370,7 +406,6 @@ class Screener:
 
     def moneyflow(self):
         self.tradex_logger.info('- getting the moneyflow')
-        period = 14
 
         # Moneyflow
         mfi = ta.mfi(self.data['high'], self.data['low'],
@@ -532,8 +567,8 @@ class Scanner:
         self.df_scanner['rsi40'] = rsi40
 
         # adding the data to the general dataframe
-        self.data['rsi14'] = self.df_scanner.rsi14
-        self.data['rsi40'] = self.df_scanner.rsi40
+        self.data['rsi14'] = rsi14
+        self.data['rsi40'] = rsi40
 
         return self.df_scanner
 

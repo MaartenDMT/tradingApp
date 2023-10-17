@@ -7,8 +7,7 @@ import pandas as pd
 import pandas_ta as ta
 
 import util.loggers as loggers
-from model.features import Tradex_indicator
-from util.utils import load_config
+from util.utils import convert_df, features, load_config, tradex_features
 
 logger = loggers.setup_loggers()
 pd.set_option('mode.chained_assignment', None)
@@ -55,12 +54,12 @@ class Environment:
         self.wait = 0
         self.high_acc_threshold = 5
 
-        self._get_data(True)
+        self.data_ = self._get_data(True)
         self._create_features()
         self.observation_space = observation_space(len(self.data.columns))
         self.look_back = self.observation_space.shape[0]
         rl_logger.info(
-            f"Environment initialized with symbol {self.symbol} and features {self.features}. Observation space shape: {self.observation_space.shape}")
+            f"Environment initialized with symbol {self.symbol} and features {self.features}. Observation space shape: {self.observation_space.shape} and lookback {self.look_back}")
 
     def _get_data(self, none=True):
         if none:
@@ -71,20 +70,21 @@ class Environment:
             if os.path.exists(pickle_file_name):
                 # If it exists, read from it
                 with open(pickle_file_name, 'rb') as f:
-                    self.data_ = pickle.load(f)
+                    data_ = pickle.load(f)
 
                 # Calculate the maximum starting index to get 10,000 rows
-                max_start_index = len(self.data_) - 1000
+                max_start_index = len(data_) - 1000
 
                 # Generate a random starting index
                 random_start_index = random.randint(0, max_start_index)
 
                 # Get 10,000 rows starting from the random index
-                self.data_ = self.data_.iloc[random_start_index:random_start_index + 1000]
-
-                return self.data_
+                data_ = data_.iloc[random_start_index:random_start_index + 1000]
+                data = convert_df(data_)
+                return data
             else:
                 rl_logger.error('no data has been writen')
+                return None
 
     def _create_features(self):
         if self.data_ is None or self.data_.empty:
@@ -92,48 +92,26 @@ class Environment:
         else:
             rl_logger.info("Data fetched successfully.")
 
-        # Moving Average
-        self.data_['ma_10'] = self.data_['close'].rolling(window=10).mean()
+        rl_logger.info(f"create features: normal data {self.data_ }.")
+        # extra features
+        feature = features(self.data_.copy())
+        rl_logger.info(f"create features: extra feature {feature}.")
 
-        # Exponential Moving Average
-        self.data_['ema_10'] = self.data_['close'].ewm(
-            span=10, adjust=False).mean()
-        self.data_['ema_200'] = self.data_['close'].ewm(
-            span=200, adjust=False).mean()
+        # tradex
+        processed_features = tradex_features(self.symbol, self.data_.copy())
 
-        # Momentum
-        # Stochastic Oscillator (STOCH)
-        stoch = self.data_.ta.stoch()
-        # RSI
-        rsi = self.data_.ta.rsi(length=14)
-        rsi_40 = self.data_.ta.rsi(length=40)
+        rl_logger.info(
+            f"create features: processed_features {processed_features}.")
 
-        # MACD
-        macd = self.data_.ta.macd(fast=14, slow=28)
-
-        # Volatility
-        # ATR
-        atr = self.data_.ta.atr()
-
-        # TREND
-        # ADX
-        adx = self.data_.ta.adx()
-
-        # Volume
-        # CMF
-        cmf = self.data_.ta.cmf()
-
-        # Statistics
-        # KURT
-        kurt = self.data_.ta.kurtosis()
-
-        self.data_ = pd.concat(
-            [self.data_, stoch, rsi, rsi_40, macd, atr, adx, cmf, kurt], axis=1)
-        self.data_['last_price'] = self.data_['close'].shift(1)
+        self.data_: pd.DataFrame = pd.concat(
+            [processed_features, feature], axis=1)
         self.data_.dropna(inplace=True)
-        rl_logger.info(self.data_)
+        rl_logger.info(f"create features: Full PROCESED data {self.data_ }.")
+
+        self.data_['last_price'] = self.data_['close'].shift(1)
 
         self.data = self.data_[self.features].copy()
+        rl_logger.info(f"create features: observation Data {self.data}.")
         self.data = (self.data - self.data.mean()) / self.data.std()
 
         self.data['r'] = np.log(self.data['close'] /
@@ -144,7 +122,10 @@ class Environment:
         # Create a new column 'd' in the dataframe to store the "ideal" action
         self.data['d'] = compute_action(self.data_)
 
+        # Combine processed_features and feature into self.data_
+
         self.data['action'] = 0
+
         rl_logger.info("Features created.")
 
     def get_feature_names(self):
@@ -153,7 +134,7 @@ class Environment:
     def _get_state(self):
         state = self.data[self.features].iloc[self.bar -
                                               self.look_back:self.bar].values
-
+        rl_logger.info(f"STATE: the state is {state}.")
         return np.array(state, dtype=np.float32)
 
     def reset(self):
@@ -162,10 +143,14 @@ class Environment:
         self.total_reward = 0
         self.accuracy = 0
         self.bar = self.look_back
+        rl_logger.info(f"RESET:the data is {self.data[self.features]}")
         state = self.data[self.features].iloc[self.bar -
                                               self.look_back:self.bar].values
-        rl_logger.info(f"RESET:the reset state is {state}")
+
         state = np.array(state, dtype=np.float32)
+        rl_logger.info(
+            f"RESET:the state shape {state.shape} & size is {state.size}")
+        rl_logger.info(f"RESET:the reset state is {state}")
         return state
 
     def step(self, action):
@@ -176,6 +161,9 @@ class Environment:
 
         is_low_volatility, is_going_up_hold, is_going_down_hold = self.check_conditions(
             current_price)
+        rl_logger.info(
+            f"STEP: volatility: {is_low_volatility}, going Up: {is_going_up_hold}, going down: {is_going_down_hold}")
+
         reward = self.compute_reward(
             action, is_low_volatility, is_going_up_hold, is_going_down_hold, correct)
 
@@ -268,7 +256,7 @@ class Environment:
             (current_price > self.data_['ema_200'].iloc[self.bar]) &
             (self.data_['RSI_40'].iloc[self.bar] > 50)
         )
-        # (self.data['RSI_14'].iloc[self.bar] > self.data['RSI_40'].iloc[self.bar])
+        # (self.data['rsi14'].iloc[self.bar] > self.data['rsi40'].iloc[self.bar])
         is_going_down_hold = (
             (self.last_action == -1) &
             (current_price < self.last_price) &
@@ -289,7 +277,7 @@ class Environment:
         elif action == 0 and is_going_down_hold:
             reward = 0.8
         else:
-            reward = -0.5  # Incorrect action
+            reward = -0.2  # Incorrect action
 
         return reward
 
@@ -297,7 +285,9 @@ class Environment:
 def compute_action(df):
     # Verify that DataFrame is not empty
     if df.empty:
+        rl_logger.info(f"DataFrame is EMPTY: {len(df)}")
         return pd.Series()
+    print(df.columns.to_list())
 
     # Conditions for low volatility, going up and going down
     is_low_volatility = (df['ADX_14'] < 25) & (df['ADX_14'] < 20) & (
@@ -325,5 +315,5 @@ def compute_action(df):
 
     actions[mask] = np.where(df[mask]['r'] > 0, 1,
                              np.where(df[mask]['r'] < 0, -1, 0))
-
+    rl_logger.info(f"masks: {mask}")
     return pd.Series(actions, index=df.index)

@@ -1,6 +1,5 @@
 import re
 import threading
-import time
 import traceback
 
 import websocket
@@ -12,6 +11,7 @@ from util.ml_util import classifier, regression
 
 logger = loggers.setup_loggers()
 autobot_logger = logger['autobot']
+
 '''
 #TODO: Make when you start a bot, 
 that you automatically get data loaded, after the data is loaded.
@@ -24,21 +24,23 @@ class AutoBot:
     def __init__(self, exchange, symbol, amount, stop_loss, take_profit, model, time, ml, trade_x, df) -> None:
         # Initialize class variables as before
         self.exchange = exchange
-        self.symbol = symbol
-        self.amount = amount
-        self.stop_loss = stop_loss
-        self.take_profit = take_profit
+        self.symbol: str = symbol
+        self.amount: float = amount
+        self.stop_loss: float = stop_loss
+        self.take_profit: float = take_profit
         self.model = model
         self.time = time
         self.ml = ml
         self.trade_x: Tradex_indicator = trade_x
         self.df = df
         self.open_orders = {}
+        self.indicators = None
 
         self.auto_trade = False
+
         # Set up logging
         self.logger = autobot_logger
-        autobot_logger.info(
+        self.logger.info(
             f"the amount of autobot:, {self.amount} and {self.model}:")
 
         stream_names = [
@@ -101,7 +103,7 @@ class AutoBot:
                 self.logger.error("no model to use!")
 
         except Exception as e:
-            logger.error(
+            self.logger.error(
                 f'Unexpected error: {e}\n{traceback.format_exc()}')
 
     def on_error(self, ws, error):
@@ -109,55 +111,55 @@ class AutoBot:
             # Handle specific WebSocket error here
             raise websocket.WebSocketException(f'WebSocket error: {error}')
         except websocket.WebSocketException as e:
-            logger.error(e)
+            self.logger.error(e)
         except Exception as e:
-            logger.error(
+            self.logger.error(
                 f'Unexpected error: {e}\n{traceback.format_exc()}')
 
     def on_close(self, ws):
         try:
             # Handle specific WebSocket close event here
-            logger.info('WebSocket connection closed')
+            self.logger.info('WebSocket connection closed')
         except Exception as e:
-            logger.error(
+            self.logger.error(
                 f'Unexpected error: {e}\n{traceback.format_exc()}')
 
     def on_open(self, ws):
         # and one for the processing of the data
-        logger.info('WebSocket connection opened')
+        self.logger.info('WebSocket connection opened')
         self.create_tradex_signals()
 
     def create_tradex_signals(self):
         try:
             # Check if the timeframe is in self.candlestick_data before creating an Indicator instance
-            if self.model.candlestick_data is not None:
-                app_logger.info(
+            if self.df is not None:
+                self.logger.info(
                     f'the create tradex data: {self.df}')
                 try:
                     self.indicators = Indicator(self.trade_x)
                 except KeyError as e:
-                    logger.error(
+                    self.logger.error(
                         f"Key error creating tradex signals for: {e}")
                 except ValueError as e:  # replace with the actual type of exception you expect
-                    logger.error(
+                    self.logger.error(
                         f"Value error creating tradex signals for: {e}")
                 except Exception as e:
-                    logger.error(
+                    self.logger.error(
                         f"Error creating tradex signals for: {e}\n{traceback.format_exc()}")
 
             else:
-                logger.error(
+                self.logger.error(
                     f'data: does not exist in self.candlestick_data')
                 return
 
         except KeyError as e:
-            logger.error(
+            self.logger.error(
                 f"Key error creating tradex signals for: {e}")
         except ValueError as e:  # replace with the actual type of exception you expect
-            logger.error(
+            self.logger.error(
                 f"Value error creating tradex signals for : {e}")
         except Exception as e:
-            logger.error(
+            self.logger.error(
                 f"Error creating tradex signals for: {e}\n{traceback.format_exc()}")
 
         threading.Thread(target=self.indicators.run).start()
@@ -175,12 +177,12 @@ class AutoBot:
         prediction = self.ml.predict(self.df,
                                      self.model, self.time, self.symbol) - 1
 
-        autobot_logger.info(
+        self.logger.info(
             f"{self.exchange} exchange, the {self.model} predicted:{prediction}")
 
         # Use the trade_x to get the signal
         trade_x_signal = self.trade_x.run()
-        autobot_logger.info(trade_x_signal)
+        self.logger.info(trade_x_signal)
 
         # Check if the prediction is above the take profit or below the stop loss
         if prediction == -1:
@@ -253,7 +255,7 @@ class AutoBot:
 
         # Use the trade_x to get the signal
         trade_x_signal = self.trade_x.run()
-        autobot_logger.info(trade_x_signal)
+        self.info(trade_x_signal)
 
         # Check if the prediction is above the take profit or below the stop loss
         if prediction < current_price:
@@ -335,19 +337,19 @@ class AutoBot:
         try:
             candlestick, timeframe = parse_candlestick(data)
         except Exception as e:
-            logger.error(
+            self.logger.error(
                 f"Failed to parse candlestick: {e}\n{traceback.format_exc()}")
             return
 
         if not candlestick.get('x'):
             return
 
-        logger.info('New candlestick received from websocket')
+        self.logger.info('New candlestick received from websocket')
 
         try:
             new_row = extract_candlestick_data(candlestick)
         except Exception as e:
-            logger.error(
+            self.logger.error(
                 f"Failed to extract candlestick data: {e}\n{traceback.format_exc()}")
             return
 
@@ -358,7 +360,7 @@ class AutoBot:
         if self.ws.sock.connected:
             ...
         else:
-            logger.warning(
+            self.logger.warning(
                 'WebSocket connection is not alive. Attempting to reconnect...')
             self.reconnect()
 
@@ -370,9 +372,10 @@ class Indicator:
         self.screener = pd.DataFrame()
         self.real_time = pd.DataFrame()
         self.scanner = pd.DataFrame()
+        self.logger = autobot_logger
 
     def run(self, data=None):
-        logger.info("making the indicators")
+        self.logger.info("making the indicators")
         try:
             self.update_data(data)
             self.instance.run()
@@ -382,7 +385,7 @@ class Indicator:
             self.scanner = self.instance.scanner.df_scanner.tail(50)
             self.data = self.get_indicators_df()
         except Exception as e:
-            logger.error(
+            self.logger.error(
                 f"Error creating tradex signals: {e}\n{traceback.format_exc()}")
 
     def get_indicators_df(self):

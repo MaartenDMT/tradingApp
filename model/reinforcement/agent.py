@@ -8,8 +8,6 @@ import pandas as pd
 import tensorflow as tf
 from keras.layers import BatchNormalization, Dropout
 from keras.regularizers import l1, l2
-from tensorflow.keras import Sequential
-from tensorflow.keras.layers import Dense
 from tensorflow.keras.optimizers import Adam
 
 import util.loggers as loggers
@@ -52,19 +50,51 @@ class DQLAgent:
                        f"epsilon_min: {epsilon_min}, epsilon_decay: {epsilon_decay}, ")
 
     def _build_model(self, hu, opt, lr, dropout, m_activation):
-        model = Sequential()
-        model.add(Dense(hu, input_dim=self.osn,
+        model = tf.keras.Sequential()
+        model.add(tf.keras.layers.Dense(hu, input_dim=self.osn,
                   activation='relu', kernel_regularizer=l2(0.01)))
         model.add(BatchNormalization())
         model.add(Dropout(dropout))
-        model.add(Dense(hu, activation='relu', kernel_regularizer=l2(0.01)))
+        model.add(tf.keras.layers.Dense(hu, activation='relu', kernel_regularizer=l2(0.01)))
         model.add(BatchNormalization())
-        model.add(Dense(self.env.action_space.n, activation='tanh'))
-        model.add(Dense(1, activation='tanh'))
+        model.add(tf.keras.layers.Dense(self.env.action_space.n, activation=m_activation))
+        model.add(tf.keras.layers.Dense(1, activation=m_activation))
         model.compile(loss='mse', optimizer=opt(learning_rate=lr))
         rl_logger.info(
             f"Model built with action space {self.env.action_space.n}.")
         return model
+    
+    def base_dense_model(self):
+        base_model = tf.keras.Sequential()
+        base_model.add(tf.keras.layers.Dense(128, activation='relu'))
+        base_model.add(tf.keras.layers.Dense(64, activation='relu'))
+        base_model.add(tf.keras.layers.Dense(32, activation='relu'))
+        base_model.add(tf.keras.layers.Dense(1, activation='sigmoid'))
+        base_model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+        base_model.fit(X_train, y_train, epochs=500, batch_size=16, validation_data=(X_test, y_test), verbose=0)
+        return base_model
+
+    def base_lstm_model(self):
+        base_model = tf.keras.Sequential()
+        base_model.add(tf.keras.layers.LSTM(100, activation='relu', input_shape=(X_train.shape[1], 1), return_sequences=True))
+        base_model.add(tf.keras.layers.Dropout(0.2))
+        base_model.add(tf.keras.layers.LSTM(100, activation='relu'))
+        base_model.add(tf.keras.layers.Dense(1, activation='sigmoid'))
+        base_model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+        base_model.fit(X_train, y_train, epochs=500, batch_size=16, validation_data=(X_test, y_test), verbose=0)
+        return base_model
+
+    def base_conv1d_lstm_model(self):
+        base_model = tf.keras.Sequential()
+        base_model.add(tf.keras.layers.Conv1D(filters=64, kernel_size=2, activation='relu', input_shape=(X_train.shape[1], 1)))
+        base_model.add(tf.keras.layers.MaxPool1D(pool_size=2))
+        base_model.add(tf.keras.layers.LSTM(100, activation='relu', return_sequences=True))
+        base_model.add(tf.keras.layers.Dropout(0.2))
+        base_model.add(tf.keras.layers.LSTM(100, activation='relu'))
+        base_model.add(tf.keras.layers.Dense(1, activation='sigmoid'))
+        base_model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+        base_model.fit(X_train, y_train, epochs=500, batch_size=16, validation_data=(X_test, y_test), verbose=0)
+        return base_model
 
     def save(self, b_reward, acc):
         # Define the file path for the CSV
@@ -102,7 +132,7 @@ class DQLAgent:
 
     def select_replay(self, method='argmax'):
         if method == 'argmax':
-            self.argmax_replay()
+            self.arg_replay()
         elif method == 'softmax':
             self.soft_replay()
         else:
@@ -260,7 +290,7 @@ class DQLAgent:
                 action_index = np.argmax(q_values)
                 # Convert back to your action space of -1, 0, 1
                 action = reverse_mapping[action_index]
-            elif self.act == "argmax":
+            elif self.act == "softmax":
                 action_probs = np.exp(q_values) / np.sum(np.exp(q_values))
                 action_index = np.random.choice(
                     len(action_probs), p=action_probs)
@@ -278,6 +308,24 @@ class DQLAgent:
 
         rl_logger.info(f"TEST: Episode reward: {episode_reward}")
         return episode_reward
+    
+    def train_base_dense_model(self, X_train, y_train, X_test, y_test):
+        # ... (code for training base dense model)
+        accuracy = 0.85  # Replace this with your actual accuracy
+        self.save(accuracy, accuracy)  # Save the model
+        return accuracy
+
+    def train_base_lstm_model(self, X_train, y_train, X_test, y_test):
+        # ... (code for training base LSTM model)
+        accuracy = 0.90  # Replace this with your actual accuracy
+        self.save(accuracy, accuracy)  # Save the model
+        return accuracy
+
+    def train_base_conv1d_lstm_model(self, X_train, y_train, X_test, y_test):
+        # ... (code for training base Conv1D LSTM model)
+        accuracy = 0.88  # Replace this with your actual accuracy
+        self.save(accuracy, accuracy)  # Save the model
+        return accuracy
 
     def calculate_correlations(self, fn=None, ax=None):
         # If feature_names is None, use generic names

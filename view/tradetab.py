@@ -36,7 +36,6 @@ class TradeTab(Frame):
         self.takeprofit_slider.config(value=10)
 
         # Add a button for placing the trade
-        print(dir(self._presenter))
         self.trade_button = Button(
             self, text="Trade", command=self._presenter.trading_presenter.place_trade)
 

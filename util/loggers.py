@@ -4,7 +4,7 @@ from logging.handlers import RotatingFileHandler
 
 def setup_loggers():
     log_configurations = [
-        {'name': 'autobot', 'file': 'data/logs/app.log'},
+        {'name': 'autobot', 'file': 'data/logs/autobot.log'},
         {'name': 'tradex', 'file': 'data/logs/tradex.log'},
         {'name': 'presenter', 'file': 'data/logs/presenter.log'},
         {'name': 'model', 'file': 'data/logs/model.log'},

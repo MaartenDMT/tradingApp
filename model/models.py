@@ -17,6 +17,9 @@ from model.reinforcement.agent import DQLAgent
 from model.reinforcement.env import Environment
 from model.reinforcement.rl_visual import plotting
 from model.trading import Trading
+from util.utils import load_config
+
+config = load_config()
 
 # Set the path to the .env file
 dotenv_path = r'.env'
@@ -130,7 +133,7 @@ class LoginModel:
             )
             self.cursor = self.conn.cursor()
         except Exception as e:
-            print(e)
+            self.model_logger.error(e)
 
     def set_logged_in(self, value):
         self.logged_in = value
@@ -263,7 +266,7 @@ class BotTabModel:
         return files
 
     def start_bot(self, index: int) -> bool:
-        print(f"the index is {index}")
+        self.model_logger.info(f"the index is {index}")
 
         if index < 0 or index >= len(self.bots):
             self.model_logger.error(f"Index {index} is out of bounds.")
@@ -303,7 +306,7 @@ class BotTabModel:
     def create_bot(self) -> None:
         bot = self._presenter.bot_tab.get_auto_bot()
         self.bots.append(bot)
-        print(f"name of the bot: {self.bots.__iter__}")
+        self.model_logger.info(f"name of the bot: {self.bots.__iter__}")
         self.model_logger.info(f"Creating a auto trading bot {bot}")
 
     def destroy_bot(self, index: int) -> bool:
@@ -402,27 +405,28 @@ class ReinforcementTabModel:
         self.model_logger = model_logger
         self.presenter = presenter
         self.model_logger.info("loading the reinforcement tab model")
+        self.features = ['close']
 
         # Define a parameter grid with hyperparameters and their possible values
         self.param_grid = {
-            'gamma': 0.95,
-            'hidden_units': 24,
-            'learning_rate': 0.01,
-            'batch_size': 16,
-            'episodes': 100,
-            'epsilon_min': 0.01,
-            'epsilon_decay': 0.995,
-            'dropout': 0.25,
-            'action': 'softmax',  # softmax, argmax
-            'm_activation': 'tanh'  # linear, tanh
+            'gamma': float(config['Params']['gamma']),
+            'hidden_units': int(config['Params']['hidden_units']),
+            'learning_rate': float(config['Params']['learning_rate']),
+            'batch_size': int(config['Params']['batch_size']),
+            'episodes': int(config['Params']['episodes']),
+            'epsilon_min': float(config['Params']['epsilon_min']),
+            'epsilon_decay': float(config['Params']['epsilon_decay']),
+            'dropout': float(config['Params']['dropout']),
+            'action': config['Params']['action'],  # softmax, argmax
+            'm_activation': config['Params']['m_activation']  # linear, tanh
         }
 
     # Define a function for training and evaluating the DQL agent
 
     def train_and_evaluate(self, params):
         # Initialize Environment and Agent with specific hyperparameters
-        env = Environment(symbol='BTCUSDT', features=[
-            'close'], limit=300, time="30m", actions=3, min_acc=0.55)
+        env = Environment(symbol='BTCUSDT', features=self.features,
+                          limit=300, time="30m", actions=3, min_acc=0.55)
         fn = env.get_feature_names()
 
         self.model_logger.info(

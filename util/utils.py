@@ -3,6 +3,9 @@ from configparser import ConfigParser
 from tkinter import END
 
 import numpy as np
+import pandas as pd
+
+from model.features import Tradex_indicator
 
 
 def load_config():
@@ -55,3 +58,62 @@ class ListboxHandler(logging.Handler):
     def emit(self, record) -> None:
         # append the log message to the Listbox widget
         self.listbox_widget.insert(END, self.format(record) + "\n")
+
+
+def tradex_features(symbol, df):
+    df['volume'].astype(float)
+    tradex = Tradex_indicator(
+        symbol=symbol, timeframe='1h', t=None, get_data=False, data=df.copy())
+    tradex.run()
+    trend = tradex.trend.get_trend()
+    screener = tradex.screener.get_screener()
+    real_time = tradex.real_time.get_real_time()
+    scanner = tradex.scanner.get_scanner()
+
+    processed_features = pd.concat(
+        [df, trend, screener, real_time, scanner], axis=1)
+    return processed_features.drop_duplicates()
+
+
+def features(df):
+
+    # Momentum
+    # Stochastic Oscillator (STOCH)
+    stoch = df.ta.stoch()
+
+    # RSI
+    rsi = df.ta.rsi(length=14)
+    rsi_40 = df.ta.rsi(length=40)
+
+    # MACD
+    macd = df.ta.macd(fast=14, slow=28)
+
+    # Volatility
+    # ATR
+    atr = df.ta.atr()
+
+    # TREND
+    # ADX
+    adx = df.ta.adx()
+
+    # Volume
+    # CMF
+    cmf = df.ta.cmf()
+
+    # Statistics
+    # KURT
+    kurt = df.ta.kurtosis()
+
+    data = pd.concat([stoch, rsi, rsi_40, macd, atr, adx, cmf, kurt], axis=1)
+
+    return data
+
+
+def convert_df(df):
+    # List of columns to be converted to float
+    columns_to_convert = ['open', 'high', 'low', 'close', 'volume']
+
+    # Apply the conversion to the specified columns
+    df[columns_to_convert] = df[columns_to_convert].astype(float)
+
+    return df

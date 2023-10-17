@@ -19,12 +19,11 @@ from sklearn.model_selection import (GridSearchCV, RandomizedSearchCV,
 from sklearn.preprocessing import StandardScaler
 from skopt import BayesSearchCV
 
-from model.features import Tradex_indicator
 from util.ml_models import get_model
 from util.ml_util import (classifier, column_1d, future_score_clas,
                           future_score_reg, regression, spot_score_clas,
                           spot_score_reg)
-from util.utils import array_min2d
+from util.utils import array_min2d, tradex_features
 
 
 class MachineLearning:
@@ -196,22 +195,7 @@ class MachineLearning:
 
     def process_features(self, df):
 
-        self.tradex = Tradex_indicator(
-            symbol=self.symbol, timeframe='1h', t=None, get_data=False, data=df.copy())
-        self.tradex.run()
-        trend = self.tradex.trend.get_trend()
-        screener = self.tradex.screener.get_screener()
-        real_time = self.tradex.real_time.get_real_time()
-        scanner = self.tradex.scanner.get_scanner()
-
-        # # Calculate RSI
-        # rsi = ta.rsi(df['close'])
-
-        # # Calculate moving average
-        # moving_average = ta.sma(df['close'], length=50)
-
-        processed_features = pd.concat(
-            [df[['open', 'high', 'low', 'volume']], trend, screener, real_time, scanner], axis=1)
+        processed_features = tradex_features(self.symbol, df)
 
         self.column_names = processed_features.columns.tolist()
 

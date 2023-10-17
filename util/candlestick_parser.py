@@ -20,24 +20,24 @@ def decode_json_message(message):
             raise ValueError(f'Expected dict, got {type(data).__name__}')
         return data
     except KeyError as e:
-        logger.error(f'Key Error processing message: {e}')
+        app_logger.error(f'Key Error processing message: {e}')
     except json.JSONDecodeError as e:
-        logger.error(f"JSONDecodeError: {e}")
+        app_logger.error(f"JSONDecodeError: {e}")
     except ValueError as e:
-        logger.error(f'Value Error processing message: {e}')
+        app_logger.error(f'Value Error processing message: {e}')
     return None
 
 
 def validate_message_data(data):
     if 'data' not in data or 'k' not in data['data']:
-        logger.warning("Invalid WebSocket message format.")
+        app_logger.warning("Invalid WebSocket message format.")
         return False
     return True
 
 
 def add_row_and_maintain_size(new_row, candlestick_data):
 
-    logger.info(f'1: {candlestick_data}')
+    app_logger.info(f'1: {candlestick_data}')
 
     # Convert new_row to a DataFrame if it's a dict
     if isinstance(new_row, dict):
@@ -52,23 +52,23 @@ def add_row_and_maintain_size(new_row, candlestick_data):
             candlestick_data.drop(
                 candlestick_data.index[0], inplace=True
             )
-            logger.info(
+            app_logger.info(
                 f'2: {candlestick_data}')
         # Append the new row
         candlestick_data = pd.concat(
             [candlestick_data, new_row]
         ).reset_index(drop=True)
-        logger.info(
+        app_logger.info(
             f'3: {candlestick_data}')
 
     except IndexError as e:
         # add logging here
-        logger.error(f"IndexError occurred: {e}")
+        app_logger.error(f"IndexError occurred: {e}")
     except ValueError as e:
-        logger.error(
+        app_logger.error(
             f"ValueError occurred: {e}.\nNew Row: {new_row}\nData: {candlestick_data}")
     except Exception as e:
-        logger.error(
+        app_logger.error(
             f"Error when adding a row occurred: {e}\n{traceback.format_exc()}")
     return candlestick_data
 
@@ -83,7 +83,7 @@ def parse_candlestick(data: Dict[str, Any]) -> Dict[str, Any]:
     try:
         timeframe = stream_name.split('@')[-1].split('_')[-1]
     except IndexError:
-        logger.error("Error parsing timeframe from stream name.")
+        app_logger.error("Error parsing timeframe from stream name.")
         return
 
     return candlestick, timeframe

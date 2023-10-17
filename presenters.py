@@ -4,8 +4,13 @@ from tkinter import messagebox
 
 from ttkbootstrap import Frame
 
+import util.loggers as loggers
+
 MAX_POSITION_SIZE = 0.01
 MIN_STOP_LOSS_LEVEL = 0.10
+
+logger = loggers.setup_loggers()
+app_logger = logger['app']
 
 
 class Presenter:
@@ -13,7 +18,6 @@ class Presenter:
         self._model = model
         self._view = view
         self.get_frames()
-
 
     def run(self) -> None:
         self._view.mainloop()
@@ -58,7 +62,7 @@ class Presenter:
         self._model.create_tabmodels(self)
         self.get_tabs(self.main_view)
         self._view.show_frame(self.main_view, self)
-        # print(dir(self.main_view))
+        self.main_listbox = MainListBox(self._model, self.main_view, self)
 
     def get_tabs(self, main_view) -> None:
         self.trading_presenter = TradePresenter(self._model, main_view, self)
@@ -67,6 +71,20 @@ class Presenter:
         self.exchange_tab = ExchangePresenter(self._model, main_view, self)
         self.ml_tab = MLPresenter(self._model, main_view, self)
         self.rl_tab = RLPresenter(self._model, main_view, self)
+
+
+class MainListBox:
+    def __init__(self, model, view, presenter) -> None:
+        self._model = model
+        self.main_view = view
+        self.presenter = presenter
+        self.load()
+
+    def load(self):
+        self.main_view.list_box("Welcome to the trade-x Bot")
+
+    def set_text(self, text):
+        self.main_view.list_box(text)
 
 
 class TradePresenter:
@@ -83,11 +101,13 @@ class TradePresenter:
     def update_stoploss(self) -> None:
         trade_tab_view = self.trade_tab()
         stoploss_slider = trade_tab_view.stoploss_slider.get()
+        self.presenter.main_listbox.set_text(stoploss_slider)
         self._model.tradetab_model.update_stoploss(stoploss_slider)
 
     def update_takeprofit(self) -> None:
         trade_tab_view = self.trade_tab()
         takeprofit_slider = trade_tab_view.takeprofit_slider.get()
+        self.presenter.main_listbox.set_text(takeprofit_slider)
         self._model.tradetab_model.update_takeprofit(takeprofit_slider)
 
     def place_trade(self) -> None:
@@ -126,6 +146,8 @@ class TradePresenter:
         self._model.tradetab_model.place_trade(
             trade_type, amount, price, stoploss, takeprofit, file)
 
+        self.presenter.main_listbox.set_text(
+            f"Type: {trade_type} {amount} at {price}")
         self._model.logger.info(f"Type: {trade_type} {amount} at {price}")
         # Update the trade history list
         # self.trade_tab.update_history()
@@ -157,6 +179,8 @@ class BotPresenter:
             bot_tab = self.bot_tab_view()
             name = self.get_bot_name(bot_tab, index)
             bot_tab.update_bot_status("Started", index, name)
+        self.presenter.main_listbox.set_text(
+            f"bot {index}: {name} has been started")
 
     def stop_bot(self, index: int) -> None:
         stopped = self._model.bottab_model.stop_bot(index)
@@ -165,6 +189,8 @@ class BotPresenter:
             bot_tab = self.bot_tab_view()
             name = self.get_bot_name(bot_tab, index)
             bot_tab.update_bot_status("Stopped", index, name)
+        self.presenter.main_listbox.set_text(
+            f"bot {index}: {name} has been stopped")
 
     def create_bot(self) -> None:
         self._model.bottab_model.create_bot()
@@ -172,6 +198,8 @@ class BotPresenter:
         name = self.get_bot_name(bot_tab, self.bot_count)
         self.bot_count += 1
         bot_tab.add_bot_to_optionmenu(self.bot_count, name)
+        self.presenter.main_listbox.set_text(
+            f"bot {self.bot_count}: {name} has been created")
 
     def threading_createbot(self) -> None:
         t = threading.Thread(target=self.create_bot)
@@ -185,6 +213,8 @@ class BotPresenter:
             if destroyed:
                 bot_tab = self.bot_tab_view()
                 bot_tab.remove_bot_from_optionmenu(index)
+            self.presenter.main_listbox.set_text(
+                f"bot {index}:has been destroyed")
         else:
             messagebox.showerror("Error", "There is no bot to destroy.")
 
@@ -205,6 +235,8 @@ class BotPresenter:
         autobot = self._model.bottab_model.get_autobot(
             exchange, symbol, amount, stoploss, takeprofit, file, time)
         self.append_botname_bottab(self.bot_tab, autobot.__str__())
+        self.presenter.main_listbox.set_text(
+            f"bot {autobot.__str__()}:has been selected")
         return autobot
 
     def append_botname_bottab(self, bottab, name) -> None:
@@ -226,6 +258,8 @@ class BotPresenter:
 
         if l:
             exchange.set_sandbox_mode(True)
+        self.presenter.main_listbox.set_text(
+            f"exchange {exchange}:has been created")
 
         return exchange
 
@@ -302,16 +336,22 @@ class ExchangePresenter:
         exchange = self._model.exchangetab_model.create_exchange(
             exchange_name, api_key, api_secret)
         exchange_tab.add_exchange_optionmenu(exchange)
+        self.presenter.main_listbox.set_text(
+            f"exchange {exchange}: has been created")
 
     def remove_exchange(self) -> None:
         exchange_tab = self.exchange_tab_view()
         index = exchange_tab.remove_exchange_from_optionmenu()
         self._model.exchangetab_model.remove_exchange(index)
+        self.presenter.main_listbox.set_text(
+            f"exchange {index}:has been removed")
 
     def select_exchange(self):
         exchange_tab = self.exchange_tab_view()
         index = exchange_tab.select_exchange()
         exchange = self._model.exchangetab_model.get_exchange(index)
+        self.presenter.main_listbox.set_text(
+            f"exchange {exchange}:has been selected")
         return exchange
 
 
@@ -332,7 +372,8 @@ class MLPresenter:
         self.ml_tab.current_ml_label.config(text=f"{selected_algorithm}")
         self._model.model_logger.info(
             f"machine learning model {selected_algorithm} selected")
-
+        self.presenter.main_listbox.set_text(
+            f"ML {selected_algorithm}: has been selected")
         return selected_algorithm
 
     def train_evaluate_save_model(self) -> None:
@@ -345,7 +386,7 @@ class MLPresenter:
         model = self.get_ML_model()
         ML = self._model.get_ML()
         predict = ML.predict(model)
-
+        self.presenter.main_listbox.set_text(f"ML has predicted {predict}")
         return predict
 
     def get_ml(self):
@@ -369,4 +410,6 @@ class RLPresenter:
         pass
 
     def start_rlmodel(self) -> None:
-        pass
+        score = self._model.rltab_model.start()
+        app_logger.info(score)
+        self.presenter.main_listbox.set_text(f"DQRL has scored: {score}")

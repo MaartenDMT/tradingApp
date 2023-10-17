@@ -27,6 +27,7 @@ def plotting(agent, env, fn):
     # Strategy Calculation
     agent.env.data_['returns'] = env.data_['close'].pct_change()
     agent.env.data_['strategy'] = env.data['action'] * env.data_['returns']
+    print(env.data['action'])
 
     # Subplot 2: Strategy
     plt.subplot(4, 2, 2)  # 4 rows, 2 columns, 2nd plot
@@ -39,6 +40,8 @@ def plotting(agent, env, fn):
     # Subplot 3: Actions during Learning
     plt.subplot(4, 2, 3)  # 4 rows, 2 columns, 3rd plot
     actions = np.array(agent.train_action_history[:len(agent.env.data)])
+    print(f"Actions shape: {actions.shape}")
+    print(f"Time steps: {len(agent.env.data)}")
     time_steps = np.arange(len(actions))
     for action in np.unique(actions):
         plt.scatter(time_steps[actions == action],

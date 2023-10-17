@@ -23,6 +23,7 @@ n_estimators = np.arange(500, 5000, 500)
 learning_rate = np.logspace(-3, 1, 4)
 tol = np.logspace(-3, -1, 4)
 
+
 def get_model(algorithm):
 
     # Regression Models
@@ -40,7 +41,7 @@ def get_model(algorithm):
             "kernel": ["linear", "poly", "rbf", "sigmoid"],
             "degree": np.arange(2, 8),
             "gamma": ["auto", "scale"],
-            "tol":tol,
+            "tol": tol,
             "epsilon":  np.logspace(-3, 2, 6)
         }
     elif algorithm == "Ridge Regression":
@@ -50,7 +51,7 @@ def get_model(algorithm):
             "fit_intercept": [True, False],
             "solver": ["auto", "svd", "cholesky", "lsqr", "sparse_cg", "sag", "saga"],
             "positive": [False],
-            "tol":tol,
+            "tol": tol,
             "max_iter": max_iter
         }
     elif algorithm == "Lasso Regression":
@@ -61,7 +62,7 @@ def get_model(algorithm):
             "precompute": [True, False],
             "positive": [True, False],
             "selection": ["cyclic", "random"],
-            "tol":tol,
+            "tol": tol,
             "max_iter": max_iter
         }
     elif algorithm == "Elastic Net Regression":
@@ -73,7 +74,7 @@ def get_model(algorithm):
             "precompute": [True, False],
             "positive": [True, False],
             "selection": ["cyclic", "random"],
-            "tol":tol,
+            "tol": tol,
             "max_iter": max_iter
         }
     elif algorithm == "Decision Tree Regressor":
@@ -120,7 +121,7 @@ def get_model(algorithm):
             "C":  np.logspace(-1, 2, 4),
             "solver": ["newton-cg", "lbfgs", "liblinear", "sag", "saga"],
             "max_iter": max_iter,
-            "tol":tol
+            "tol": tol
         }
     elif algorithm == "MLPClassifier":
         model = MLPClassifier()
@@ -157,7 +158,7 @@ def get_model(algorithm):
             "kernel": ["linear", "poly", "rbf", "sigmoid"],
             "degree": [2, 3, 4, 5],
             "gamma": ["auto", "scale"],
-            "tol":tol,
+            "tol": tol,
             "cache_size": np.arange(200, 500, 100),
         }
 
