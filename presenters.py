@@ -410,6 +410,9 @@ class RLPresenter:
         pass
 
     def start_rlmodel(self) -> None:
-        score = self._model.rltab_model.start()
+        self.presenter.main_listbox.set_text(
+            f"Starting the DQRL Model")
+        self._model.rltab_model.start()
+        score = self._model.rltab_model.result
         app_logger.info(score)
         self.presenter.main_listbox.set_text(f"DQRL has scored: {score}")

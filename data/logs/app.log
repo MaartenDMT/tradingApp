@@ -1,15 +1,16 @@
-2023-09-26 23:28:29 - autobot - INFO - the amount of autobot:, 30.23255813953488 and BayesianRidge(alpha_1=0.0001, alpha_2=0.0001, lambda_1=1e-05, lambda_2=1e-05,
-              n_iter=100, tol=0.01):
-2023-09-26 23:29:15 - autobot - ERROR - no model to use!
-2023-09-26 23:43:20 - autobot - INFO - the amount of autobot:, 50.0 and BayesianRidge(alpha_1=1e-05, alpha_2=1e-05, lambda_1=1e-05, n_iter=1000):
-2023-09-26 23:43:48 - autobot - INFO - Phemex exchange, the BayesianRidge(alpha_1=1e-05, alpha_2=1e-05, lambda_1=1e-05, n_iter=1000) predicted:0
-2023-09-26 23:52:28 - autobot - INFO - the amount of autobot:, 26.744186046511626 and BayesianRidge(alpha_1=1e-05, alpha_2=1e-05, lambda_1=1e-05, n_iter=1000):
-2023-09-26 23:53:07 - autobot - INFO - Phemex exchange, the BayesianRidge(alpha_1=1e-05, alpha_2=1e-05, lambda_1=1e-05, n_iter=1000) predicted:-1
-2023-09-26 23:53:07 - autobot - INFO - None
-2023-09-26 23:53:11 - autobot - ERROR - autobot Sell order:phemex {"code":11056,"msg":"TE_QTY_TOO_LARGE","data":null}
-2023-09-27 01:02:41 - autobot - INFO - the amount of autobot:, 25.581395348837212 and BayesianRidge(alpha_1=0.0001, alpha_2=0.0001, lambda_1=1e-05, lambda_2=1e-05,
-              n_iter=100, tol=0.01):
-2023-10-08 02:14:03 - autobot - INFO - the amount of autobot:, 26.744186046511626 and LinearRegression(n_jobs=-1):
-2023-10-08 02:15:29 - autobot - INFO - the amount of autobot:, 50.0 and LinearRegression(n_jobs=-1):
-2023-10-08 02:17:29 - autobot - INFO - the amount of autobot:, 50.0 and LinearRegression(n_jobs=-1):
-2023-10-08 12:52:03 - autobot - INFO - the amount of autobot:, 50.0 and LinearRegression(n_jobs=-1):
+2023-10-26 20:07:39 - app - INFO - None
+2023-10-26 20:10:25 - app - INFO - None
+2023-10-26 20:11:12 - app - INFO - None
+2023-10-26 20:17:40 - app - INFO - None
+2023-10-26 20:20:06 - app - INFO - None
+2023-10-29 15:25:42 - app - INFO - None
+2023-10-29 15:46:59 - app - INFO - None
+2023-10-29 15:50:51 - app - INFO - None
+2023-10-29 15:52:02 - app - INFO - None
+2023-10-29 15:54:11 - app - INFO - None
+2023-10-29 15:55:51 - app - INFO - None
+2023-10-29 16:08:51 - app - INFO - None
+2023-10-29 16:15:01 - app - INFO - None
+2023-10-29 16:19:13 - app - INFO - None
+2023-10-29 16:22:02 - app - INFO - None
+2023-10-29 16:24:17 - app - INFO - None

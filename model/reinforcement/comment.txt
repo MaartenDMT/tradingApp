@@ -1,0 +1,45 @@
+    # def replay(self):
+    #     batch = random.sample(self.memory, self.batch_size)
+    #     for state, action, reward, next_state, done in batch:
+    #         if not done:
+    #             # Get the single continuous value
+    #             pred = self.model.predict(next_state)[0][0]
+    #             reward += self.gamma * pred
+    #         target = self.model.predict(state)
+    #         # Update the single continuous value in the target
+    #         target[0, 0] = reward
+    #         self.model.fit(state, target, epochs=1, verbose=False)
+    #         if self.epsilon > self.epsilon_min:
+    #             self.epsilon *= self.epsilon_decay
+    #     agent_logger.info(f"REPLAY: done. Epsilon is now {self.epsilon}")
+
+
+
+    # def soft_replay(self):
+    #     batch = random.sample(self.memory, self.batch_size)
+    #     for state, action, reward, next_state, done in batch:
+    #         if not done:
+    #             q_values = self.model.predict(next_state)[0]
+    #             action_probs = np.exp(q_values) / np.sum(np.exp(q_values))
+    #             # Use the expected value based on softmax
+    #             expected_reward = np.sum(action_probs * q_values)
+    #             reward += self.gamma * expected_reward
+    #         target = self.model.predict(state)[0]
+    #         target[0, action] = reward
+    #         self.model.fit(state, target, epochs=1, verbose=False)
+    #         if self.epsilon > self.epsilon_min:
+    #             self.epsilon *= self.epsilon_decay
+    #     agent_logger.info(f"REPLAY: done. Epsilon is now {self.epsilon}")
+
+        # def arg_replay(self):
+    #     batch = random.sample(self.memory, self.batch_size)
+    #     for state, action, reward, next_state, done in batch:
+    #         if not done:
+    #             pred = np.amax(self.model.predict(next_state)[0])
+    #             reward += self.gamma * pred
+    #         target = self.model.predict(state)[0]
+    #         target[0, action] = reward
+    #         self.model.fit(state, target, epochs=1, verbose=False)
+    #         if self.epsilon > self.epsilon_min:
+    #             self.epsilon *= self.epsilon_decay
+    #     agent_logger.info(f"REPLAY: done. Epsilon is now {self.epsilon}")

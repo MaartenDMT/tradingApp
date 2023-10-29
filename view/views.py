@@ -1,8 +1,8 @@
 
 from tkinter import Listbox, messagebox
 
-from ttkbootstrap import (Button, Entry, Frame, Label, Menu, Notebook,
-                          StringVar, Style, Window, END, Treeview)
+from ttkbootstrap import (END, Button, Entry, Frame, Label, Menu, Notebook,
+                          StringVar, Style, Treeview, Window)
 
 from view.bottab import BotTab
 from view.charttab import ChartTab

@@ -347,7 +347,7 @@ class Screener:
         self.df_screener['s_vwap'] = vwap
         self.df_screener['mfi'] = mfi
         self.df_screener['mfi_sum'] = self.mfi_sum
-        self.df_screener['dots'] = dots
+        self.df_screener['s_dots'] = dots
 
         # adding the data to the general dataframe
         self.data['mfi'] = self.df_screener.mfi

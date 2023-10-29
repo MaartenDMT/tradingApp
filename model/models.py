@@ -406,9 +406,11 @@ class ReinforcementTabModel:
         self.presenter = presenter
         self.model_logger.info("loading the reinforcement tab model")
         self.features = ['close']
+        self.result = None
 
         # Define a parameter grid with hyperparameters and their possible values
         self.param_grid = {
+            'modelname': str(config['Params']['modelname']),
             'gamma': float(config['Params']['gamma']),
             'hidden_units': int(config['Params']['hidden_units']),
             'learning_rate': float(config['Params']['learning_rate']),
@@ -417,8 +419,13 @@ class ReinforcementTabModel:
             'epsilon_min': float(config['Params']['epsilon_min']),
             'epsilon_decay': float(config['Params']['epsilon_decay']),
             'dropout': float(config['Params']['dropout']),
-            'action': config['Params']['action'],  # softmax, argmax
-            'm_activation': config['Params']['m_activation']  # linear, tanh
+            'act': str(config['Params']['act']),  # softmax, argmax
+            # linear, tanh, sigmoid
+            'm_activation': str(config['Params']['m_activation']),
+            'env_actions': int(config['Params']['env_actions']),
+            'min_acc': float(config['Params']['min_acc']),
+            'test_episodes': int(config['Params']['test_episodes']),
+            'loss': str(config['Params']['loss'])
         }
 
     # Define a function for training and evaluating the DQL agent
@@ -426,7 +433,7 @@ class ReinforcementTabModel:
     def train_and_evaluate(self, params):
         # Initialize Environment and Agent with specific hyperparameters
         env = Environment(symbol='BTCUSDT', features=self.features,
-                          limit=300, time="30m", actions=3, min_acc=0.55)
+                          limit=300, time="30m", actions=params['env_actions'], min_acc=params['min_acc'])
         fn = env.get_feature_names()
 
         self.model_logger.info(
@@ -437,21 +444,27 @@ class ReinforcementTabModel:
             f"look back: {env.look_back}")
         self.model_logger.info(self.param_grid)
 
-        agent = DQLAgent(gamma=params['gamma'], hu=params['hidden_units'], lr=params['learning_rate'], env=env,
-                         epsilon_min=params['epsilon_min'], epsilon_decay=params['epsilon_decay'], dropout=params['dropout'], act=params['action'], m_activation=params['m_activation'])
+        agent = DQLAgent(**self.param_grid)
+
         agent.batch_size = params['batch_size']
 
         # Train the agent
         agent.learn(episodes=params['episodes'])
 
         # Evaluate the agent's performance (you can use your custom evaluation metric)
-        performance = agent.test(1)
+        performance = agent.test(params['test_episodes'])
 
         # plot everything & save everything
         plotting(agent, env, fn)
 
         # Return the mean performance (customize this based on your evaluation metric)
-        return np.mean(performance)
+        self.result = np.mean(performance)
 
     def start(self):
-        score = self.train_and_evaluate(self.param_grid)
+        try:
+            evaluation_thread = threading.Thread(
+                target=self.train_and_evaluate, args=(self.param_grid,))
+            evaluation_thread.setDaemon(True)
+            evaluation_thread.start()
+        except Exception as e:
+            self.model_logger.error(f"{e}\n{traceback.format_exc()}")
