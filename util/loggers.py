@@ -32,7 +32,7 @@ def setup_individual_logger(logger_name, log_file):
         logger.setLevel(logging.DEBUG)
 
         file_handler = RotatingFileHandler(
-            log_file, maxBytes=2_000_000, backupCount=10)
+            log_file, maxBytes=2_000_000_000, backupCount=10)
 
         console_handler = logging.StreamHandler()
         console_handler.setLevel(logging.ERROR)

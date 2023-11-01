@@ -415,17 +415,21 @@ class ReinforcementTabModel:
             'hidden_units': int(config['Params']['hidden_units']),
             'learning_rate': float(config['Params']['learning_rate']),
             'batch_size': int(config['Params']['batch_size']),
-            'episodes': int(config['Params']['episodes']),
             'epsilon_min': float(config['Params']['epsilon_min']),
             'epsilon_decay': float(config['Params']['epsilon_decay']),
             'dropout': float(config['Params']['dropout']),
             'act': str(config['Params']['act']),  # softmax, argmax
             # linear, tanh, sigmoid
             'm_activation': str(config['Params']['m_activation']),
-            'env_actions': int(config['Params']['env_actions']),
-            'min_acc': float(config['Params']['min_acc']),
-            'test_episodes': int(config['Params']['test_episodes']),
+
             'loss': str(config['Params']['loss'])
+        }
+
+        self.params = {
+            'episodes': int(config['Params']['episodes']),
+            'env_actions': int(config['Params']['env_actions']),
+            'test_episodes': int(config['Params']['test_episodes']),
+            'min_acc': float(config['Params']['min_acc']),
         }
 
     # Define a function for training and evaluating the DQL agent
@@ -444,9 +448,7 @@ class ReinforcementTabModel:
             f"look back: {env.look_back}")
         self.model_logger.info(self.param_grid)
 
-        agent = DQLAgent(**self.param_grid)
-
-        agent.batch_size = params['batch_size']
+        agent = DQLAgent(**self.param_grid, env=env)
 
         # Train the agent
         agent.learn(episodes=params['episodes'])
@@ -463,7 +465,7 @@ class ReinforcementTabModel:
     def start(self):
         try:
             evaluation_thread = threading.Thread(
-                target=self.train_and_evaluate, args=(self.param_grid,))
+                target=self.train_and_evaluate, args=(self.params,))
             evaluation_thread.setDaemon(True)
             evaluation_thread.start()
         except Exception as e:

@@ -606,3 +606,1447 @@
 2023-10-29 16:24:18 - tradex - INFO - - setting up the waves
 2023-10-29 16:24:18 - tradex - INFO - init trade-x scanner
 2023-10-29 16:24:18 - tradex - INFO - - setting up the rsi's
+2023-10-29 18:14:28 - tradex - INFO - init trade-x trend
+2023-10-29 18:14:28 - tradex - INFO - init trade-x screener
+2023-10-29 18:14:28 - tradex - INFO - - setting up High|Low channel
+2023-10-29 18:14:28 - tradex - INFO - init trade-x Real time
+2023-10-29 18:14:28 - tradex - INFO - - make the waves
+2023-10-29 18:14:28 - tradex - INFO - init trade-x scanner
+2023-10-29 18:14:28 - tradex - INFO - - setting up the waves
+2023-10-29 18:14:28 - tradex - INFO - - setting up EMA
+2023-10-29 18:14:28 - tradex - INFO - - setting up the rsi's
+2023-10-29 18:14:28 - tradex - INFO - - setting up LSMA
+2023-10-29 18:14:28 - tradex - INFO - - setting up VWAP
+2023-10-29 18:14:28 - tradex - INFO - - setting up wave spaces
+2023-10-29 18:14:28 - tradex - INFO - - setting up the waves
+2023-10-29 18:14:28 - tradex - INFO - - getting the dots
+2023-10-29 18:14:28 - tradex - INFO - - setting up the waves
+2023-10-29 18:14:28 - tradex - INFO - - getting the moneyflow
+2023-10-29 18:14:28 - tradex - INFO - - getting the dots
+2023-10-29 18:14:28 - tradex - INFO - - make the waves
+2023-10-29 18:14:28 - tradex - INFO - Elapsed time: 0.26 seconds
+2023-10-29 18:14:28 - tradex - INFO - ____________________
+2023-10-29 18:14:28 - tradex - INFO - init trade-x trend
+2023-10-29 18:14:28 - tradex - INFO - - setting up High|Low channel
+2023-10-29 18:14:28 - tradex - INFO - - setting up EMA
+2023-10-29 18:14:28 - tradex - INFO - - setting up LSMA
+2023-10-29 18:14:28 - tradex - INFO - - setting up VWAP
+2023-10-29 18:14:28 - tradex - INFO - init trade-x screener
+2023-10-29 18:14:28 - tradex - INFO - - make the waves
+2023-10-29 18:14:28 - tradex - INFO - - getting the moneyflow
+2023-10-29 18:14:28 - tradex - INFO - - getting the dots
+2023-10-29 18:14:28 - tradex - INFO - - make the waves
+2023-10-29 18:14:28 - tradex - INFO - init trade-x Real time
+2023-10-29 18:14:28 - tradex - INFO - - setting up the waves
+2023-10-29 18:14:28 - tradex - INFO - - setting up wave spaces
+2023-10-29 18:14:28 - tradex - INFO - - setting up the waves
+2023-10-29 18:14:28 - tradex - INFO - - getting the dots
+2023-10-29 18:14:28 - tradex - INFO - - setting up the waves
+2023-10-29 18:14:28 - tradex - INFO - init trade-x scanner
+2023-10-29 18:14:28 - tradex - INFO - - setting up the rsi's
+2023-10-29 18:18:27 - tradex - INFO - init trade-x trend
+2023-10-29 18:18:27 - tradex - INFO - - setting up High|Low channel
+2023-10-29 18:18:27 - tradex - INFO - init trade-x screener
+2023-10-29 18:18:27 - tradex - INFO - - setting up EMA
+2023-10-29 18:18:27 - tradex - INFO - - make the waves
+2023-10-29 18:18:27 - tradex - INFO - init trade-x Real time
+2023-10-29 18:18:27 - tradex - INFO - init trade-x scanner
+2023-10-29 18:18:27 - tradex - INFO - - setting up LSMA
+2023-10-29 18:18:27 - tradex - INFO - - setting up the waves
+2023-10-29 18:18:27 - tradex - INFO - - setting up the rsi's
+2023-10-29 18:18:27 - tradex - INFO - - setting up VWAP
+2023-10-29 18:18:27 - tradex - INFO - - setting up wave spaces
+2023-10-29 18:18:27 - tradex - INFO - - setting up the waves
+2023-10-29 18:18:27 - tradex - INFO - - getting the dots
+2023-10-29 18:18:27 - tradex - INFO - - setting up the waves
+2023-10-29 18:18:27 - tradex - INFO - - getting the moneyflow
+2023-10-29 18:18:27 - tradex - INFO - - getting the dots
+2023-10-29 18:18:27 - tradex - INFO - - make the waves
+2023-10-29 18:18:27 - tradex - INFO - Elapsed time: 0.26 seconds
+2023-10-29 18:18:27 - tradex - INFO - ____________________
+2023-10-29 18:18:27 - tradex - INFO - init trade-x trend
+2023-10-29 18:18:27 - tradex - INFO - - setting up High|Low channel
+2023-10-29 18:18:27 - tradex - INFO - - setting up EMA
+2023-10-29 18:18:27 - tradex - INFO - - setting up LSMA
+2023-10-29 18:18:27 - tradex - INFO - - setting up VWAP
+2023-10-29 18:18:27 - tradex - INFO - init trade-x screener
+2023-10-29 18:18:27 - tradex - INFO - - make the waves
+2023-10-29 18:18:27 - tradex - INFO - - getting the moneyflow
+2023-10-29 18:18:27 - tradex - INFO - - getting the dots
+2023-10-29 18:18:27 - tradex - INFO - - make the waves
+2023-10-29 18:18:27 - tradex - INFO - init trade-x Real time
+2023-10-29 18:18:27 - tradex - INFO - - setting up the waves
+2023-10-29 18:18:27 - tradex - INFO - - setting up wave spaces
+2023-10-29 18:18:27 - tradex - INFO - - setting up the waves
+2023-10-29 18:18:27 - tradex - INFO - - getting the dots
+2023-10-29 18:18:27 - tradex - INFO - - setting up the waves
+2023-10-29 18:18:27 - tradex - INFO - init trade-x scanner
+2023-10-29 18:18:27 - tradex - INFO - - setting up the rsi's
+2023-10-29 18:19:54 - tradex - INFO - init trade-x trend
+2023-10-29 18:19:54 - tradex - INFO - - setting up High|Low channel
+2023-10-29 18:19:54 - tradex - INFO - init trade-x screener
+2023-10-29 18:19:54 - tradex - INFO - init trade-x Real time
+2023-10-29 18:19:54 - tradex - INFO - init trade-x scanner
+2023-10-29 18:19:54 - tradex - INFO - - make the waves
+2023-10-29 18:19:54 - tradex - INFO - - setting up EMA
+2023-10-29 18:19:54 - tradex - INFO - - setting up the waves
+2023-10-29 18:19:54 - tradex - INFO - - setting up the rsi's
+2023-10-29 18:19:54 - tradex - INFO - - setting up LSMA
+2023-10-29 18:19:54 - tradex - INFO - - setting up wave spaces
+2023-10-29 18:19:54 - tradex - INFO - - setting up the waves
+2023-10-29 18:19:54 - tradex - INFO - - setting up VWAP
+2023-10-29 18:19:54 - tradex - INFO - - getting the dots
+2023-10-29 18:19:54 - tradex - INFO - - setting up the waves
+2023-10-29 18:19:55 - tradex - INFO - - getting the moneyflow
+2023-10-29 18:19:55 - tradex - INFO - - getting the dots
+2023-10-29 18:19:55 - tradex - INFO - - make the waves
+2023-10-29 18:19:55 - tradex - INFO - Elapsed time: 0.26 seconds
+2023-10-29 18:19:55 - tradex - INFO - ____________________
+2023-10-29 18:19:55 - tradex - INFO - init trade-x trend
+2023-10-29 18:19:55 - tradex - INFO - - setting up High|Low channel
+2023-10-29 18:19:55 - tradex - INFO - - setting up EMA
+2023-10-29 18:19:55 - tradex - INFO - - setting up LSMA
+2023-10-29 18:19:55 - tradex - INFO - - setting up VWAP
+2023-10-29 18:19:55 - tradex - INFO - init trade-x screener
+2023-10-29 18:19:55 - tradex - INFO - - make the waves
+2023-10-29 18:19:55 - tradex - INFO - - getting the moneyflow
+2023-10-29 18:19:55 - tradex - INFO - - getting the dots
+2023-10-29 18:19:55 - tradex - INFO - - make the waves
+2023-10-29 18:19:55 - tradex - INFO - init trade-x Real time
+2023-10-29 18:19:55 - tradex - INFO - - setting up the waves
+2023-10-29 18:19:55 - tradex - INFO - - setting up wave spaces
+2023-10-29 18:19:55 - tradex - INFO - - setting up the waves
+2023-10-29 18:19:55 - tradex - INFO - - getting the dots
+2023-10-29 18:19:55 - tradex - INFO - - setting up the waves
+2023-10-29 18:19:55 - tradex - INFO - init trade-x scanner
+2023-10-29 18:19:55 - tradex - INFO - - setting up the rsi's
+2023-10-29 18:24:48 - tradex - INFO - init trade-x trend
+2023-10-29 18:24:48 - tradex - INFO - init trade-x screener
+2023-10-29 18:24:48 - tradex - INFO - - setting up High|Low channel
+2023-10-29 18:24:48 - tradex - INFO - init trade-x Real time
+2023-10-29 18:24:48 - tradex - INFO - - make the waves
+2023-10-29 18:24:48 - tradex - INFO - - setting up the waves
+2023-10-29 18:24:48 - tradex - INFO - init trade-x scanner
+2023-10-29 18:24:48 - tradex - INFO - - setting up EMA
+2023-10-29 18:24:48 - tradex - INFO - - setting up the rsi's
+2023-10-29 18:24:48 - tradex - INFO - - setting up LSMA
+2023-10-29 18:24:48 - tradex - INFO - - setting up wave spaces
+2023-10-29 18:24:48 - tradex - INFO - - setting up the waves
+2023-10-29 18:24:48 - tradex - INFO - - setting up VWAP
+2023-10-29 18:24:48 - tradex - INFO - - getting the dots
+2023-10-29 18:24:48 - tradex - INFO - - setting up the waves
+2023-10-29 18:24:48 - tradex - INFO - - getting the moneyflow
+2023-10-29 18:24:48 - tradex - INFO - - getting the dots
+2023-10-29 18:24:48 - tradex - INFO - - make the waves
+2023-10-29 18:24:48 - tradex - INFO - Elapsed time: 0.26 seconds
+2023-10-29 18:24:48 - tradex - INFO - ____________________
+2023-10-29 18:24:48 - tradex - INFO - init trade-x trend
+2023-10-29 18:24:48 - tradex - INFO - - setting up High|Low channel
+2023-10-29 18:24:48 - tradex - INFO - - setting up EMA
+2023-10-29 18:24:48 - tradex - INFO - - setting up LSMA
+2023-10-29 18:24:48 - tradex - INFO - - setting up VWAP
+2023-10-29 18:24:48 - tradex - INFO - init trade-x screener
+2023-10-29 18:24:48 - tradex - INFO - - make the waves
+2023-10-29 18:24:48 - tradex - INFO - - getting the moneyflow
+2023-10-29 18:24:48 - tradex - INFO - - getting the dots
+2023-10-29 18:24:48 - tradex - INFO - - make the waves
+2023-10-29 18:24:48 - tradex - INFO - init trade-x Real time
+2023-10-29 18:24:48 - tradex - INFO - - setting up the waves
+2023-10-29 18:24:48 - tradex - INFO - - setting up wave spaces
+2023-10-29 18:24:48 - tradex - INFO - - setting up the waves
+2023-10-29 18:24:48 - tradex - INFO - - getting the dots
+2023-10-29 18:24:48 - tradex - INFO - - setting up the waves
+2023-10-29 18:24:48 - tradex - INFO - init trade-x scanner
+2023-10-29 18:24:48 - tradex - INFO - - setting up the rsi's
+2023-10-29 18:26:44 - tradex - INFO - init trade-x trend
+2023-10-29 18:26:44 - tradex - INFO - init trade-x screener
+2023-10-29 18:26:44 - tradex - INFO - - setting up High|Low channel
+2023-10-29 18:26:44 - tradex - INFO - init trade-x Real time
+2023-10-29 18:26:44 - tradex - INFO - - make the waves
+2023-10-29 18:26:44 - tradex - INFO - init trade-x scanner
+2023-10-29 18:26:44 - tradex - INFO - - setting up the waves
+2023-10-29 18:26:44 - tradex - INFO - - setting up EMA
+2023-10-29 18:26:44 - tradex - INFO - - setting up the rsi's
+2023-10-29 18:26:44 - tradex - INFO - - setting up LSMA
+2023-10-29 18:26:44 - tradex - INFO - - setting up VWAP
+2023-10-29 18:26:44 - tradex - INFO - - setting up wave spaces
+2023-10-29 18:26:44 - tradex - INFO - - setting up the waves
+2023-10-29 18:26:44 - tradex - INFO - - getting the dots
+2023-10-29 18:26:44 - tradex - INFO - - setting up the waves
+2023-10-29 18:26:44 - tradex - INFO - - getting the moneyflow
+2023-10-29 18:26:45 - tradex - INFO - - getting the dots
+2023-10-29 18:26:45 - tradex - INFO - - make the waves
+2023-10-29 18:26:45 - tradex - INFO - Elapsed time: 0.26 seconds
+2023-10-29 18:26:45 - tradex - INFO - ____________________
+2023-10-29 18:26:45 - tradex - INFO - init trade-x trend
+2023-10-29 18:26:45 - tradex - INFO - - setting up High|Low channel
+2023-10-29 18:26:45 - tradex - INFO - - setting up EMA
+2023-10-29 18:26:45 - tradex - INFO - - setting up LSMA
+2023-10-29 18:26:45 - tradex - INFO - - setting up VWAP
+2023-10-29 18:26:45 - tradex - INFO - init trade-x screener
+2023-10-29 18:26:45 - tradex - INFO - - make the waves
+2023-10-29 18:26:45 - tradex - INFO - - getting the moneyflow
+2023-10-29 18:26:45 - tradex - INFO - - getting the dots
+2023-10-29 18:26:45 - tradex - INFO - - make the waves
+2023-10-29 18:26:45 - tradex - INFO - init trade-x Real time
+2023-10-29 18:26:45 - tradex - INFO - - setting up the waves
+2023-10-29 18:26:45 - tradex - INFO - - setting up wave spaces
+2023-10-29 18:26:45 - tradex - INFO - - setting up the waves
+2023-10-29 18:26:45 - tradex - INFO - - getting the dots
+2023-10-29 18:26:45 - tradex - INFO - - setting up the waves
+2023-10-29 18:26:45 - tradex - INFO - init trade-x scanner
+2023-10-29 18:26:45 - tradex - INFO - - setting up the rsi's
+2023-10-29 18:52:38 - tradex - INFO - init trade-x trend
+2023-10-29 18:52:38 - tradex - INFO - - setting up High|Low channel
+2023-10-29 18:52:38 - tradex - INFO - init trade-x screener
+2023-10-29 18:52:38 - tradex - INFO - init trade-x Real time
+2023-10-29 18:52:38 - tradex - INFO - - make the waves
+2023-10-29 18:52:38 - tradex - INFO - - setting up EMA
+2023-10-29 18:52:38 - tradex - INFO - - setting up the waves
+2023-10-29 18:52:38 - tradex - INFO - init trade-x scanner
+2023-10-29 18:52:38 - tradex - INFO - - setting up LSMA
+2023-10-29 18:52:38 - tradex - INFO - - setting up the rsi's
+2023-10-29 18:52:39 - tradex - INFO - - setting up wave spaces
+2023-10-29 18:52:39 - tradex - INFO - - setting up the waves
+2023-10-29 18:52:39 - tradex - INFO - - setting up VWAP
+2023-10-29 18:52:39 - tradex - INFO - - getting the dots
+2023-10-29 18:52:39 - tradex - INFO - - setting up the waves
+2023-10-29 18:52:39 - tradex - INFO - - getting the moneyflow
+2023-10-29 18:52:39 - tradex - INFO - - getting the dots
+2023-10-29 18:52:39 - tradex - INFO - - make the waves
+2023-10-29 18:52:39 - tradex - INFO - Elapsed time: 0.27 seconds
+2023-10-29 18:52:39 - tradex - INFO - ____________________
+2023-10-29 18:52:39 - tradex - INFO - init trade-x trend
+2023-10-29 18:52:39 - tradex - INFO - - setting up High|Low channel
+2023-10-29 18:52:39 - tradex - INFO - - setting up EMA
+2023-10-29 18:52:39 - tradex - INFO - - setting up LSMA
+2023-10-29 18:52:39 - tradex - INFO - - setting up VWAP
+2023-10-29 18:52:39 - tradex - INFO - init trade-x screener
+2023-10-29 18:52:39 - tradex - INFO - - make the waves
+2023-10-29 18:52:39 - tradex - INFO - - getting the moneyflow
+2023-10-29 18:52:39 - tradex - INFO - - getting the dots
+2023-10-29 18:52:39 - tradex - INFO - - make the waves
+2023-10-29 18:52:39 - tradex - INFO - init trade-x Real time
+2023-10-29 18:52:39 - tradex - INFO - - setting up the waves
+2023-10-29 18:52:39 - tradex - INFO - - setting up wave spaces
+2023-10-29 18:52:39 - tradex - INFO - - setting up the waves
+2023-10-29 18:52:39 - tradex - INFO - - getting the dots
+2023-10-29 18:52:39 - tradex - INFO - - setting up the waves
+2023-10-29 18:52:39 - tradex - INFO - init trade-x scanner
+2023-10-29 18:52:39 - tradex - INFO - - setting up the rsi's
+2023-10-29 19:09:11 - tradex - INFO - init trade-x trend
+2023-10-29 19:09:11 - tradex - INFO - init trade-x screener
+2023-10-29 19:09:11 - tradex - INFO - - setting up High|Low channel
+2023-10-29 19:09:11 - tradex - INFO - - make the waves
+2023-10-29 19:09:11 - tradex - INFO - init trade-x Real time
+2023-10-29 19:09:11 - tradex - INFO - init trade-x scanner
+2023-10-29 19:09:11 - tradex - INFO - - setting up the waves
+2023-10-29 19:09:11 - tradex - INFO - - setting up EMA
+2023-10-29 19:09:11 - tradex - INFO - - setting up the rsi's
+2023-10-29 19:09:11 - tradex - INFO - - setting up LSMA
+2023-10-29 19:09:11 - tradex - INFO - - setting up wave spaces
+2023-10-29 19:09:11 - tradex - INFO - - setting up the waves
+2023-10-29 19:09:11 - tradex - INFO - - setting up VWAP
+2023-10-29 19:09:11 - tradex - INFO - - getting the dots
+2023-10-29 19:09:11 - tradex - INFO - - setting up the waves
+2023-10-29 19:09:11 - tradex - INFO - - getting the moneyflow
+2023-10-29 19:09:11 - tradex - INFO - - getting the dots
+2023-10-29 19:09:11 - tradex - INFO - - make the waves
+2023-10-29 19:09:11 - tradex - INFO - Elapsed time: 0.27 seconds
+2023-10-29 19:09:11 - tradex - INFO - ____________________
+2023-10-29 19:09:11 - tradex - INFO - init trade-x trend
+2023-10-29 19:09:11 - tradex - INFO - - setting up High|Low channel
+2023-10-29 19:09:11 - tradex - INFO - - setting up EMA
+2023-10-29 19:09:11 - tradex - INFO - - setting up LSMA
+2023-10-29 19:09:11 - tradex - INFO - - setting up VWAP
+2023-10-29 19:09:11 - tradex - INFO - init trade-x screener
+2023-10-29 19:09:11 - tradex - INFO - - make the waves
+2023-10-29 19:09:11 - tradex - INFO - - getting the moneyflow
+2023-10-29 19:09:11 - tradex - INFO - - getting the dots
+2023-10-29 19:09:11 - tradex - INFO - - make the waves
+2023-10-29 19:09:11 - tradex - INFO - init trade-x Real time
+2023-10-29 19:09:11 - tradex - INFO - - setting up the waves
+2023-10-29 19:09:11 - tradex - INFO - - setting up wave spaces
+2023-10-29 19:09:11 - tradex - INFO - - setting up the waves
+2023-10-29 19:09:11 - tradex - INFO - - getting the dots
+2023-10-29 19:09:11 - tradex - INFO - - setting up the waves
+2023-10-29 19:09:11 - tradex - INFO - init trade-x scanner
+2023-10-29 19:09:11 - tradex - INFO - - setting up the rsi's
+2023-10-29 19:13:33 - tradex - INFO - init trade-x trend
+2023-10-29 19:13:33 - tradex - INFO - init trade-x screener
+2023-10-29 19:13:33 - tradex - INFO - - setting up High|Low channel
+2023-10-29 19:13:33 - tradex - INFO - init trade-x Real time
+2023-10-29 19:13:33 - tradex - INFO - - make the waves
+2023-10-29 19:13:33 - tradex - INFO - init trade-x scanner
+2023-10-29 19:13:33 - tradex - INFO - - setting up the waves
+2023-10-29 19:13:33 - tradex - INFO - - setting up EMA
+2023-10-29 19:13:33 - tradex - INFO - - setting up the rsi's
+2023-10-29 19:13:33 - tradex - INFO - - setting up LSMA
+2023-10-29 19:13:33 - tradex - INFO - - setting up wave spaces
+2023-10-29 19:13:33 - tradex - INFO - - setting up VWAP
+2023-10-29 19:13:33 - tradex - INFO - - setting up the waves
+2023-10-29 19:13:33 - tradex - INFO - - getting the dots
+2023-10-29 19:13:33 - tradex - INFO - - setting up the waves
+2023-10-29 19:13:34 - tradex - INFO - - getting the moneyflow
+2023-10-29 19:13:34 - tradex - INFO - - getting the dots
+2023-10-29 19:13:34 - tradex - INFO - - make the waves
+2023-10-29 19:13:34 - tradex - INFO - Elapsed time: 0.27 seconds
+2023-10-29 19:13:34 - tradex - INFO - ____________________
+2023-10-29 19:13:34 - tradex - INFO - init trade-x trend
+2023-10-29 19:13:34 - tradex - INFO - - setting up High|Low channel
+2023-10-29 19:13:34 - tradex - INFO - - setting up EMA
+2023-10-29 19:13:34 - tradex - INFO - - setting up LSMA
+2023-10-29 19:13:34 - tradex - INFO - - setting up VWAP
+2023-10-29 19:13:34 - tradex - INFO - init trade-x screener
+2023-10-29 19:13:34 - tradex - INFO - - make the waves
+2023-10-29 19:13:34 - tradex - INFO - - getting the moneyflow
+2023-10-29 19:13:34 - tradex - INFO - - getting the dots
+2023-10-29 19:13:34 - tradex - INFO - - make the waves
+2023-10-29 19:13:34 - tradex - INFO - init trade-x Real time
+2023-10-29 19:13:34 - tradex - INFO - - setting up the waves
+2023-10-29 19:13:34 - tradex - INFO - - setting up wave spaces
+2023-10-29 19:13:34 - tradex - INFO - - setting up the waves
+2023-10-29 19:13:34 - tradex - INFO - - getting the dots
+2023-10-29 19:13:34 - tradex - INFO - - setting up the waves
+2023-10-29 19:13:34 - tradex - INFO - init trade-x scanner
+2023-10-29 19:13:34 - tradex - INFO - - setting up the rsi's
+2023-10-29 19:20:38 - tradex - INFO - init trade-x trend
+2023-10-29 19:20:38 - tradex - INFO - - setting up High|Low channel
+2023-10-29 19:20:38 - tradex - INFO - init trade-x screener
+2023-10-29 19:20:38 - tradex - INFO - init trade-x Real time
+2023-10-29 19:20:38 - tradex - INFO - - make the waves
+2023-10-29 19:20:38 - tradex - INFO - init trade-x scanner
+2023-10-29 19:20:38 - tradex - INFO - - setting up the waves
+2023-10-29 19:20:38 - tradex - INFO - - setting up EMA
+2023-10-29 19:20:38 - tradex - INFO - - setting up the rsi's
+2023-10-29 19:20:38 - tradex - INFO - - setting up LSMA
+2023-10-29 19:20:38 - tradex - INFO - - setting up VWAP
+2023-10-29 19:20:38 - tradex - INFO - - setting up wave spaces
+2023-10-29 19:20:38 - tradex - INFO - - setting up the waves
+2023-10-29 19:20:38 - tradex - INFO - - getting the dots
+2023-10-29 19:20:38 - tradex - INFO - - setting up the waves
+2023-10-29 19:20:38 - tradex - INFO - - getting the moneyflow
+2023-10-29 19:20:38 - tradex - INFO - - getting the dots
+2023-10-29 19:20:38 - tradex - INFO - - make the waves
+2023-10-29 19:20:39 - tradex - INFO - Elapsed time: 0.27 seconds
+2023-10-29 19:20:39 - tradex - INFO - ____________________
+2023-10-29 19:20:39 - tradex - INFO - init trade-x trend
+2023-10-29 19:20:39 - tradex - INFO - - setting up High|Low channel
+2023-10-29 19:20:39 - tradex - INFO - - setting up EMA
+2023-10-29 19:20:39 - tradex - INFO - - setting up LSMA
+2023-10-29 19:20:39 - tradex - INFO - - setting up VWAP
+2023-10-29 19:20:39 - tradex - INFO - init trade-x screener
+2023-10-29 19:20:39 - tradex - INFO - - make the waves
+2023-10-29 19:20:39 - tradex - INFO - - getting the moneyflow
+2023-10-29 19:20:39 - tradex - INFO - - getting the dots
+2023-10-29 19:20:39 - tradex - INFO - - make the waves
+2023-10-29 19:20:39 - tradex - INFO - init trade-x Real time
+2023-10-29 19:20:39 - tradex - INFO - - setting up the waves
+2023-10-29 19:20:39 - tradex - INFO - - setting up wave spaces
+2023-10-29 19:20:39 - tradex - INFO - - setting up the waves
+2023-10-29 19:20:39 - tradex - INFO - - getting the dots
+2023-10-29 19:20:39 - tradex - INFO - - setting up the waves
+2023-10-29 19:20:39 - tradex - INFO - init trade-x scanner
+2023-10-29 19:20:39 - tradex - INFO - - setting up the rsi's
+2023-10-29 19:28:13 - tradex - INFO - init trade-x trend
+2023-10-29 19:28:13 - tradex - INFO - init trade-x screener
+2023-10-29 19:28:13 - tradex - INFO - - setting up High|Low channel
+2023-10-29 19:28:13 - tradex - INFO - init trade-x Real time
+2023-10-29 19:28:13 - tradex - INFO - - make the waves
+2023-10-29 19:28:13 - tradex - INFO - init trade-x scanner
+2023-10-29 19:28:13 - tradex - INFO - - setting up EMA
+2023-10-29 19:28:13 - tradex - INFO - - setting up the waves
+2023-10-29 19:28:13 - tradex - INFO - - setting up the rsi's
+2023-10-29 19:28:13 - tradex - INFO - - setting up LSMA
+2023-10-29 19:28:13 - tradex - INFO - - setting up VWAP
+2023-10-29 19:28:13 - tradex - INFO - - setting up wave spaces
+2023-10-29 19:28:13 - tradex - INFO - - setting up the waves
+2023-10-29 19:28:13 - tradex - INFO - - getting the dots
+2023-10-29 19:28:13 - tradex - INFO - - setting up the waves
+2023-10-29 19:28:13 - tradex - INFO - - getting the moneyflow
+2023-10-29 19:28:13 - tradex - INFO - - getting the dots
+2023-10-29 19:28:13 - tradex - INFO - - make the waves
+2023-10-29 19:28:13 - tradex - INFO - Elapsed time: 0.25 seconds
+2023-10-29 19:28:13 - tradex - INFO - ____________________
+2023-10-29 19:28:13 - tradex - INFO - init trade-x trend
+2023-10-29 19:28:13 - tradex - INFO - - setting up High|Low channel
+2023-10-29 19:28:13 - tradex - INFO - - setting up EMA
+2023-10-29 19:28:13 - tradex - INFO - - setting up LSMA
+2023-10-29 19:28:13 - tradex - INFO - - setting up VWAP
+2023-10-29 19:28:13 - tradex - INFO - init trade-x screener
+2023-10-29 19:28:13 - tradex - INFO - - make the waves
+2023-10-29 19:28:13 - tradex - INFO - - getting the moneyflow
+2023-10-29 19:28:13 - tradex - INFO - - getting the dots
+2023-10-29 19:28:13 - tradex - INFO - - make the waves
+2023-10-29 19:28:13 - tradex - INFO - init trade-x Real time
+2023-10-29 19:28:13 - tradex - INFO - - setting up the waves
+2023-10-29 19:28:13 - tradex - INFO - - setting up wave spaces
+2023-10-29 19:28:13 - tradex - INFO - - setting up the waves
+2023-10-29 19:28:13 - tradex - INFO - - getting the dots
+2023-10-29 19:28:13 - tradex - INFO - - setting up the waves
+2023-10-29 19:28:13 - tradex - INFO - init trade-x scanner
+2023-10-29 19:28:13 - tradex - INFO - - setting up the rsi's
+2023-10-29 19:31:06 - tradex - INFO - init trade-x trend
+2023-10-29 19:31:06 - tradex - INFO - init trade-x screener
+2023-10-29 19:31:06 - tradex - INFO - - setting up High|Low channel
+2023-10-29 19:31:06 - tradex - INFO - - make the waves
+2023-10-29 19:31:06 - tradex - INFO - init trade-x Real time
+2023-10-29 19:31:06 - tradex - INFO - init trade-x scanner
+2023-10-29 19:31:06 - tradex - INFO - - setting up EMA
+2023-10-29 19:31:06 - tradex - INFO - - setting up the waves
+2023-10-29 19:31:06 - tradex - INFO - - setting up the rsi's
+2023-10-29 19:31:06 - tradex - INFO - - setting up LSMA
+2023-10-29 19:31:06 - tradex - INFO - - setting up wave spaces
+2023-10-29 19:31:06 - tradex - INFO - - setting up the waves
+2023-10-29 19:31:06 - tradex - INFO - - setting up VWAP
+2023-10-29 19:31:06 - tradex - INFO - - getting the dots
+2023-10-29 19:31:06 - tradex - INFO - - setting up the waves
+2023-10-29 19:31:06 - tradex - INFO - - getting the moneyflow
+2023-10-29 19:31:06 - tradex - INFO - - getting the dots
+2023-10-29 19:31:06 - tradex - INFO - - make the waves
+2023-10-29 19:31:06 - tradex - INFO - Elapsed time: 0.25 seconds
+2023-10-29 19:31:06 - tradex - INFO - ____________________
+2023-10-29 19:31:06 - tradex - INFO - init trade-x trend
+2023-10-29 19:31:06 - tradex - INFO - - setting up High|Low channel
+2023-10-29 19:31:06 - tradex - INFO - - setting up EMA
+2023-10-29 19:31:06 - tradex - INFO - - setting up LSMA
+2023-10-29 19:31:07 - tradex - INFO - - setting up VWAP
+2023-10-29 19:31:07 - tradex - INFO - init trade-x screener
+2023-10-29 19:31:07 - tradex - INFO - - make the waves
+2023-10-29 19:31:07 - tradex - INFO - - getting the moneyflow
+2023-10-29 19:31:07 - tradex - INFO - - getting the dots
+2023-10-29 19:31:07 - tradex - INFO - - make the waves
+2023-10-29 19:31:07 - tradex - INFO - init trade-x Real time
+2023-10-29 19:31:07 - tradex - INFO - - setting up the waves
+2023-10-29 19:31:07 - tradex - INFO - - setting up wave spaces
+2023-10-29 19:31:07 - tradex - INFO - - setting up the waves
+2023-10-29 19:31:07 - tradex - INFO - - getting the dots
+2023-10-29 19:31:07 - tradex - INFO - - setting up the waves
+2023-10-29 19:31:07 - tradex - INFO - init trade-x scanner
+2023-10-29 19:31:07 - tradex - INFO - - setting up the rsi's
+2023-10-29 19:32:54 - tradex - INFO - init trade-x trend
+2023-10-29 19:32:54 - tradex - INFO - init trade-x screener
+2023-10-29 19:32:54 - tradex - INFO - - setting up High|Low channel
+2023-10-29 19:32:54 - tradex - INFO - init trade-x Real time
+2023-10-29 19:32:54 - tradex - INFO - - make the waves
+2023-10-29 19:32:54 - tradex - INFO - - setting up the waves
+2023-10-29 19:32:54 - tradex - INFO - init trade-x scanner
+2023-10-29 19:32:54 - tradex - INFO - - setting up EMA
+2023-10-29 19:32:54 - tradex - INFO - - setting up the rsi's
+2023-10-29 19:32:54 - tradex - INFO - - setting up LSMA
+2023-10-29 19:32:54 - tradex - INFO - - setting up wave spaces
+2023-10-29 19:32:54 - tradex - INFO - - setting up the waves
+2023-10-29 19:32:54 - tradex - INFO - - setting up VWAP
+2023-10-29 19:32:54 - tradex - INFO - - getting the dots
+2023-10-29 19:32:54 - tradex - INFO - - setting up the waves
+2023-10-29 19:32:54 - tradex - INFO - - getting the moneyflow
+2023-10-29 19:32:54 - tradex - INFO - - getting the dots
+2023-10-29 19:32:54 - tradex - INFO - - make the waves
+2023-10-29 19:32:54 - tradex - INFO - Elapsed time: 0.27 seconds
+2023-10-29 19:32:54 - tradex - INFO - ____________________
+2023-10-29 19:32:54 - tradex - INFO - init trade-x trend
+2023-10-29 19:32:54 - tradex - INFO - - setting up High|Low channel
+2023-10-29 19:32:54 - tradex - INFO - - setting up EMA
+2023-10-29 19:32:54 - tradex - INFO - - setting up LSMA
+2023-10-29 19:32:54 - tradex - INFO - - setting up VWAP
+2023-10-29 19:32:54 - tradex - INFO - init trade-x screener
+2023-10-29 19:32:54 - tradex - INFO - - make the waves
+2023-10-29 19:32:54 - tradex - INFO - - getting the moneyflow
+2023-10-29 19:32:54 - tradex - INFO - - getting the dots
+2023-10-29 19:32:54 - tradex - INFO - - make the waves
+2023-10-29 19:32:54 - tradex - INFO - init trade-x Real time
+2023-10-29 19:32:54 - tradex - INFO - - setting up the waves
+2023-10-29 19:32:54 - tradex - INFO - - setting up wave spaces
+2023-10-29 19:32:54 - tradex - INFO - - setting up the waves
+2023-10-29 19:32:54 - tradex - INFO - - getting the dots
+2023-10-29 19:32:54 - tradex - INFO - - setting up the waves
+2023-10-29 19:32:54 - tradex - INFO - init trade-x scanner
+2023-10-29 19:32:54 - tradex - INFO - - setting up the rsi's
+2023-10-29 19:49:56 - tradex - INFO - init trade-x trend
+2023-10-29 19:49:56 - tradex - INFO - init trade-x screener
+2023-10-29 19:49:56 - tradex - INFO - - setting up High|Low channel
+2023-10-29 19:49:56 - tradex - INFO - - make the waves
+2023-10-29 19:49:56 - tradex - INFO - init trade-x Real time
+2023-10-29 19:49:56 - tradex - INFO - init trade-x scanner
+2023-10-29 19:49:56 - tradex - INFO - - setting up the waves
+2023-10-29 19:49:56 - tradex - INFO - - setting up EMA
+2023-10-29 19:49:56 - tradex - INFO - - setting up the rsi's
+2023-10-29 19:49:56 - tradex - INFO - - setting up LSMA
+2023-10-29 19:49:56 - tradex - INFO - - setting up wave spaces
+2023-10-29 19:49:56 - tradex - INFO - - setting up the waves
+2023-10-29 19:49:57 - tradex - INFO - - setting up VWAP
+2023-10-29 19:49:57 - tradex - INFO - - getting the dots
+2023-10-29 19:49:57 - tradex - INFO - - setting up the waves
+2023-10-29 19:49:57 - tradex - INFO - - getting the moneyflow
+2023-10-29 19:49:57 - tradex - INFO - - getting the dots
+2023-10-29 19:49:57 - tradex - INFO - - make the waves
+2023-10-29 19:49:57 - tradex - INFO - Elapsed time: 0.25 seconds
+2023-10-29 19:49:57 - tradex - INFO - ____________________
+2023-10-29 19:49:57 - tradex - INFO - init trade-x trend
+2023-10-29 19:49:57 - tradex - INFO - - setting up High|Low channel
+2023-10-29 19:49:57 - tradex - INFO - - setting up EMA
+2023-10-29 19:49:57 - tradex - INFO - - setting up LSMA
+2023-10-29 19:49:57 - tradex - INFO - - setting up VWAP
+2023-10-29 19:49:57 - tradex - INFO - init trade-x screener
+2023-10-29 19:49:57 - tradex - INFO - - make the waves
+2023-10-29 19:49:57 - tradex - INFO - - getting the moneyflow
+2023-10-29 19:49:57 - tradex - INFO - - getting the dots
+2023-10-29 19:49:57 - tradex - INFO - - make the waves
+2023-10-29 19:49:57 - tradex - INFO - init trade-x Real time
+2023-10-29 19:49:57 - tradex - INFO - - setting up the waves
+2023-10-29 19:49:57 - tradex - INFO - - setting up wave spaces
+2023-10-29 19:49:57 - tradex - INFO - - setting up the waves
+2023-10-29 19:49:57 - tradex - INFO - - getting the dots
+2023-10-29 19:49:57 - tradex - INFO - - setting up the waves
+2023-10-29 19:49:57 - tradex - INFO - init trade-x scanner
+2023-10-29 19:49:57 - tradex - INFO - - setting up the rsi's
+2023-10-29 20:10:20 - tradex - INFO - init trade-x trend
+2023-10-29 20:10:20 - tradex - INFO - init trade-x screener
+2023-10-29 20:10:20 - tradex - INFO - - setting up High|Low channel
+2023-10-29 20:10:20 - tradex - INFO - - make the waves
+2023-10-29 20:10:20 - tradex - INFO - init trade-x Real time
+2023-10-29 20:10:20 - tradex - INFO - init trade-x scanner
+2023-10-29 20:10:20 - tradex - INFO - - setting up the waves
+2023-10-29 20:10:20 - tradex - INFO - - setting up the rsi's
+2023-10-29 20:10:20 - tradex - INFO - - setting up EMA
+2023-10-29 20:10:20 - tradex - INFO - - setting up LSMA
+2023-10-29 20:10:20 - tradex - INFO - - setting up wave spaces
+2023-10-29 20:10:20 - tradex - INFO - - setting up the waves
+2023-10-29 20:10:20 - tradex - INFO - - setting up VWAP
+2023-10-29 20:10:20 - tradex - INFO - - getting the dots
+2023-10-29 20:10:20 - tradex - INFO - - setting up the waves
+2023-10-29 20:10:20 - tradex - INFO - - getting the moneyflow
+2023-10-29 20:10:20 - tradex - INFO - - getting the dots
+2023-10-29 20:10:20 - tradex - INFO - - make the waves
+2023-10-29 20:10:20 - tradex - INFO - Elapsed time: 0.26 seconds
+2023-10-29 20:10:20 - tradex - INFO - ____________________
+2023-10-29 20:10:20 - tradex - INFO - init trade-x trend
+2023-10-29 20:10:20 - tradex - INFO - - setting up High|Low channel
+2023-10-29 20:10:20 - tradex - INFO - - setting up EMA
+2023-10-29 20:10:20 - tradex - INFO - - setting up LSMA
+2023-10-29 20:10:21 - tradex - INFO - - setting up VWAP
+2023-10-29 20:10:21 - tradex - INFO - init trade-x screener
+2023-10-29 20:10:21 - tradex - INFO - - make the waves
+2023-10-29 20:10:21 - tradex - INFO - - getting the moneyflow
+2023-10-29 20:10:21 - tradex - INFO - - getting the dots
+2023-10-29 20:10:21 - tradex - INFO - - make the waves
+2023-10-29 20:10:21 - tradex - INFO - init trade-x Real time
+2023-10-29 20:10:21 - tradex - INFO - - setting up the waves
+2023-10-29 20:10:21 - tradex - INFO - - setting up wave spaces
+2023-10-29 20:10:21 - tradex - INFO - - setting up the waves
+2023-10-29 20:10:21 - tradex - INFO - - getting the dots
+2023-10-29 20:10:21 - tradex - INFO - - setting up the waves
+2023-10-29 20:10:21 - tradex - INFO - init trade-x scanner
+2023-10-29 20:10:21 - tradex - INFO - - setting up the rsi's
+2023-10-29 20:14:30 - tradex - INFO - init trade-x trend
+2023-10-29 20:14:30 - tradex - INFO - init trade-x screener
+2023-10-29 20:14:30 - tradex - INFO - - setting up High|Low channel
+2023-10-29 20:14:30 - tradex - INFO - - make the waves
+2023-10-29 20:14:30 - tradex - INFO - init trade-x Real time
+2023-10-29 20:14:30 - tradex - INFO - init trade-x scanner
+2023-10-29 20:14:30 - tradex - INFO - - setting up EMA
+2023-10-29 20:14:30 - tradex - INFO - - setting up the waves
+2023-10-29 20:14:30 - tradex - INFO - - setting up the rsi's
+2023-10-29 20:14:30 - tradex - INFO - - setting up LSMA
+2023-10-29 20:14:30 - tradex - INFO - - setting up VWAP
+2023-10-29 20:14:30 - tradex - INFO - - setting up wave spaces
+2023-10-29 20:14:30 - tradex - INFO - - setting up the waves
+2023-10-29 20:14:30 - tradex - INFO - - getting the dots
+2023-10-29 20:14:30 - tradex - INFO - - setting up the waves
+2023-10-29 20:14:30 - tradex - INFO - - getting the moneyflow
+2023-10-29 20:14:30 - tradex - INFO - - getting the dots
+2023-10-29 20:14:30 - tradex - INFO - - make the waves
+2023-10-29 20:14:30 - tradex - INFO - Elapsed time: 0.26 seconds
+2023-10-29 20:14:30 - tradex - INFO - ____________________
+2023-10-29 20:14:30 - tradex - INFO - init trade-x trend
+2023-10-29 20:14:30 - tradex - INFO - - setting up High|Low channel
+2023-10-29 20:14:30 - tradex - INFO - - setting up EMA
+2023-10-29 20:14:30 - tradex - INFO - - setting up LSMA
+2023-10-29 20:14:30 - tradex - INFO - - setting up VWAP
+2023-10-29 20:14:30 - tradex - INFO - init trade-x screener
+2023-10-29 20:14:30 - tradex - INFO - - make the waves
+2023-10-29 20:14:30 - tradex - INFO - - getting the moneyflow
+2023-10-29 20:14:30 - tradex - INFO - - getting the dots
+2023-10-29 20:14:30 - tradex - INFO - - make the waves
+2023-10-29 20:14:30 - tradex - INFO - init trade-x Real time
+2023-10-29 20:14:30 - tradex - INFO - - setting up the waves
+2023-10-29 20:14:30 - tradex - INFO - - setting up wave spaces
+2023-10-29 20:14:30 - tradex - INFO - - setting up the waves
+2023-10-29 20:14:30 - tradex - INFO - - getting the dots
+2023-10-29 20:14:30 - tradex - INFO - - setting up the waves
+2023-10-29 20:14:30 - tradex - INFO - init trade-x scanner
+2023-10-29 20:14:30 - tradex - INFO - - setting up the rsi's
+2023-10-29 20:15:40 - tradex - INFO - init trade-x trend
+2023-10-29 20:15:40 - tradex - INFO - init trade-x screener
+2023-10-29 20:15:40 - tradex - INFO - - setting up High|Low channel
+2023-10-29 20:15:40 - tradex - INFO - init trade-x Real time
+2023-10-29 20:15:40 - tradex - INFO - - make the waves
+2023-10-29 20:15:40 - tradex - INFO - init trade-x scanner
+2023-10-29 20:15:40 - tradex - INFO - - setting up the waves
+2023-10-29 20:15:40 - tradex - INFO - - setting up EMA
+2023-10-29 20:15:40 - tradex - INFO - - setting up the rsi's
+2023-10-29 20:15:40 - tradex - INFO - - setting up LSMA
+2023-10-29 20:15:40 - tradex - INFO - - setting up wave spaces
+2023-10-29 20:15:40 - tradex - INFO - - setting up the waves
+2023-10-29 20:15:40 - tradex - INFO - - setting up VWAP
+2023-10-29 20:15:40 - tradex - INFO - - getting the dots
+2023-10-29 20:15:40 - tradex - INFO - - setting up the waves
+2023-10-29 20:15:41 - tradex - INFO - - getting the moneyflow
+2023-10-29 20:15:41 - tradex - INFO - - getting the dots
+2023-10-29 20:15:41 - tradex - INFO - - make the waves
+2023-10-29 20:15:41 - tradex - INFO - Elapsed time: 0.27 seconds
+2023-10-29 20:15:41 - tradex - INFO - ____________________
+2023-10-29 20:15:41 - tradex - INFO - init trade-x trend
+2023-10-29 20:15:41 - tradex - INFO - - setting up High|Low channel
+2023-10-29 20:15:41 - tradex - INFO - - setting up EMA
+2023-10-29 20:15:41 - tradex - INFO - - setting up LSMA
+2023-10-29 20:15:41 - tradex - INFO - - setting up VWAP
+2023-10-29 20:15:41 - tradex - INFO - init trade-x screener
+2023-10-29 20:15:41 - tradex - INFO - - make the waves
+2023-10-29 20:15:41 - tradex - INFO - - getting the moneyflow
+2023-10-29 20:15:41 - tradex - INFO - - getting the dots
+2023-10-29 20:15:41 - tradex - INFO - - make the waves
+2023-10-29 20:15:41 - tradex - INFO - init trade-x Real time
+2023-10-29 20:15:41 - tradex - INFO - - setting up the waves
+2023-10-29 20:15:41 - tradex - INFO - - setting up wave spaces
+2023-10-29 20:15:41 - tradex - INFO - - setting up the waves
+2023-10-29 20:15:41 - tradex - INFO - - getting the dots
+2023-10-29 20:15:41 - tradex - INFO - - setting up the waves
+2023-10-29 20:15:41 - tradex - INFO - init trade-x scanner
+2023-10-29 20:15:41 - tradex - INFO - - setting up the rsi's
+2023-10-29 20:16:27 - tradex - INFO - init trade-x trend
+2023-10-29 20:16:27 - tradex - INFO - init trade-x screener
+2023-10-29 20:16:27 - tradex - INFO - - setting up High|Low channel
+2023-10-29 20:16:27 - tradex - INFO - init trade-x Real time
+2023-10-29 20:16:27 - tradex - INFO - - make the waves
+2023-10-29 20:16:27 - tradex - INFO - init trade-x scanner
+2023-10-29 20:16:27 - tradex - INFO - - setting up the waves
+2023-10-29 20:16:27 - tradex - INFO - - setting up EMA
+2023-10-29 20:16:27 - tradex - INFO - - setting up the rsi's
+2023-10-29 20:16:27 - tradex - INFO - - setting up LSMA
+2023-10-29 20:16:27 - tradex - INFO - - setting up wave spaces
+2023-10-29 20:16:27 - tradex - INFO - - setting up the waves
+2023-10-29 20:16:27 - tradex - INFO - - setting up VWAP
+2023-10-29 20:16:27 - tradex - INFO - - getting the dots
+2023-10-29 20:16:27 - tradex - INFO - - setting up the waves
+2023-10-29 20:16:27 - tradex - INFO - - getting the moneyflow
+2023-10-29 20:16:27 - tradex - INFO - - getting the dots
+2023-10-29 20:16:27 - tradex - INFO - - make the waves
+2023-10-29 20:16:27 - tradex - INFO - Elapsed time: 0.26 seconds
+2023-10-29 20:16:27 - tradex - INFO - ____________________
+2023-10-29 20:16:27 - tradex - INFO - init trade-x trend
+2023-10-29 20:16:27 - tradex - INFO - - setting up High|Low channel
+2023-10-29 20:16:27 - tradex - INFO - - setting up EMA
+2023-10-29 20:16:27 - tradex - INFO - - setting up LSMA
+2023-10-29 20:16:27 - tradex - INFO - - setting up VWAP
+2023-10-29 20:16:28 - tradex - INFO - init trade-x screener
+2023-10-29 20:16:28 - tradex - INFO - - make the waves
+2023-10-29 20:16:28 - tradex - INFO - - getting the moneyflow
+2023-10-29 20:16:28 - tradex - INFO - - getting the dots
+2023-10-29 20:16:28 - tradex - INFO - - make the waves
+2023-10-29 20:16:28 - tradex - INFO - init trade-x Real time
+2023-10-29 20:16:28 - tradex - INFO - - setting up the waves
+2023-10-29 20:16:28 - tradex - INFO - - setting up wave spaces
+2023-10-29 20:16:28 - tradex - INFO - - setting up the waves
+2023-10-29 20:16:28 - tradex - INFO - - getting the dots
+2023-10-29 20:16:28 - tradex - INFO - - setting up the waves
+2023-10-29 20:16:28 - tradex - INFO - init trade-x scanner
+2023-10-29 20:16:28 - tradex - INFO - - setting up the rsi's
+2023-10-29 20:23:59 - tradex - INFO - init trade-x trend
+2023-10-29 20:23:59 - tradex - INFO - init trade-x screener
+2023-10-29 20:23:59 - tradex - INFO - - setting up High|Low channel
+2023-10-29 20:23:59 - tradex - INFO - - make the waves
+2023-10-29 20:23:59 - tradex - INFO - init trade-x Real time
+2023-10-29 20:23:59 - tradex - INFO - init trade-x scanner
+2023-10-29 20:23:59 - tradex - INFO - - setting up the waves
+2023-10-29 20:23:59 - tradex - INFO - - setting up EMA
+2023-10-29 20:23:59 - tradex - INFO - - setting up the rsi's
+2023-10-29 20:23:59 - tradex - INFO - - setting up LSMA
+2023-10-29 20:23:59 - tradex - INFO - - setting up wave spaces
+2023-10-29 20:23:59 - tradex - INFO - - setting up the waves
+2023-10-29 20:23:59 - tradex - INFO - - setting up VWAP
+2023-10-29 20:23:59 - tradex - INFO - - getting the dots
+2023-10-29 20:23:59 - tradex - INFO - - setting up the waves
+2023-10-29 20:23:59 - tradex - INFO - - getting the moneyflow
+2023-10-29 20:23:59 - tradex - INFO - - getting the dots
+2023-10-29 20:23:59 - tradex - INFO - - make the waves
+2023-10-29 20:23:59 - tradex - INFO - Elapsed time: 0.28 seconds
+2023-10-29 20:23:59 - tradex - INFO - ____________________
+2023-10-29 20:23:59 - tradex - INFO - init trade-x trend
+2023-10-29 20:23:59 - tradex - INFO - - setting up High|Low channel
+2023-10-29 20:23:59 - tradex - INFO - - setting up EMA
+2023-10-29 20:23:59 - tradex - INFO - - setting up LSMA
+2023-10-29 20:23:59 - tradex - INFO - - setting up VWAP
+2023-10-29 20:23:59 - tradex - INFO - init trade-x screener
+2023-10-29 20:23:59 - tradex - INFO - - make the waves
+2023-10-29 20:23:59 - tradex - INFO - - getting the moneyflow
+2023-10-29 20:23:59 - tradex - INFO - - getting the dots
+2023-10-29 20:23:59 - tradex - INFO - - make the waves
+2023-10-29 20:23:59 - tradex - INFO - init trade-x Real time
+2023-10-29 20:23:59 - tradex - INFO - - setting up the waves
+2023-10-29 20:23:59 - tradex - INFO - - setting up wave spaces
+2023-10-29 20:23:59 - tradex - INFO - - setting up the waves
+2023-10-29 20:23:59 - tradex - INFO - - getting the dots
+2023-10-29 20:23:59 - tradex - INFO - - setting up the waves
+2023-10-29 20:23:59 - tradex - INFO - init trade-x scanner
+2023-10-29 20:23:59 - tradex - INFO - - setting up the rsi's
+2023-10-29 20:59:25 - tradex - INFO - init trade-x trend
+2023-10-29 20:59:25 - tradex - INFO - - setting up High|Low channel
+2023-10-29 20:59:25 - tradex - INFO - init trade-x screener
+2023-10-29 20:59:25 - tradex - INFO - init trade-x Real time
+2023-10-29 20:59:25 - tradex - INFO - - make the waves
+2023-10-29 20:59:25 - tradex - INFO - init trade-x scanner
+2023-10-29 20:59:25 - tradex - INFO - - setting up the waves
+2023-10-29 20:59:25 - tradex - INFO - - setting up EMA
+2023-10-29 20:59:25 - tradex - INFO - - setting up the rsi's
+2023-10-29 20:59:25 - tradex - INFO - - setting up LSMA
+2023-10-29 20:59:25 - tradex - INFO - - setting up wave spaces
+2023-10-29 20:59:25 - tradex - INFO - - setting up the waves
+2023-10-29 20:59:25 - tradex - INFO - - setting up VWAP
+2023-10-29 20:59:25 - tradex - INFO - - getting the dots
+2023-10-29 20:59:25 - tradex - INFO - - setting up the waves
+2023-10-29 20:59:25 - tradex - INFO - - getting the moneyflow
+2023-10-29 20:59:25 - tradex - INFO - - getting the dots
+2023-10-29 20:59:25 - tradex - INFO - - make the waves
+2023-10-29 20:59:25 - tradex - INFO - Elapsed time: 0.27 seconds
+2023-10-29 20:59:25 - tradex - INFO - ____________________
+2023-10-29 20:59:25 - tradex - INFO - init trade-x trend
+2023-10-29 20:59:25 - tradex - INFO - - setting up High|Low channel
+2023-10-29 20:59:25 - tradex - INFO - - setting up EMA
+2023-10-29 20:59:25 - tradex - INFO - - setting up LSMA
+2023-10-29 20:59:25 - tradex - INFO - - setting up VWAP
+2023-10-29 20:59:25 - tradex - INFO - init trade-x screener
+2023-10-29 20:59:25 - tradex - INFO - - make the waves
+2023-10-29 20:59:25 - tradex - INFO - - getting the moneyflow
+2023-10-29 20:59:25 - tradex - INFO - - getting the dots
+2023-10-29 20:59:25 - tradex - INFO - - make the waves
+2023-10-29 20:59:25 - tradex - INFO - init trade-x Real time
+2023-10-29 20:59:25 - tradex - INFO - - setting up the waves
+2023-10-29 20:59:25 - tradex - INFO - - setting up wave spaces
+2023-10-29 20:59:25 - tradex - INFO - - setting up the waves
+2023-10-29 20:59:25 - tradex - INFO - - getting the dots
+2023-10-29 20:59:25 - tradex - INFO - - setting up the waves
+2023-10-29 20:59:25 - tradex - INFO - init trade-x scanner
+2023-10-29 20:59:25 - tradex - INFO - - setting up the rsi's
+2023-10-29 21:05:12 - tradex - INFO - init trade-x trend
+2023-10-29 21:05:12 - tradex - INFO - - setting up High|Low channel
+2023-10-29 21:05:12 - tradex - INFO - init trade-x screener
+2023-10-29 21:05:12 - tradex - INFO - init trade-x Real time
+2023-10-29 21:05:12 - tradex - INFO - - make the waves
+2023-10-29 21:05:12 - tradex - INFO - init trade-x scanner
+2023-10-29 21:05:12 - tradex - INFO - - setting up EMA
+2023-10-29 21:05:12 - tradex - INFO - - setting up the waves
+2023-10-29 21:05:12 - tradex - INFO - - setting up the rsi's
+2023-10-29 21:05:12 - tradex - INFO - - setting up LSMA
+2023-10-29 21:05:12 - tradex - INFO - - setting up VWAP
+2023-10-29 21:05:12 - tradex - INFO - - setting up wave spaces
+2023-10-29 21:05:12 - tradex - INFO - - setting up the waves
+2023-10-29 21:05:12 - tradex - INFO - - getting the dots
+2023-10-29 21:05:12 - tradex - INFO - - setting up the waves
+2023-10-29 21:05:12 - tradex - INFO - - getting the moneyflow
+2023-10-29 21:05:12 - tradex - INFO - - getting the dots
+2023-10-29 21:05:12 - tradex - INFO - - make the waves
+2023-10-29 21:05:12 - tradex - INFO - Elapsed time: 0.26 seconds
+2023-10-29 21:05:12 - tradex - INFO - ____________________
+2023-10-29 21:05:12 - tradex - INFO - init trade-x trend
+2023-10-29 21:05:12 - tradex - INFO - - setting up High|Low channel
+2023-10-29 21:05:12 - tradex - INFO - - setting up EMA
+2023-10-29 21:05:12 - tradex - INFO - - setting up LSMA
+2023-10-29 21:05:12 - tradex - INFO - - setting up VWAP
+2023-10-29 21:05:12 - tradex - INFO - init trade-x screener
+2023-10-29 21:05:12 - tradex - INFO - - make the waves
+2023-10-29 21:05:12 - tradex - INFO - - getting the moneyflow
+2023-10-29 21:05:12 - tradex - INFO - - getting the dots
+2023-10-29 21:05:12 - tradex - INFO - - make the waves
+2023-10-29 21:05:12 - tradex - INFO - init trade-x Real time
+2023-10-29 21:05:12 - tradex - INFO - - setting up the waves
+2023-10-29 21:05:12 - tradex - INFO - - setting up wave spaces
+2023-10-29 21:05:12 - tradex - INFO - - setting up the waves
+2023-10-29 21:05:12 - tradex - INFO - - getting the dots
+2023-10-29 21:05:12 - tradex - INFO - - setting up the waves
+2023-10-29 21:05:12 - tradex - INFO - init trade-x scanner
+2023-10-29 21:05:12 - tradex - INFO - - setting up the rsi's
+2023-10-29 21:06:01 - tradex - INFO - init trade-x trend
+2023-10-29 21:06:01 - tradex - INFO - - setting up High|Low channel
+2023-10-29 21:06:01 - tradex - INFO - init trade-x screener
+2023-10-29 21:06:01 - tradex - INFO - - setting up EMA
+2023-10-29 21:06:01 - tradex - INFO - init trade-x Real time
+2023-10-29 21:06:01 - tradex - INFO - - make the waves
+2023-10-29 21:06:01 - tradex - INFO - - setting up the waves
+2023-10-29 21:06:01 - tradex - INFO - init trade-x scanner
+2023-10-29 21:06:01 - tradex - INFO - - setting up LSMA
+2023-10-29 21:06:01 - tradex - INFO - - setting up the rsi's
+2023-10-29 21:06:01 - tradex - INFO - - setting up wave spaces
+2023-10-29 21:06:01 - tradex - INFO - - setting up VWAP
+2023-10-29 21:06:01 - tradex - INFO - - setting up the waves
+2023-10-29 21:06:01 - tradex - INFO - - getting the dots
+2023-10-29 21:06:01 - tradex - INFO - - setting up the waves
+2023-10-29 21:06:01 - tradex - INFO - - getting the moneyflow
+2023-10-29 21:06:01 - tradex - INFO - - getting the dots
+2023-10-29 21:06:01 - tradex - INFO - - make the waves
+2023-10-29 21:06:01 - tradex - INFO - Elapsed time: 0.29 seconds
+2023-10-29 21:06:01 - tradex - INFO - ____________________
+2023-10-29 21:06:01 - tradex - INFO - init trade-x trend
+2023-10-29 21:06:01 - tradex - INFO - - setting up High|Low channel
+2023-10-29 21:06:01 - tradex - INFO - - setting up EMA
+2023-10-29 21:06:01 - tradex - INFO - - setting up LSMA
+2023-10-29 21:06:01 - tradex - INFO - - setting up VWAP
+2023-10-29 21:06:01 - tradex - INFO - init trade-x screener
+2023-10-29 21:06:01 - tradex - INFO - - make the waves
+2023-10-29 21:06:01 - tradex - INFO - - getting the moneyflow
+2023-10-29 21:06:01 - tradex - INFO - - getting the dots
+2023-10-29 21:06:01 - tradex - INFO - - make the waves
+2023-10-29 21:06:02 - tradex - INFO - init trade-x Real time
+2023-10-29 21:06:02 - tradex - INFO - - setting up the waves
+2023-10-29 21:06:02 - tradex - INFO - - setting up wave spaces
+2023-10-29 21:06:02 - tradex - INFO - - setting up the waves
+2023-10-29 21:06:02 - tradex - INFO - - getting the dots
+2023-10-29 21:06:02 - tradex - INFO - - setting up the waves
+2023-10-29 21:06:02 - tradex - INFO - init trade-x scanner
+2023-10-29 21:06:02 - tradex - INFO - - setting up the rsi's
+2023-10-29 21:06:58 - tradex - INFO - init trade-x trend
+2023-10-29 21:06:58 - tradex - INFO - - setting up High|Low channel
+2023-10-29 21:06:58 - tradex - INFO - init trade-x screener
+2023-10-29 21:06:58 - tradex - INFO - init trade-x Real time
+2023-10-29 21:06:58 - tradex - INFO - init trade-x scanner
+2023-10-29 21:06:58 - tradex - INFO - - make the waves
+2023-10-29 21:06:58 - tradex - INFO - - setting up EMA
+2023-10-29 21:06:58 - tradex - INFO - - setting up the waves
+2023-10-29 21:06:58 - tradex - INFO - - setting up the rsi's
+2023-10-29 21:06:58 - tradex - INFO - - setting up LSMA
+2023-10-29 21:06:58 - tradex - INFO - - setting up wave spaces
+2023-10-29 21:06:58 - tradex - INFO - - setting up the waves
+2023-10-29 21:06:58 - tradex - INFO - - setting up VWAP
+2023-10-29 21:06:58 - tradex - INFO - - getting the dots
+2023-10-29 21:06:58 - tradex - INFO - - setting up the waves
+2023-10-29 21:06:58 - tradex - INFO - - getting the moneyflow
+2023-10-29 21:06:58 - tradex - INFO - - getting the dots
+2023-10-29 21:06:58 - tradex - INFO - - make the waves
+2023-10-29 21:06:58 - tradex - INFO - Elapsed time: 0.29 seconds
+2023-10-29 21:06:58 - tradex - INFO - ____________________
+2023-10-29 21:06:58 - tradex - INFO - init trade-x trend
+2023-10-29 21:06:58 - tradex - INFO - - setting up High|Low channel
+2023-10-29 21:06:58 - tradex - INFO - - setting up EMA
+2023-10-29 21:06:58 - tradex - INFO - - setting up LSMA
+2023-10-29 21:06:58 - tradex - INFO - - setting up VWAP
+2023-10-29 21:06:59 - tradex - INFO - init trade-x screener
+2023-10-29 21:06:59 - tradex - INFO - - make the waves
+2023-10-29 21:06:59 - tradex - INFO - - getting the moneyflow
+2023-10-29 21:06:59 - tradex - INFO - - getting the dots
+2023-10-29 21:06:59 - tradex - INFO - - make the waves
+2023-10-29 21:06:59 - tradex - INFO - init trade-x Real time
+2023-10-29 21:06:59 - tradex - INFO - - setting up the waves
+2023-10-29 21:06:59 - tradex - INFO - - setting up wave spaces
+2023-10-29 21:06:59 - tradex - INFO - - setting up the waves
+2023-10-29 21:06:59 - tradex - INFO - - getting the dots
+2023-10-29 21:06:59 - tradex - INFO - - setting up the waves
+2023-10-29 21:06:59 - tradex - INFO - init trade-x scanner
+2023-10-29 21:06:59 - tradex - INFO - - setting up the rsi's
+2023-10-30 19:01:45 - tradex - INFO - init trade-x trend
+2023-10-30 19:01:45 - tradex - INFO - init trade-x screener
+2023-10-30 19:01:45 - tradex - INFO - init trade-x Real time
+2023-10-30 19:01:45 - tradex - INFO - init trade-x scanner
+2023-10-30 19:01:45 - tradex - INFO - - setting up High|Low channel
+2023-10-30 19:01:45 - tradex - INFO - - make the waves
+2023-10-30 19:01:45 - tradex - INFO - - setting up the waves
+2023-10-30 19:01:45 - tradex - INFO - - setting up the rsi's
+2023-10-30 19:01:45 - tradex - INFO - - setting up EMA
+2023-10-30 19:01:45 - tradex - INFO - - setting up LSMA
+2023-10-30 19:01:45 - tradex - INFO - - setting up wave spaces
+2023-10-30 19:01:45 - tradex - INFO - - setting up the waves
+2023-10-30 19:01:45 - tradex - INFO - - setting up VWAP
+2023-10-30 19:01:45 - tradex - INFO - - getting the dots
+2023-10-30 19:01:45 - tradex - INFO - - setting up the waves
+2023-10-30 19:01:45 - tradex - INFO - - getting the moneyflow
+2023-10-30 19:01:45 - tradex - INFO - - getting the dots
+2023-10-30 19:01:45 - tradex - INFO - - make the waves
+2023-10-30 19:01:45 - tradex - INFO - Elapsed time: 0.29 seconds
+2023-10-30 19:01:45 - tradex - INFO - ____________________
+2023-10-30 19:01:45 - tradex - INFO - init trade-x trend
+2023-10-30 19:01:45 - tradex - INFO - - setting up High|Low channel
+2023-10-30 19:01:45 - tradex - INFO - - setting up EMA
+2023-10-30 19:01:45 - tradex - INFO - - setting up LSMA
+2023-10-30 19:01:45 - tradex - INFO - - setting up VWAP
+2023-10-30 19:01:45 - tradex - INFO - init trade-x screener
+2023-10-30 19:01:45 - tradex - INFO - - make the waves
+2023-10-30 19:01:45 - tradex - INFO - - getting the moneyflow
+2023-10-30 19:01:45 - tradex - INFO - - getting the dots
+2023-10-30 19:01:45 - tradex - INFO - - make the waves
+2023-10-30 19:01:45 - tradex - INFO - init trade-x Real time
+2023-10-30 19:01:45 - tradex - INFO - - setting up the waves
+2023-10-30 19:01:45 - tradex - INFO - - setting up wave spaces
+2023-10-30 19:01:45 - tradex - INFO - - setting up the waves
+2023-10-30 19:01:45 - tradex - INFO - - getting the dots
+2023-10-30 19:01:45 - tradex - INFO - - setting up the waves
+2023-10-30 19:01:45 - tradex - INFO - init trade-x scanner
+2023-10-30 19:01:45 - tradex - INFO - - setting up the rsi's
+2023-10-30 19:03:34 - tradex - INFO - init trade-x trend
+2023-10-30 19:03:34 - tradex - INFO - - setting up High|Low channel
+2023-10-30 19:03:34 - tradex - INFO - init trade-x screener
+2023-10-30 19:03:34 - tradex - INFO - init trade-x Real time
+2023-10-30 19:03:34 - tradex - INFO - - make the waves
+2023-10-30 19:03:34 - tradex - INFO - init trade-x scanner
+2023-10-30 19:03:34 - tradex - INFO - - setting up EMA
+2023-10-30 19:03:34 - tradex - INFO - - setting up the waves
+2023-10-30 19:03:34 - tradex - INFO - - setting up the rsi's
+2023-10-30 19:03:34 - tradex - INFO - - setting up LSMA
+2023-10-30 19:03:34 - tradex - INFO - - setting up wave spaces
+2023-10-30 19:03:34 - tradex - INFO - - setting up the waves
+2023-10-30 19:03:34 - tradex - INFO - - setting up VWAP
+2023-10-30 19:03:34 - tradex - INFO - - getting the dots
+2023-10-30 19:03:34 - tradex - INFO - - setting up the waves
+2023-10-30 19:03:34 - tradex - INFO - - getting the moneyflow
+2023-10-30 19:03:34 - tradex - INFO - - getting the dots
+2023-10-30 19:03:34 - tradex - INFO - - make the waves
+2023-10-30 19:03:34 - tradex - INFO - Elapsed time: 0.30 seconds
+2023-10-30 19:03:34 - tradex - INFO - ____________________
+2023-10-30 19:03:34 - tradex - INFO - init trade-x trend
+2023-10-30 19:03:34 - tradex - INFO - - setting up High|Low channel
+2023-10-30 19:03:34 - tradex - INFO - - setting up EMA
+2023-10-30 19:03:34 - tradex - INFO - - setting up LSMA
+2023-10-30 19:03:34 - tradex - INFO - - setting up VWAP
+2023-10-30 19:03:34 - tradex - INFO - init trade-x screener
+2023-10-30 19:03:34 - tradex - INFO - - make the waves
+2023-10-30 19:03:35 - tradex - INFO - - getting the moneyflow
+2023-10-30 19:03:35 - tradex - INFO - - getting the dots
+2023-10-30 19:03:35 - tradex - INFO - - make the waves
+2023-10-30 19:03:35 - tradex - INFO - init trade-x Real time
+2023-10-30 19:03:35 - tradex - INFO - - setting up the waves
+2023-10-30 19:03:35 - tradex - INFO - - setting up wave spaces
+2023-10-30 19:03:35 - tradex - INFO - - setting up the waves
+2023-10-30 19:03:35 - tradex - INFO - - getting the dots
+2023-10-30 19:03:35 - tradex - INFO - - setting up the waves
+2023-10-30 19:03:35 - tradex - INFO - init trade-x scanner
+2023-10-30 19:03:35 - tradex - INFO - - setting up the rsi's
+2023-11-01 11:30:50 - tradex - INFO - init trade-x trend
+2023-11-01 11:30:50 - tradex - INFO - init trade-x screener
+2023-11-01 11:30:50 - tradex - INFO - init trade-x Real time
+2023-11-01 11:30:50 - tradex - INFO - init trade-x scanner
+2023-11-01 11:30:50 - tradex - INFO - - setting up High|Low channel
+2023-11-01 11:30:50 - tradex - INFO - - make the waves
+2023-11-01 11:30:50 - tradex - INFO - - setting up the waves
+2023-11-01 11:30:50 - tradex - INFO - - setting up the rsi's
+2023-11-01 11:30:50 - tradex - INFO - - setting up EMA
+2023-11-01 11:30:50 - tradex - INFO - - setting up LSMA
+2023-11-01 11:30:50 - tradex - INFO - - setting up wave spaces
+2023-11-01 11:30:50 - tradex - INFO - - setting up the waves
+2023-11-01 11:30:50 - tradex - INFO - - setting up VWAP
+2023-11-01 11:30:50 - tradex - INFO - - getting the dots
+2023-11-01 11:30:50 - tradex - INFO - - setting up the waves
+2023-11-01 11:30:50 - tradex - INFO - - getting the moneyflow
+2023-11-01 11:30:50 - tradex - INFO - - getting the dots
+2023-11-01 11:30:50 - tradex - INFO - - make the waves
+2023-11-01 11:30:50 - tradex - INFO - Elapsed time: 0.27 seconds
+2023-11-01 11:30:50 - tradex - INFO - ____________________
+2023-11-01 11:30:50 - tradex - INFO - init trade-x trend
+2023-11-01 11:30:50 - tradex - INFO - - setting up High|Low channel
+2023-11-01 11:30:50 - tradex - INFO - - setting up EMA
+2023-11-01 11:30:50 - tradex - INFO - - setting up LSMA
+2023-11-01 11:30:50 - tradex - INFO - - setting up VWAP
+2023-11-01 11:30:50 - tradex - INFO - init trade-x screener
+2023-11-01 11:30:50 - tradex - INFO - - make the waves
+2023-11-01 11:30:50 - tradex - INFO - - getting the moneyflow
+2023-11-01 11:30:50 - tradex - INFO - - getting the dots
+2023-11-01 11:30:50 - tradex - INFO - - make the waves
+2023-11-01 11:30:50 - tradex - INFO - init trade-x Real time
+2023-11-01 11:30:50 - tradex - INFO - - setting up the waves
+2023-11-01 11:30:50 - tradex - INFO - - setting up wave spaces
+2023-11-01 11:30:50 - tradex - INFO - - setting up the waves
+2023-11-01 11:30:50 - tradex - INFO - - getting the dots
+2023-11-01 11:30:50 - tradex - INFO - - setting up the waves
+2023-11-01 11:30:50 - tradex - INFO - init trade-x scanner
+2023-11-01 11:30:50 - tradex - INFO - - setting up the rsi's
+2023-11-01 11:38:49 - tradex - INFO - init trade-x trend
+2023-11-01 11:38:49 - tradex - INFO - init trade-x screener
+2023-11-01 11:38:49 - tradex - INFO - - setting up High|Low channel
+2023-11-01 11:38:49 - tradex - INFO - - make the waves
+2023-11-01 11:38:49 - tradex - INFO - init trade-x Real time
+2023-11-01 11:38:49 - tradex - INFO - init trade-x scanner
+2023-11-01 11:38:49 - tradex - INFO - - setting up EMA
+2023-11-01 11:38:49 - tradex - INFO - - setting up the waves
+2023-11-01 11:38:49 - tradex - INFO - - setting up the rsi's
+2023-11-01 11:38:49 - tradex - INFO - - setting up LSMA
+2023-11-01 11:38:49 - tradex - INFO - - setting up VWAP
+2023-11-01 11:38:49 - tradex - INFO - - setting up wave spaces
+2023-11-01 11:38:49 - tradex - INFO - - setting up the waves
+2023-11-01 11:38:49 - tradex - INFO - - getting the dots
+2023-11-01 11:38:49 - tradex - INFO - - setting up the waves
+2023-11-01 11:38:49 - tradex - INFO - - getting the moneyflow
+2023-11-01 11:38:49 - tradex - INFO - - getting the dots
+2023-11-01 11:38:49 - tradex - INFO - - make the waves
+2023-11-01 11:38:49 - tradex - INFO - Elapsed time: 0.26 seconds
+2023-11-01 11:38:49 - tradex - INFO - ____________________
+2023-11-01 11:38:49 - tradex - INFO - init trade-x trend
+2023-11-01 11:38:49 - tradex - INFO - - setting up High|Low channel
+2023-11-01 11:38:49 - tradex - INFO - - setting up EMA
+2023-11-01 11:38:49 - tradex - INFO - - setting up LSMA
+2023-11-01 11:38:49 - tradex - INFO - - setting up VWAP
+2023-11-01 11:38:49 - tradex - INFO - init trade-x screener
+2023-11-01 11:38:49 - tradex - INFO - - make the waves
+2023-11-01 11:38:49 - tradex - INFO - - getting the moneyflow
+2023-11-01 11:38:49 - tradex - INFO - - getting the dots
+2023-11-01 11:38:49 - tradex - INFO - - make the waves
+2023-11-01 11:38:49 - tradex - INFO - init trade-x Real time
+2023-11-01 11:38:49 - tradex - INFO - - setting up the waves
+2023-11-01 11:38:49 - tradex - INFO - - setting up wave spaces
+2023-11-01 11:38:49 - tradex - INFO - - setting up the waves
+2023-11-01 11:38:49 - tradex - INFO - - getting the dots
+2023-11-01 11:38:49 - tradex - INFO - - setting up the waves
+2023-11-01 11:38:49 - tradex - INFO - init trade-x scanner
+2023-11-01 11:38:49 - tradex - INFO - - setting up the rsi's
+2023-11-01 11:45:48 - tradex - INFO - init trade-x trend
+2023-11-01 11:45:48 - tradex - INFO - init trade-x screener
+2023-11-01 11:45:48 - tradex - INFO - - setting up High|Low channel
+2023-11-01 11:45:48 - tradex - INFO - - make the waves
+2023-11-01 11:45:48 - tradex - INFO - init trade-x Real time
+2023-11-01 11:45:48 - tradex - INFO - init trade-x scanner
+2023-11-01 11:45:48 - tradex - INFO - - setting up the waves
+2023-11-01 11:45:48 - tradex - INFO - - setting up the rsi's
+2023-11-01 11:45:48 - tradex - INFO - - setting up EMA
+2023-11-01 11:45:48 - tradex - INFO - - setting up LSMA
+2023-11-01 11:45:48 - tradex - INFO - - setting up wave spaces
+2023-11-01 11:45:48 - tradex - INFO - - setting up the waves
+2023-11-01 11:45:48 - tradex - INFO - - setting up VWAP
+2023-11-01 11:45:48 - tradex - INFO - - getting the dots
+2023-11-01 11:45:48 - tradex - INFO - - setting up the waves
+2023-11-01 11:45:48 - tradex - INFO - - getting the moneyflow
+2023-11-01 11:45:48 - tradex - INFO - - getting the dots
+2023-11-01 11:45:48 - tradex - INFO - - make the waves
+2023-11-01 11:45:48 - tradex - INFO - Elapsed time: 0.26 seconds
+2023-11-01 11:45:48 - tradex - INFO - ____________________
+2023-11-01 11:45:48 - tradex - INFO - init trade-x trend
+2023-11-01 11:45:48 - tradex - INFO - - setting up High|Low channel
+2023-11-01 11:45:48 - tradex - INFO - - setting up EMA
+2023-11-01 11:45:48 - tradex - INFO - - setting up LSMA
+2023-11-01 11:45:48 - tradex - INFO - - setting up VWAP
+2023-11-01 11:45:48 - tradex - INFO - init trade-x screener
+2023-11-01 11:45:48 - tradex - INFO - - make the waves
+2023-11-01 11:45:48 - tradex - INFO - - getting the moneyflow
+2023-11-01 11:45:48 - tradex - INFO - - getting the dots
+2023-11-01 11:45:48 - tradex - INFO - - make the waves
+2023-11-01 11:45:48 - tradex - INFO - init trade-x Real time
+2023-11-01 11:45:48 - tradex - INFO - - setting up the waves
+2023-11-01 11:45:48 - tradex - INFO - - setting up wave spaces
+2023-11-01 11:45:48 - tradex - INFO - - setting up the waves
+2023-11-01 11:45:48 - tradex - INFO - - getting the dots
+2023-11-01 11:45:48 - tradex - INFO - - setting up the waves
+2023-11-01 11:45:48 - tradex - INFO - init trade-x scanner
+2023-11-01 11:45:48 - tradex - INFO - - setting up the rsi's
+2023-11-01 11:50:57 - tradex - INFO - init trade-x trend
+2023-11-01 11:50:57 - tradex - INFO - - setting up High|Low channel
+2023-11-01 11:50:57 - tradex - INFO - init trade-x screener
+2023-11-01 11:50:57 - tradex - INFO - - make the waves
+2023-11-01 11:50:57 - tradex - INFO - init trade-x Real time
+2023-11-01 11:50:57 - tradex - INFO - - setting up EMA
+2023-11-01 11:50:57 - tradex - INFO - init trade-x scanner
+2023-11-01 11:50:57 - tradex - INFO - - setting up the waves
+2023-11-01 11:50:57 - tradex - INFO - - setting up the rsi's
+2023-11-01 11:50:57 - tradex - INFO - - setting up LSMA
+2023-11-01 11:50:57 - tradex - INFO - - setting up wave spaces
+2023-11-01 11:50:57 - tradex - INFO - - setting up VWAP
+2023-11-01 11:50:57 - tradex - INFO - - setting up the waves
+2023-11-01 11:50:57 - tradex - INFO - - getting the dots
+2023-11-01 11:50:57 - tradex - INFO - - setting up the waves
+2023-11-01 11:50:57 - tradex - INFO - - getting the moneyflow
+2023-11-01 11:50:57 - tradex - INFO - - getting the dots
+2023-11-01 11:50:57 - tradex - INFO - - make the waves
+2023-11-01 11:50:57 - tradex - INFO - Elapsed time: 0.26 seconds
+2023-11-01 11:50:57 - tradex - INFO - ____________________
+2023-11-01 11:50:57 - tradex - INFO - init trade-x trend
+2023-11-01 11:50:57 - tradex - INFO - - setting up High|Low channel
+2023-11-01 11:50:57 - tradex - INFO - - setting up EMA
+2023-11-01 11:50:57 - tradex - INFO - - setting up LSMA
+2023-11-01 11:50:57 - tradex - INFO - - setting up VWAP
+2023-11-01 11:50:57 - tradex - INFO - init trade-x screener
+2023-11-01 11:50:57 - tradex - INFO - - make the waves
+2023-11-01 11:50:57 - tradex - INFO - - getting the moneyflow
+2023-11-01 11:50:57 - tradex - INFO - - getting the dots
+2023-11-01 11:50:57 - tradex - INFO - - make the waves
+2023-11-01 11:50:57 - tradex - INFO - init trade-x Real time
+2023-11-01 11:50:57 - tradex - INFO - - setting up the waves
+2023-11-01 11:50:57 - tradex - INFO - - setting up wave spaces
+2023-11-01 11:50:57 - tradex - INFO - - setting up the waves
+2023-11-01 11:50:57 - tradex - INFO - - getting the dots
+2023-11-01 11:50:57 - tradex - INFO - - setting up the waves
+2023-11-01 11:50:57 - tradex - INFO - init trade-x scanner
+2023-11-01 11:50:57 - tradex - INFO - - setting up the rsi's
+2023-11-01 11:54:07 - tradex - INFO - init trade-x trend
+2023-11-01 11:54:07 - tradex - INFO - init trade-x screener
+2023-11-01 11:54:07 - tradex - INFO - - setting up High|Low channel
+2023-11-01 11:54:07 - tradex - INFO - - make the waves
+2023-11-01 11:54:07 - tradex - INFO - init trade-x Real time
+2023-11-01 11:54:07 - tradex - INFO - init trade-x scanner
+2023-11-01 11:54:07 - tradex - INFO - - setting up EMA
+2023-11-01 11:54:07 - tradex - INFO - - setting up the waves
+2023-11-01 11:54:07 - tradex - INFO - - setting up the rsi's
+2023-11-01 11:54:07 - tradex - INFO - - setting up LSMA
+2023-11-01 11:54:07 - tradex - INFO - - setting up VWAP
+2023-11-01 11:54:07 - tradex - INFO - - setting up wave spaces
+2023-11-01 11:54:07 - tradex - INFO - - setting up the waves
+2023-11-01 11:54:07 - tradex - INFO - - getting the dots
+2023-11-01 11:54:07 - tradex - INFO - - setting up the waves
+2023-11-01 11:54:08 - tradex - INFO - - getting the moneyflow
+2023-11-01 11:54:08 - tradex - INFO - - getting the dots
+2023-11-01 11:54:08 - tradex - INFO - - make the waves
+2023-11-01 11:54:08 - tradex - INFO - Elapsed time: 0.28 seconds
+2023-11-01 11:54:08 - tradex - INFO - ____________________
+2023-11-01 11:54:08 - tradex - INFO - init trade-x trend
+2023-11-01 11:54:08 - tradex - INFO - - setting up High|Low channel
+2023-11-01 11:54:08 - tradex - INFO - - setting up EMA
+2023-11-01 11:54:08 - tradex - INFO - - setting up LSMA
+2023-11-01 11:54:08 - tradex - INFO - - setting up VWAP
+2023-11-01 11:54:08 - tradex - INFO - init trade-x screener
+2023-11-01 11:54:08 - tradex - INFO - - make the waves
+2023-11-01 11:54:08 - tradex - INFO - - getting the moneyflow
+2023-11-01 11:54:08 - tradex - INFO - - getting the dots
+2023-11-01 11:54:08 - tradex - INFO - - make the waves
+2023-11-01 11:54:08 - tradex - INFO - init trade-x Real time
+2023-11-01 11:54:08 - tradex - INFO - - setting up the waves
+2023-11-01 11:54:08 - tradex - INFO - - setting up wave spaces
+2023-11-01 11:54:08 - tradex - INFO - - setting up the waves
+2023-11-01 11:54:08 - tradex - INFO - - getting the dots
+2023-11-01 11:54:08 - tradex - INFO - - setting up the waves
+2023-11-01 11:54:08 - tradex - INFO - init trade-x scanner
+2023-11-01 11:54:08 - tradex - INFO - - setting up the rsi's
+2023-11-01 11:58:13 - tradex - INFO - init trade-x trend
+2023-11-01 11:58:13 - tradex - INFO - - setting up High|Low channel
+2023-11-01 11:58:13 - tradex - INFO - init trade-x screener
+2023-11-01 11:58:13 - tradex - INFO - init trade-x Real time
+2023-11-01 11:58:13 - tradex - INFO - - setting up EMA
+2023-11-01 11:58:13 - tradex - INFO - - make the waves
+2023-11-01 11:58:13 - tradex - INFO - - setting up the waves
+2023-11-01 11:58:13 - tradex - INFO - init trade-x scanner
+2023-11-01 11:58:13 - tradex - INFO - - setting up LSMA
+2023-11-01 11:58:13 - tradex - INFO - - setting up the rsi's
+2023-11-01 11:58:13 - tradex - INFO - - setting up VWAP
+2023-11-01 11:58:13 - tradex - INFO - - setting up wave spaces
+2023-11-01 11:58:13 - tradex - INFO - - setting up the waves
+2023-11-01 11:58:13 - tradex - INFO - - getting the dots
+2023-11-01 11:58:13 - tradex - INFO - - setting up the waves
+2023-11-01 11:58:13 - tradex - INFO - - getting the moneyflow
+2023-11-01 11:58:13 - tradex - INFO - - getting the dots
+2023-11-01 11:58:13 - tradex - INFO - - make the waves
+2023-11-01 11:58:13 - tradex - INFO - Elapsed time: 0.25 seconds
+2023-11-01 11:58:13 - tradex - INFO - ____________________
+2023-11-01 11:58:13 - tradex - INFO - init trade-x trend
+2023-11-01 11:58:13 - tradex - INFO - - setting up High|Low channel
+2023-11-01 11:58:13 - tradex - INFO - - setting up EMA
+2023-11-01 11:58:13 - tradex - INFO - - setting up LSMA
+2023-11-01 11:58:13 - tradex - INFO - - setting up VWAP
+2023-11-01 11:58:13 - tradex - INFO - init trade-x screener
+2023-11-01 11:58:13 - tradex - INFO - - make the waves
+2023-11-01 11:58:13 - tradex - INFO - - getting the moneyflow
+2023-11-01 11:58:13 - tradex - INFO - - getting the dots
+2023-11-01 11:58:13 - tradex - INFO - - make the waves
+2023-11-01 11:58:13 - tradex - INFO - init trade-x Real time
+2023-11-01 11:58:13 - tradex - INFO - - setting up the waves
+2023-11-01 11:58:13 - tradex - INFO - - setting up wave spaces
+2023-11-01 11:58:13 - tradex - INFO - - setting up the waves
+2023-11-01 11:58:13 - tradex - INFO - - getting the dots
+2023-11-01 11:58:13 - tradex - INFO - - setting up the waves
+2023-11-01 11:58:13 - tradex - INFO - init trade-x scanner
+2023-11-01 11:58:13 - tradex - INFO - - setting up the rsi's
+2023-11-01 11:59:06 - tradex - INFO - init trade-x trend
+2023-11-01 11:59:06 - tradex - INFO - - setting up High|Low channel
+2023-11-01 11:59:06 - tradex - INFO - init trade-x screener
+2023-11-01 11:59:06 - tradex - INFO - - setting up EMA
+2023-11-01 11:59:06 - tradex - INFO - - make the waves
+2023-11-01 11:59:06 - tradex - INFO - init trade-x Real time
+2023-11-01 11:59:06 - tradex - INFO - init trade-x scanner
+2023-11-01 11:59:06 - tradex - INFO - - setting up LSMA
+2023-11-01 11:59:06 - tradex - INFO - - setting up the waves
+2023-11-01 11:59:06 - tradex - INFO - - setting up the rsi's
+2023-11-01 11:59:06 - tradex - INFO - - setting up VWAP
+2023-11-01 11:59:06 - tradex - INFO - - setting up wave spaces
+2023-11-01 11:59:06 - tradex - INFO - - setting up the waves
+2023-11-01 11:59:06 - tradex - INFO - - getting the dots
+2023-11-01 11:59:06 - tradex - INFO - - setting up the waves
+2023-11-01 11:59:06 - tradex - INFO - - getting the moneyflow
+2023-11-01 11:59:06 - tradex - INFO - - getting the dots
+2023-11-01 11:59:06 - tradex - INFO - - make the waves
+2023-11-01 11:59:06 - tradex - INFO - Elapsed time: 0.25 seconds
+2023-11-01 11:59:06 - tradex - INFO - ____________________
+2023-11-01 11:59:06 - tradex - INFO - init trade-x trend
+2023-11-01 11:59:06 - tradex - INFO - - setting up High|Low channel
+2023-11-01 11:59:06 - tradex - INFO - - setting up EMA
+2023-11-01 11:59:06 - tradex - INFO - - setting up LSMA
+2023-11-01 11:59:06 - tradex - INFO - - setting up VWAP
+2023-11-01 11:59:06 - tradex - INFO - init trade-x screener
+2023-11-01 11:59:06 - tradex - INFO - - make the waves
+2023-11-01 11:59:06 - tradex - INFO - - getting the moneyflow
+2023-11-01 11:59:06 - tradex - INFO - - getting the dots
+2023-11-01 11:59:06 - tradex - INFO - - make the waves
+2023-11-01 11:59:06 - tradex - INFO - init trade-x Real time
+2023-11-01 11:59:06 - tradex - INFO - - setting up the waves
+2023-11-01 11:59:06 - tradex - INFO - - setting up wave spaces
+2023-11-01 11:59:06 - tradex - INFO - - setting up the waves
+2023-11-01 11:59:06 - tradex - INFO - - getting the dots
+2023-11-01 11:59:06 - tradex - INFO - - setting up the waves
+2023-11-01 11:59:06 - tradex - INFO - init trade-x scanner
+2023-11-01 11:59:06 - tradex - INFO - - setting up the rsi's
+2023-11-01 12:01:56 - tradex - INFO - init trade-x trend
+2023-11-01 12:01:56 - tradex - INFO - - setting up High|Low channel
+2023-11-01 12:01:56 - tradex - INFO - init trade-x screener
+2023-11-01 12:01:56 - tradex - INFO - - setting up EMA
+2023-11-01 12:01:56 - tradex - INFO - init trade-x Real time
+2023-11-01 12:01:56 - tradex - INFO - - make the waves
+2023-11-01 12:01:56 - tradex - INFO - init trade-x scanner
+2023-11-01 12:01:56 - tradex - INFO - - setting up LSMA
+2023-11-01 12:01:56 - tradex - INFO - - setting up the waves
+2023-11-01 12:01:56 - tradex - INFO - - setting up the rsi's
+2023-11-01 12:01:56 - tradex - INFO - - setting up VWAP
+2023-11-01 12:01:56 - tradex - INFO - - setting up wave spaces
+2023-11-01 12:01:56 - tradex - INFO - - setting up the waves
+2023-11-01 12:01:56 - tradex - INFO - - getting the dots
+2023-11-01 12:01:56 - tradex - INFO - - setting up the waves
+2023-11-01 12:01:56 - tradex - INFO - - getting the moneyflow
+2023-11-01 12:01:56 - tradex - INFO - - getting the dots
+2023-11-01 12:01:56 - tradex - INFO - - make the waves
+2023-11-01 12:01:56 - tradex - INFO - Elapsed time: 0.26 seconds
+2023-11-01 12:01:56 - tradex - INFO - ____________________
+2023-11-01 12:01:56 - tradex - INFO - init trade-x trend
+2023-11-01 12:01:56 - tradex - INFO - - setting up High|Low channel
+2023-11-01 12:01:56 - tradex - INFO - - setting up EMA
+2023-11-01 12:01:56 - tradex - INFO - - setting up LSMA
+2023-11-01 12:01:56 - tradex - INFO - - setting up VWAP
+2023-11-01 12:01:56 - tradex - INFO - init trade-x screener
+2023-11-01 12:01:56 - tradex - INFO - - make the waves
+2023-11-01 12:01:56 - tradex - INFO - - getting the moneyflow
+2023-11-01 12:01:56 - tradex - INFO - - getting the dots
+2023-11-01 12:01:56 - tradex - INFO - - make the waves
+2023-11-01 12:01:56 - tradex - INFO - init trade-x Real time
+2023-11-01 12:01:56 - tradex - INFO - - setting up the waves
+2023-11-01 12:01:56 - tradex - INFO - - setting up wave spaces
+2023-11-01 12:01:56 - tradex - INFO - - setting up the waves
+2023-11-01 12:01:56 - tradex - INFO - - getting the dots
+2023-11-01 12:01:56 - tradex - INFO - - setting up the waves
+2023-11-01 12:01:56 - tradex - INFO - init trade-x scanner
+2023-11-01 12:01:56 - tradex - INFO - - setting up the rsi's
+2023-11-01 13:09:25 - tradex - INFO - init trade-x trend
+2023-11-01 13:09:25 - tradex - INFO - - setting up High|Low channel
+2023-11-01 13:09:25 - tradex - INFO - init trade-x screener
+2023-11-01 13:09:25 - tradex - INFO - init trade-x Real time
+2023-11-01 13:09:25 - tradex - INFO - init trade-x scanner
+2023-11-01 13:09:25 - tradex - INFO - - make the waves
+2023-11-01 13:09:25 - tradex - INFO - - setting up the waves
+2023-11-01 13:09:25 - tradex - INFO - - setting up EMA
+2023-11-01 13:09:25 - tradex - INFO - - setting up the rsi's
+2023-11-01 13:09:25 - tradex - INFO - - setting up LSMA
+2023-11-01 13:09:25 - tradex - INFO - - setting up wave spaces
+2023-11-01 13:09:25 - tradex - INFO - - setting up the waves
+2023-11-01 13:09:25 - tradex - INFO - - setting up VWAP
+2023-11-01 13:09:25 - tradex - INFO - - getting the dots
+2023-11-01 13:09:25 - tradex - INFO - - setting up the waves
+2023-11-01 13:09:25 - tradex - INFO - - getting the moneyflow
+2023-11-01 13:09:25 - tradex - INFO - - getting the dots
+2023-11-01 13:09:25 - tradex - INFO - - make the waves
+2023-11-01 13:09:25 - tradex - INFO - Elapsed time: 0.26 seconds
+2023-11-01 13:09:25 - tradex - INFO - ____________________
+2023-11-01 13:09:25 - tradex - INFO - init trade-x trend
+2023-11-01 13:09:25 - tradex - INFO - - setting up High|Low channel
+2023-11-01 13:09:25 - tradex - INFO - - setting up EMA
+2023-11-01 13:09:25 - tradex - INFO - - setting up LSMA
+2023-11-01 13:09:25 - tradex - INFO - - setting up VWAP
+2023-11-01 13:09:25 - tradex - INFO - init trade-x screener
+2023-11-01 13:09:25 - tradex - INFO - - make the waves
+2023-11-01 13:09:25 - tradex - INFO - - getting the moneyflow
+2023-11-01 13:09:25 - tradex - INFO - - getting the dots
+2023-11-01 13:09:25 - tradex - INFO - - make the waves
+2023-11-01 13:09:25 - tradex - INFO - init trade-x Real time
+2023-11-01 13:09:25 - tradex - INFO - - setting up the waves
+2023-11-01 13:09:25 - tradex - INFO - - setting up wave spaces
+2023-11-01 13:09:25 - tradex - INFO - - setting up the waves
+2023-11-01 13:09:25 - tradex - INFO - - getting the dots
+2023-11-01 13:09:25 - tradex - INFO - - setting up the waves
+2023-11-01 13:09:25 - tradex - INFO - init trade-x scanner
+2023-11-01 13:09:25 - tradex - INFO - - setting up the rsi's
+2023-11-01 13:11:58 - tradex - INFO - init trade-x trend
+2023-11-01 13:11:58 - tradex - INFO - - setting up High|Low channel
+2023-11-01 13:11:58 - tradex - INFO - init trade-x screener
+2023-11-01 13:11:58 - tradex - INFO - init trade-x Real time
+2023-11-01 13:11:58 - tradex - INFO - - make the waves
+2023-11-01 13:11:58 - tradex - INFO - - setting up EMA
+2023-11-01 13:11:58 - tradex - INFO - init trade-x scanner
+2023-11-01 13:11:58 - tradex - INFO - - setting up the waves
+2023-11-01 13:11:58 - tradex - INFO - - setting up the rsi's
+2023-11-01 13:11:58 - tradex - INFO - - setting up LSMA
+2023-11-01 13:11:59 - tradex - INFO - - setting up VWAP
+2023-11-01 13:11:59 - tradex - INFO - - setting up wave spaces
+2023-11-01 13:11:59 - tradex - INFO - - setting up the waves
+2023-11-01 13:11:59 - tradex - INFO - - getting the dots
+2023-11-01 13:11:59 - tradex - INFO - - setting up the waves
+2023-11-01 13:11:59 - tradex - INFO - - getting the moneyflow
+2023-11-01 13:11:59 - tradex - INFO - - getting the dots
+2023-11-01 13:11:59 - tradex - INFO - - make the waves
+2023-11-01 13:11:59 - tradex - INFO - Elapsed time: 0.28 seconds
+2023-11-01 13:11:59 - tradex - INFO - ____________________
+2023-11-01 13:11:59 - tradex - INFO - init trade-x trend
+2023-11-01 13:11:59 - tradex - INFO - - setting up High|Low channel
+2023-11-01 13:11:59 - tradex - INFO - - setting up EMA
+2023-11-01 13:11:59 - tradex - INFO - - setting up LSMA
+2023-11-01 13:11:59 - tradex - INFO - - setting up VWAP
+2023-11-01 13:11:59 - tradex - INFO - init trade-x screener
+2023-11-01 13:11:59 - tradex - INFO - - make the waves
+2023-11-01 13:11:59 - tradex - INFO - - getting the moneyflow
+2023-11-01 13:11:59 - tradex - INFO - - getting the dots
+2023-11-01 13:11:59 - tradex - INFO - - make the waves
+2023-11-01 13:11:59 - tradex - INFO - init trade-x Real time
+2023-11-01 13:11:59 - tradex - INFO - - setting up the waves
+2023-11-01 13:11:59 - tradex - INFO - - setting up wave spaces
+2023-11-01 13:11:59 - tradex - INFO - - setting up the waves
+2023-11-01 13:11:59 - tradex - INFO - - getting the dots
+2023-11-01 13:11:59 - tradex - INFO - - setting up the waves
+2023-11-01 13:11:59 - tradex - INFO - init trade-x scanner
+2023-11-01 13:11:59 - tradex - INFO - - setting up the rsi's
+2023-11-01 13:13:05 - tradex - INFO - init trade-x trend
+2023-11-01 13:13:05 - tradex - INFO - - setting up High|Low channel
+2023-11-01 13:13:05 - tradex - INFO - init trade-x screener
+2023-11-01 13:13:05 - tradex - INFO - init trade-x Real time
+2023-11-01 13:13:05 - tradex - INFO - - make the waves
+2023-11-01 13:13:05 - tradex - INFO - init trade-x scanner
+2023-11-01 13:13:05 - tradex - INFO - - setting up EMA
+2023-11-01 13:13:05 - tradex - INFO - - setting up the waves
+2023-11-01 13:13:05 - tradex - INFO - - setting up the rsi's
+2023-11-01 13:13:05 - tradex - INFO - - setting up LSMA
+2023-11-01 13:13:05 - tradex - INFO - - setting up wave spaces
+2023-11-01 13:13:05 - tradex - INFO - - setting up the waves
+2023-11-01 13:13:05 - tradex - INFO - - setting up VWAP
+2023-11-01 13:13:05 - tradex - INFO - - getting the dots
+2023-11-01 13:13:05 - tradex - INFO - - setting up the waves
+2023-11-01 13:13:05 - tradex - INFO - - getting the moneyflow
+2023-11-01 13:13:05 - tradex - INFO - - getting the dots
+2023-11-01 13:13:05 - tradex - INFO - - make the waves
+2023-11-01 13:13:06 - tradex - INFO - Elapsed time: 0.25 seconds
+2023-11-01 13:13:06 - tradex - INFO - ____________________
+2023-11-01 13:13:06 - tradex - INFO - init trade-x trend
+2023-11-01 13:13:06 - tradex - INFO - - setting up High|Low channel
+2023-11-01 13:13:06 - tradex - INFO - - setting up EMA
+2023-11-01 13:13:06 - tradex - INFO - - setting up LSMA
+2023-11-01 13:13:06 - tradex - INFO - - setting up VWAP
+2023-11-01 13:13:06 - tradex - INFO - init trade-x screener
+2023-11-01 13:13:06 - tradex - INFO - - make the waves
+2023-11-01 13:13:06 - tradex - INFO - - getting the moneyflow
+2023-11-01 13:13:06 - tradex - INFO - - getting the dots
+2023-11-01 13:13:06 - tradex - INFO - - make the waves
+2023-11-01 13:13:06 - tradex - INFO - init trade-x Real time
+2023-11-01 13:13:06 - tradex - INFO - - setting up the waves
+2023-11-01 13:13:06 - tradex - INFO - - setting up wave spaces
+2023-11-01 13:13:06 - tradex - INFO - - setting up the waves
+2023-11-01 13:13:06 - tradex - INFO - - getting the dots
+2023-11-01 13:13:06 - tradex - INFO - - setting up the waves
+2023-11-01 13:13:06 - tradex - INFO - init trade-x scanner
+2023-11-01 13:13:06 - tradex - INFO - - setting up the rsi's
+2023-11-01 13:14:04 - tradex - INFO - init trade-x trend
+2023-11-01 13:14:04 - tradex - INFO - init trade-x screener
+2023-11-01 13:14:04 - tradex - INFO - - setting up High|Low channel
+2023-11-01 13:14:04 - tradex - INFO - - make the waves
+2023-11-01 13:14:04 - tradex - INFO - init trade-x Real time
+2023-11-01 13:14:04 - tradex - INFO - init trade-x scanner
+2023-11-01 13:14:04 - tradex - INFO - - setting up EMA
+2023-11-01 13:14:04 - tradex - INFO - - setting up the waves
+2023-11-01 13:14:04 - tradex - INFO - - setting up the rsi's
+2023-11-01 13:14:04 - tradex - INFO - - setting up LSMA
+2023-11-01 13:14:04 - tradex - INFO - - setting up wave spaces
+2023-11-01 13:14:04 - tradex - INFO - - setting up the waves
+2023-11-01 13:14:04 - tradex - INFO - - setting up VWAP
+2023-11-01 13:14:04 - tradex - INFO - - getting the dots
+2023-11-01 13:14:04 - tradex - INFO - - setting up the waves
+2023-11-01 13:14:04 - tradex - INFO - - getting the moneyflow
+2023-11-01 13:14:04 - tradex - INFO - - getting the dots
+2023-11-01 13:14:04 - tradex - INFO - - make the waves
+2023-11-01 13:14:05 - tradex - INFO - Elapsed time: 0.25 seconds
+2023-11-01 13:14:05 - tradex - INFO - ____________________
+2023-11-01 13:14:05 - tradex - INFO - init trade-x trend
+2023-11-01 13:14:05 - tradex - INFO - - setting up High|Low channel
+2023-11-01 13:14:05 - tradex - INFO - - setting up EMA
+2023-11-01 13:14:05 - tradex - INFO - - setting up LSMA
+2023-11-01 13:14:05 - tradex - INFO - - setting up VWAP
+2023-11-01 13:14:05 - tradex - INFO - init trade-x screener
+2023-11-01 13:14:05 - tradex - INFO - - make the waves
+2023-11-01 13:14:05 - tradex - INFO - - getting the moneyflow
+2023-11-01 13:14:05 - tradex - INFO - - getting the dots
+2023-11-01 13:14:05 - tradex - INFO - - make the waves
+2023-11-01 13:14:05 - tradex - INFO - init trade-x Real time
+2023-11-01 13:14:05 - tradex - INFO - - setting up the waves
+2023-11-01 13:14:05 - tradex - INFO - - setting up wave spaces
+2023-11-01 13:14:05 - tradex - INFO - - setting up the waves
+2023-11-01 13:14:05 - tradex - INFO - - getting the dots
+2023-11-01 13:14:05 - tradex - INFO - - setting up the waves
+2023-11-01 13:14:05 - tradex - INFO - init trade-x scanner
+2023-11-01 13:14:05 - tradex - INFO - - setting up the rsi's
+2023-11-01 13:16:26 - tradex - INFO - init trade-x trend
+2023-11-01 13:16:26 - tradex - INFO - - setting up High|Low channel
+2023-11-01 13:16:26 - tradex - INFO - init trade-x screener
+2023-11-01 13:16:26 - tradex - INFO - init trade-x Real time
+2023-11-01 13:16:26 - tradex - INFO - - make the waves
+2023-11-01 13:16:26 - tradex - INFO - init trade-x scanner
+2023-11-01 13:16:26 - tradex - INFO - - setting up the waves
+2023-11-01 13:16:26 - tradex - INFO - - setting up EMA
+2023-11-01 13:16:26 - tradex - INFO - - setting up the rsi's
+2023-11-01 13:16:26 - tradex - INFO - - setting up LSMA
+2023-11-01 13:16:26 - tradex - INFO - - setting up wave spaces
+2023-11-01 13:16:26 - tradex - INFO - - setting up the waves
+2023-11-01 13:16:26 - tradex - INFO - - setting up VWAP
+2023-11-01 13:16:26 - tradex - INFO - - getting the dots
+2023-11-01 13:16:26 - tradex - INFO - - setting up the waves
+2023-11-01 13:16:26 - tradex - INFO - - getting the moneyflow
+2023-11-01 13:16:26 - tradex - INFO - - getting the dots
+2023-11-01 13:16:26 - tradex - INFO - - make the waves
+2023-11-01 13:16:26 - tradex - INFO - Elapsed time: 0.26 seconds
+2023-11-01 13:16:26 - tradex - INFO - ____________________
+2023-11-01 13:16:26 - tradex - INFO - init trade-x trend
+2023-11-01 13:16:26 - tradex - INFO - - setting up High|Low channel
+2023-11-01 13:16:26 - tradex - INFO - - setting up EMA
+2023-11-01 13:16:26 - tradex - INFO - - setting up LSMA
+2023-11-01 13:16:26 - tradex - INFO - - setting up VWAP
+2023-11-01 13:16:26 - tradex - INFO - init trade-x screener
+2023-11-01 13:16:26 - tradex - INFO - - make the waves
+2023-11-01 13:16:27 - tradex - INFO - - getting the moneyflow
+2023-11-01 13:16:27 - tradex - INFO - - getting the dots
+2023-11-01 13:16:27 - tradex - INFO - - make the waves
+2023-11-01 13:16:27 - tradex - INFO - init trade-x Real time
+2023-11-01 13:16:27 - tradex - INFO - - setting up the waves
+2023-11-01 13:16:27 - tradex - INFO - - setting up wave spaces
+2023-11-01 13:16:27 - tradex - INFO - - setting up the waves
+2023-11-01 13:16:27 - tradex - INFO - - getting the dots
+2023-11-01 13:16:27 - tradex - INFO - - setting up the waves
+2023-11-01 13:16:27 - tradex - INFO - init trade-x scanner
+2023-11-01 13:16:27 - tradex - INFO - - setting up the rsi's
+2023-11-01 13:42:11 - tradex - INFO - init trade-x trend
+2023-11-01 13:42:11 - tradex - INFO - - setting up High|Low channel
+2023-11-01 13:42:11 - tradex - INFO - init trade-x screener
+2023-11-01 13:42:11 - tradex - INFO - - setting up EMA
+2023-11-01 13:42:11 - tradex - INFO - - make the waves
+2023-11-01 13:42:11 - tradex - INFO - init trade-x Real time
+2023-11-01 13:42:11 - tradex - INFO - init trade-x scanner
+2023-11-01 13:42:11 - tradex - INFO - - setting up the waves
+2023-11-01 13:42:11 - tradex - INFO - - setting up LSMA
+2023-11-01 13:42:11 - tradex - INFO - - setting up the rsi's
+2023-11-01 13:42:11 - tradex - INFO - - setting up VWAP
+2023-11-01 13:42:11 - tradex - INFO - - setting up wave spaces
+2023-11-01 13:42:11 - tradex - INFO - - setting up the waves
+2023-11-01 13:42:11 - tradex - INFO - - getting the dots
+2023-11-01 13:42:11 - tradex - INFO - - setting up the waves
+2023-11-01 13:42:11 - tradex - INFO - - getting the moneyflow
+2023-11-01 13:42:11 - tradex - INFO - - getting the dots
+2023-11-01 13:42:11 - tradex - INFO - - make the waves
+2023-11-01 13:42:12 - tradex - INFO - Elapsed time: 0.27 seconds
+2023-11-01 13:42:12 - tradex - INFO - ____________________
+2023-11-01 13:42:12 - tradex - INFO - init trade-x trend
+2023-11-01 13:42:12 - tradex - INFO - - setting up High|Low channel
+2023-11-01 13:42:12 - tradex - INFO - - setting up EMA
+2023-11-01 13:42:12 - tradex - INFO - - setting up LSMA
+2023-11-01 13:42:12 - tradex - INFO - - setting up VWAP
+2023-11-01 13:42:12 - tradex - INFO - init trade-x screener
+2023-11-01 13:42:12 - tradex - INFO - - make the waves
+2023-11-01 13:42:12 - tradex - INFO - - getting the moneyflow
+2023-11-01 13:42:12 - tradex - INFO - - getting the dots
+2023-11-01 13:42:12 - tradex - INFO - - make the waves
+2023-11-01 13:42:12 - tradex - INFO - init trade-x Real time
+2023-11-01 13:42:12 - tradex - INFO - - setting up the waves
+2023-11-01 13:42:12 - tradex - INFO - - setting up wave spaces
+2023-11-01 13:42:12 - tradex - INFO - - setting up the waves
+2023-11-01 13:42:12 - tradex - INFO - - getting the dots
+2023-11-01 13:42:12 - tradex - INFO - - setting up the waves
+2023-11-01 13:42:12 - tradex - INFO - init trade-x scanner
+2023-11-01 13:42:12 - tradex - INFO - - setting up the rsi's

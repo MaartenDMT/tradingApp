@@ -77,25 +77,6 @@ def tradex_features(symbol, df):
 
 def features(df):
 
-    # Momentum
-    # Stochastic Oscillator (STOCH)
-    stoch = df.ta.stoch()
-
-    # RSI
-    rsi = df.ta.rsi(length=14)
-    rsi_40 = df.ta.rsi(length=40)
-
-    # MACD
-    macd = df.ta.macd(fast=14, slow=28)
-
-    # Volatility
-    # ATR
-    atr = df.ta.atr()
-
-    # TREND
-    # ADX
-    adx = df.ta.adx()
-
     # Volume
     # CMF
     cmf = df.ta.cmf()
@@ -104,7 +85,7 @@ def features(df):
     # KURT
     kurt = df.ta.kurtosis()
 
-    data = pd.concat([stoch, rsi, rsi_40, macd, atr, adx, cmf, kurt], axis=1)
+    data = pd.concat([cmf, kurt], axis=1)
 
     return data
 

@@ -19,19 +19,20 @@ env = Environment(symbol='BTCUSDT', features=['close'],
 
 
 def objective(trial):
+    #
     hyperparameters = {
-        'modelname': trial.suggest_categorical('modelname', ["Standard_Model", "Dense_Model", "LSTM_Model", "CONV1D_LSTM_Model"]),
+        'modelname': trial.suggest_categorical('modelname', ["Standard_Model", "Dense_Model", "LSTM_Model", "CONV1D_LSTM_Model", "build_resnet_model", "base_conv1d_model", "base_transformer_model"]),
         'gamma': trial.suggest_float('gamma', 0.9, 0.99),
-        'hu': trial.suggest_int('hu', 16, 32),
-        'lr': trial.suggest_float('lr', 0.001, 0.1, log=True),
+        'hidden_units': trial.suggest_int('hidden_units', 16, 32, 64),
+        'learning_rate': trial.suggest_float('learning_rate', 0.001, 0.1, log=True),
         'epsilon': trial.suggest_float('epsilon', 0.9, 1.1),
         'dropout': trial.suggest_float('dropout', 0.1, 0.3),
-        'act': trial.suggest_categorical('act', ['argmax', 'softmax']),
+        'act': trial.suggest_categorical('act', ['argmax', 'softmax', 'default']),
         'm_activation': trial.suggest_categorical('m_activation', ['linear', 'tanh', 'sigmoid'])
     }
 
     agent = DQLAgent(env=env, **hyperparameters)
-    agent.learn(episodes=10)
+    agent.learn(episodes=20)
     test_rewards = agent.test(episodes=10)
     avg_test_reward = sum(test_rewards) / 10
 
@@ -39,7 +40,7 @@ def objective(trial):
 
 
 study = optuna.create_study(direction='maximize')
-study.optimize(objective, n_trials=2)
+study.optimize(objective, n_trials=10)
 
 # Get the best parameters and use them
 best_params = study.best_params
@@ -59,10 +60,8 @@ top_10_params_df = pd.DataFrame(top_10_params)
 top_10_params_df.to_csv('top_5_params.csv', index=False)
 
 agent = DQLAgent(env=env, **best_params)
-agent.learn(episodes=100)
+agent.learn(episodes=50)
 agent.save_model()
 test = agent.test(episodes=20)
 avg_test = sum(test) / 20
 print(avg_test)
-
-# TODO: add matplotlib and money function to the programm

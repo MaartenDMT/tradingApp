@@ -8,21 +8,23 @@ import pandas as pd
 import tensorflow as tf
 from keras.layers import BatchNormalization, Dropout
 from keras.regularizers import l1, l2
-from model.reinforcement.agent_extra import is_new_record, save_model, save_to_csv
 from tensorflow.keras.optimizers import Adam
 
 import util.loggers as loggers
+from model.reinforcement.agent_extra import (is_new_record,
+                                             multi_head_attention, save_model,
+                                             save_to_csv, transformer_block)
 from util.rl_util import next_available_filename
 
 logger = loggers.setup_loggers()
 agent_logger = logger['agent']
 rl_logger = logger['rl']
 
-MODEL_PATH = 'data/saved_model/dql_model.keras'
+MODEL_PATH = 'data/saved_model'
 
 
 class DQLAgent:
-    def __init__(self, gamma=0.95, hu=24, opt=Adam, lr=0.001,
+    def __init__(self, gamma=0.95, hidden_units=24, opt=Adam, learning_rate=0.001,
                  epsilon=1.0, epsilon_min=0.01, epsilon_decay=0.995, batch_size=32, dropout=0.5,
                  finish=False, env=None, act='argmax', m_activation='linear', actions: int = 3, loss='mse', modelname='Standard_Model'):
         self.env = env
@@ -30,11 +32,11 @@ class DQLAgent:
         self.epsilon = epsilon
         self.epsilon_min = epsilon_min
         self.epsilon_decay = epsilon_decay
-        self.hu = hu
+        self.hidden_units = hidden_units
         self.gamma = gamma
         self.batch_size = batch_size
         self.opt = opt
-        self.lr = lr
+        self.learning_rate = learning_rate
         self.loss = loss
         self.max_treward = 0
         self.averages = []
@@ -51,29 +53,33 @@ class DQLAgent:
         self.train_action_history = []
         self.test_action_history = []
 
-        self.memory = deque(maxlen=200)
+        self.memory = deque(maxlen=1_000)
         self.osn = env.observation_space.shape[0]
-        self.model = self.get_model(hu, dropout, m_activation, self.modelname)
+        self.model = self.get_model(
+            hidden_units, dropout, m_activation, self.modelname)
 
         for layer in self.model.layers:
             if hasattr(layer, 'get_weights'):
                 rl_logger.info(f'Layer: {layer.name}')
 
         agent_logger.info(f"Agent initialized with parameters:\n"
-                          f"gamma: {gamma}, hu: {hu}, opt: {opt}, lr: {lr}, epsilon: {epsilon},\n "
+                          f"gamma: {gamma}, hidden_units: {hidden_units}, opt: {opt}, learning_rate: {learning_rate}, epsilon: {epsilon},\n "
                           f"epsilon_min: {epsilon_min}, epsilon_decay: {epsilon_decay}, ")
 
-    def get_model(self, hu, dropout, m_activation, chosen_model):
+    def get_model(self, hidden_units, dropout, m_activation, chosen_model):
         models = {
-            "Standard_Model": self._build_model(hu, dropout, m_activation),
+            "Standard_Model": self._build_model(hidden_units, dropout, m_activation),
             "Dense_Model": self.base_dense_model(m_activation, dropout),
             "LSTM_Model": self.base_lstm_model(m_activation, dropout),
-            "CONV1D_LSTM_Model": self.base_conv1d_lstm_model(m_activation, dropout)
+            "CONV1D_LSTM_Model": self.base_conv1d_lstm_model(m_activation, dropout),
+            "build_resnet_model": self.build_resnet_model(m_activation, dropout),
+            "base_conv1d_model": self.base_conv1d_model(m_activation, dropout),
+            "base_transformer_model": self.base_transformer_model(m_activation, dropout),
         }
 
         return models[chosen_model]
 
-    def _build_model(self, hu, dropout, m_activation):
+    def _build_model(self, hidden_units, dropout, m_activation):
         rl_logger.info("Standard Model loaded.")
         model = tf.keras.Sequential()
         model.add(tf.keras.layers.Dense(64, input_dim=self.osn,
@@ -81,12 +87,12 @@ class DQLAgent:
         model.add(BatchNormalization())
         model.add(Dropout(dropout))
         model.add(tf.keras.layers.Dense(
-            hu, activation='relu', kernel_regularizer=l2(0.01)))
+            hidden_units, activation='relu', kernel_regularizer=l2(0.01)))
         model.add(BatchNormalization())
         model.add(tf.keras.layers.Dense(
             self.env_actions, activation=m_activation))
         model.compile(loss=self.loss, optimizer=self.opt(
-            learning_rate=self.lr), metrics=['accuracy'])
+            learning_rate=self.learning_rate), metrics=['accuracy'])
         agent_logger.info(
             f"Model built with action space {self.env.action_space.n}.")
         return model
@@ -94,16 +100,18 @@ class DQLAgent:
     def base_dense_model(self, m_activation, dropout):
         agent_logger.info("Dense Model loaded.")
         base_model = tf.keras.Sequential()
-        base_model.add(tf.keras.layers.Dense(128, activation='relu'))
+        base_model.add(tf.keras.layers.Dense(
+            128, input_dim=self.osn, activation='relu'))
+        base_model.add(BatchNormalization())
         base_model.add(Dropout(dropout))
         base_model.add(tf.keras.layers.Dense(64, activation='relu'))
+        base_model.add(BatchNormalization())
         base_model.add(tf.keras.layers.Dense(32, activation='relu'))
-        base_model.add(tf.keras.layers.Dense(
-            self.env.action_space.n, activation='relu'))
+        base_model.add(BatchNormalization())
         base_model.add(tf.keras.layers.Dense(
             self.env_actions, activation=m_activation))
         base_model.compile(
-            optimizer=self.opt(learning_rate=self.lr), loss=self.loss, metrics=['accuracy'])
+            optimizer=self.opt(learning_rate=self.learning_rate), loss=self.loss, metrics=['accuracy'])
 
         return base_model
 
@@ -117,7 +125,7 @@ class DQLAgent:
         base_model.add(tf.keras.layers.Dense(
             self.env_actions, activation=m_activation))
         base_model.compile(
-            optimizer=self.opt(learning_rate=self.lr), loss=self.loss, metrics=['accuracy'])
+            optimizer=self.opt(learning_rate=self.learning_rate), loss=self.loss, metrics=['accuracy'])
 
         return base_model
 
@@ -134,9 +142,75 @@ class DQLAgent:
         base_model.add(tf.keras.layers.Dense(
             self.env_actions, activation=m_activation))
         base_model.compile(
-            optimizer=self.opt(learning_rate=self.lr), loss=self.loss, metrics=['accuracy'])
+            optimizer=self.opt(learning_rate=self.learning_rate), loss=self.loss, metrics=['accuracy'])
 
         return base_model
+
+    def build_resnet_model(self, m_activation, dropout):
+        rl_logger.info("ResNet Model loaded.")
+
+        inputs = tf.keras.layers.Input(shape=(self.osn,))
+        x = tf.keras.layers.Dense(128, activation='relu')(inputs)
+        x = BatchNormalization()(x)
+        x = Dropout(dropout)(x)
+
+        # Residual block
+        residual = x
+        x = tf.keras.layers.Dense(128, activation='relu')(
+            x)  # Change this to 128 units
+        x = BatchNormalization()(x)
+        x = Dropout(dropout)(x)
+        x = tf.keras.layers.Dense(128, activation='relu')(
+            x)  # Change this to 128 units
+        x = tf.keras.layers.Add()([x, residual])
+
+        x = BatchNormalization()(x)
+        outputs = tf.keras.layers.Dense(
+            self.env_actions, activation=m_activation)(x)
+
+        model = tf.keras.Model(inputs=inputs, outputs=outputs)
+        model.compile(optimizer=self.opt(
+            learning_rate=self.learning_rate), loss=self.loss, metrics=['accuracy'])
+        return model
+
+    def base_conv1d_model(self, m_activation, dropout):
+        rl_logger.info("Simple CONV1D Model loaded.")
+
+        base_model = tf.keras.Sequential()
+        base_model.add(tf.keras.layers.Conv1D(
+            filters=64, kernel_size=2, activation='relu', input_shape=(self.osn, 1)))
+        base_model.add(tf.keras.layers.MaxPool1D(pool_size=2))
+        base_model.add(tf.keras.layers.Flatten())
+        base_model.add(tf.keras.layers.Dense(100, activation='relu'))
+        base_model.add(tf.keras.layers.Dropout(dropout))
+        base_model.add(tf.keras.layers.Dense(
+            self.env_actions, activation=m_activation))
+
+        base_model.compile(optimizer=self.opt(
+            learning_rate=self.learning_rate), loss=self.loss, metrics=['accuracy'])
+        return base_model
+
+    def base_transformer_model(self, m_activation, dropout=0.1, d_model=128, num_heads=4):
+        rl_logger.info("Transformer Model loaded.")
+
+        inputs = tf.keras.layers.Input(shape=(self.osn, 1))
+        x = tf.keras.layers.Dense(d_model)(inputs)
+
+        # Embed the sequence into the d_model space
+        x = tf.keras.layers.Dense(d_model)(x)
+
+        # Add positional encoding if needed. Skipped in this example for brevity.
+        # x = positional_encoding(x, d_model)
+
+        x = transformer_block(d_model, num_heads, dropout)(x)
+        x = tf.keras.layers.GlobalAveragePooling1D()(x)
+        outputs = tf.keras.layers.Dense(
+            self.env_actions, activation=m_activation)(x)
+
+        model = tf.keras.Model(inputs=inputs, outputs=outputs)
+        model.compile(optimizer=self.opt(
+            learning_rate=self.learning_rate), loss=self.loss, metrics=['accuracy'])
+        return model
 
     def get_model_parameters(self):
         """
@@ -145,8 +219,8 @@ class DQLAgent:
         return {
             "model_name": self.modelname,
             "gamma": self.gamma,
-            "hu": self.hu,
-            "lr": self.lr,
+            "hidden_units": self.hidden_units,
+            "learning_rate": self.learning_rate,
             "epsilon": self.epsilon,
             "dropout": self.dropout,
             "act": self.act,
@@ -155,13 +229,13 @@ class DQLAgent:
             "action_space_n": self.env.action_space.n,
             "env_actions": self.env_actions,
             "loss": self.loss,
-            "learning_rate": self.lr,
+            "learning_rate": self.learning_rate,
             "metrics": ['accuracy']
         }
 
     def save(self, b_reward, acc):
         # Check if new record needs to be saved
-        should_save = is_new_record(b_reward, acc)
+        should_save = is_new_record(b_reward, acc, self.modelname)
 
         # Save new record if conditions met
         if should_save:
@@ -171,7 +245,8 @@ class DQLAgent:
 
     def load(self):
         if os.path.exists(MODEL_PATH):
-            self.model = tf.keras.models.load_model(MODEL_PATH)
+            self.model = tf.keras.models.load_model(
+                f"{MODEL_PATH}/{self.modelname}_model.keras")
             agent_logger.info("Model loaded.")
 
     def select_action(self, state, method='argmax'):
@@ -197,7 +272,12 @@ class DQLAgent:
     def softmax_action(self, state):
         q_values = self.model.predict(state)[0]
         agent_logger.info(f'ACT:the prediction is {q_values}')
-        action_probs = np.exp(q_values) / np.sum(np.exp(q_values))
+        max_q = np.max(q_values)
+        action_probs = np.exp(q_values - max_q) / \
+            np.sum(np.exp(q_values - max_q))
+
+        if np.isnan(action_probs).any():
+            return np.random.choice(len(action_probs))
         action = np.random.choice(len(action_probs), p=action_probs)
         agent_logger.info(f'ACT:softmax of this prediction is {action}')
         return action
@@ -236,10 +316,10 @@ class DQLAgent:
         acc = self.env.accuracy
         b_reward = self.best_treward
 
-        while os.path.exists(f'{base_filename}{model_count}.keras'):
+        while os.path.exists(f'{base_filename}/{self.modelname}{model_count}.keras'):
             model_count += 1
 
-        filename = f'{base_filename}{model_count}.keras'
+        filename = f'{base_filename}/{self.modelname}{model_count}.keras'
         self.model.save(filename)
         agent_logger.info(f"Model saved as {filename}")
 
@@ -261,14 +341,22 @@ class DQLAgent:
         for e in range(1, episodes + 1):
             agent_logger.info(f"LEARN: Currently at episode {e}/{episodes}")
             state = self.env.reset()
-            state = np.reshape(state, [1, self.osn])
+
+            if self.modelname in ["LSTM_Model", "CONV1D_LSTM_Model"]:
+                state = np.reshape(state, [1, self.osn, 1])
+            else:
+                state = np.reshape(state, [1, self.osn])
 
             sum_of_rewards = 0  # Initialize the sum_of_rewards for this episode
 
             while not self.env.is_episode_done():
                 action = self.select_action(state, self.act)
                 next_state, reward, done, _ = self.env.step(action)
-                next_state = np.reshape(next_state, [1, self.osn])
+
+                if self.modelname in ["LSTM_Model", "CONV1D_LSTM_Model"]:
+                    next_state = np.reshape(state, [1, self.osn, 1])
+                else:
+                    next_state = np.reshape(next_state, [1, self.osn])
 
                 sum_of_rewards += reward   # Update the sum_of_rewards for this episode
                 agent_logger.info(
@@ -329,14 +417,19 @@ class DQLAgent:
         episode_reward = 0
 
         while not self.env.is_episode_done():
-            state = np.reshape(state, [1, self.osn])
+
+            if self.modelname in ["LSTM_Model", "CONV1D_LSTM_Model"]:
+                state = np.reshape(state, [1, self.osn, 1])
+            else:
+                state = np.reshape(state, [1, self.osn])
+
             agent_logger.info(
                 f"TEST - state shape: {state.shape}, state: {state}")
 
             action = self.select_action(state, self.act)
 
             # Depending on the level of logging you need, you may or may not need the following lines.
-            # The action selection process is already logged within select_action.
+            # The action selection process is alearning_rateeady logged within select_action.
             q_values = self.model.predict(state)[0]
             agent_logger.info(f"TEST: model predicted {q_values}")
 
@@ -359,6 +452,12 @@ class DQLAgent:
         agent_logger.info("Length of fn:", len(fn))
         agent_logger.info("Number of columns in state_history:", len(
             self.state_history[0]) if self.state_history else "state_history is empty")
+
+        if self.modelname in ["LSTM_Model", "CONV1D_LSTM_Model"]:
+            state_df = pd.DataFrame(self.state_history.squeeze(), columns=fn)
+        else:
+            state_df = pd.DataFrame(self.state_history, columns=fn)
+
         state_df = pd.DataFrame(self.state_history, columns=fn)
         reward_df = pd.DataFrame(self.reward_history, columns=['reward'])
 
