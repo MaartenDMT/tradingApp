@@ -299,7 +299,11 @@ class DQLAgent:
             target = self.model.predict(state)
             agent_logger.info(
                 f"REPLAY -state shape: {state.shape}, action: {action}, target shape: {target.shape}")
-            target[0, action] = reward
+            # Ensure action is an integer and within the valid range
+            if isinstance(action, int) and 0 <= action < target.shape[1]:
+                target[0, action] = reward
+            else:
+                agent_logger.error(f"Invalid action: {action}")
             states.append(state)
             targets.append(target)
 

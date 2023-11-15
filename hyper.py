@@ -1,25 +1,23 @@
 import optuna
 import pandas as pd
-
-import util.loggers as loggers
 from model.reinforcement.agent import DQLAgent
 from model.reinforcement.env import Environment
 from util.utils import load_config
+import util.loggers as loggers
 
+# Logger and Configuration Setup
 logger = loggers.setup_loggers()
 rl_logger = logger['rl']
 config = load_config()
 
-CSV_PATH = "data/best_model/best_params.csv"
-
-params = {key: config['Params'][key] for key in config['Params']}
-
+# Environment Setup
 env = Environment(symbol='BTCUSDT', features=['close'],
-                  limit=300, time="30m", actions=3, min_acc=float(params['min_acc']))
+                  limit=300, time="30m", actions=3, min_acc=float(config['Params']['min_acc']))
+
+# Objective Function for Optuna
 
 
 def objective(trial):
-    #
     hyperparameters = {
         'modelname': trial.suggest_categorical('modelname', ["Standard_Model", "Dense_Model", "LSTM_Model", "CONV1D_LSTM_Model", "build_resnet_model", "base_conv1d_model", "base_transformer_model"]),
         'gamma': trial.suggest_float('gamma', 0.9, 0.99),
@@ -32,36 +30,27 @@ def objective(trial):
     }
 
     agent = DQLAgent(env=env, **hyperparameters)
-    agent.learn(episodes=20)
-    test_rewards = agent.test(episodes=10)
-    avg_test_reward = sum(test_rewards) / 10
-
-    return avg_test_reward
+    agent.learn(episodes=100)
+    test_rewards = agent.test(episodes=20)
+    return sum(test_rewards) / len(test_rewards)
 
 
+# Study Creation and Optimization
 study = optuna.create_study(direction='maximize')
-study.optimize(objective, n_trials=10)
+study.optimize(objective, n_trials=20)
 
-# Get the best parameters and use them
+# Result Processing
 best_params = study.best_params
-
-# Fetch all completed trials and sort them based on value
-completed_trials = study.get_trials(
-    deepcopy=False, states=[optuna.trial.TrialState.COMPLETE])
-top_10_trials = sorted(
-    completed_trials, key=lambda trial: trial.value, reverse=True)[:10]
-
-# Extract parameters from the top 10 trials
+top_10_trials = sorted(study.get_trials(states=[
+                       optuna.trial.TrialState.COMPLETE]), key=lambda trial: trial.value, reverse=True)[:10]
 top_10_params = [trial.params for trial in top_10_trials]
-
-# Save top_10_params to CSV
 top_10_params_df = pd.DataFrame(top_10_params)
-# 'top_10_params.csv' is the filename. You can change it if needed.
 top_10_params_df.to_csv('top_5_params.csv', index=False)
 
+# Testing the Agent
 agent = DQLAgent(env=env, **best_params)
 agent.learn(episodes=50)
 agent.save_model()
-test = agent.test(episodes=20)
-avg_test = sum(test) / 20
-print(avg_test)
+test_rewards = agent.test(episodes=20)
+avg_test_reward = sum(test_rewards) / len(test_rewards)
+print(avg_test_reward)

@@ -1,45 +1,631 @@
-    # def replay(self):
-    #     batch = random.sample(self.memory, self.batch_size)
-    #     for state, action, reward, next_state, done in batch:
-    #         if not done:
-    #             # Get the single continuous value
-    #             pred = self.model.predict(next_state)[0][0]
-    #             reward += self.gamma * pred
-    #         target = self.model.predict(state)
-    #         # Update the single continuous value in the target
-    #         target[0, 0] = reward
-    #         self.model.fit(state, target, epochs=1, verbose=False)
-    #         if self.epsilon > self.epsilon_min:
-    #             self.epsilon *= self.epsilon_decay
-    #     agent_logger.info(f"REPLAY: done. Epsilon is now {self.epsilon}")
+import os
+import pickle
+import random
+
+import numpy as np
+import pandas as pd
+import pandas_ta as ta
+
+import util.loggers as loggers
+from util.utils import convert_df, features, load_config, tradex_features
+import model.reinforcement.indicators as ind
+
+logger = loggers.setup_loggers()
+env_logger = logger['env']
+rl_logger = logger['rl']
+
+# Constants
+EARLY_STOP_REWARD_THRESHOLD = -12.0
+HIGH_ACC_REWARD_VALUES = 0.5
 
 
+class Environment:
+    """The main trading environment."""
 
-    # def soft_replay(self):
-    #     batch = random.sample(self.memory, self.batch_size)
-    #     for state, action, reward, next_state, done in batch:
-    #         if not done:
-    #             q_values = self.model.predict(next_state)[0]
-    #             action_probs = np.exp(q_values) / np.sum(np.exp(q_values))
-    #             # Use the expected value based on softmax
-    #             expected_reward = np.sum(action_probs * q_values)
-    #             reward += self.gamma * expected_reward
-    #         target = self.model.predict(state)[0]
-    #         target[0, action] = reward
-    #         self.model.fit(state, target, epochs=1, verbose=False)
-    #         if self.epsilon > self.epsilon_min:
-    #             self.epsilon *= self.epsilon_decay
-    #     agent_logger.info(f"REPLAY: done. Epsilon is now {self.epsilon}")
+    def __init__(self, symbol, features, limit, time, actions, min_acc):
+        self.config = load_config()
+        self.symbol, self.features = symbol, features
+        self.limit, self.time = limit, time
+        self.action_space = ActionSpace(actions)
+        self.bar, self.min_accuracy = 0, min_acc
+        self.last_price = None
+        self._initialize_environment()
 
-        # def arg_replay(self):
-    #     batch = random.sample(self.memory, self.batch_size)
-    #     for state, action, reward, next_state, done in batch:
-    #         if not done:
-    #             pred = np.amax(self.model.predict(next_state)[0])
-    #             reward += self.gamma * pred
-    #         target = self.model.predict(state)[0]
-    #         target[0, action] = reward
-    #         self.model.fit(state, target, epochs=1, verbose=False)
-    #         if self.epsilon > self.epsilon_min:
-    #             self.epsilon *= self.epsilon_decay
-    #     agent_logger.info(f"REPLAY: done. Epsilon is now {self.epsilon}")
+    def _initialize_environment(self):
+
+        self.data_processor = DataProcessor(
+            self.config, self.symbol, self.features, self.bar)
+
+        # Load data and create features
+        self.data_processor._create_features()
+        self.data_ = self.data_processor.data_
+        self.data = self.data_processor.data
+
+        # Initialize other parameters
+        self._set_initial_parameters()
+        self._setup_observation_space()
+
+        # the rest of the system
+        self.reward_system = RewardSystem()
+        self.portfolio_manager = PortfolioManager(self.data, self.look_back)
+        self.logger_and_state = LoggerAndState(env_logger)
+
+    def _set_initial_parameters(self):
+        self.last_price, self.last_accuracy = None, None
+        self.high_acc_counter, self.patience = 0, int(
+            self.config['env']['patience'])
+        self.wait, self.high_acc_threshold = 0, 5
+        self.total_reward = 0
+        self.accuracy = 0
+
+    def _setup_observation_space(self):
+        self.observation_space = ObservationSpace(len(self.data.columns))
+        self.look_back = self.observation_space.shape[0]
+        env_logger.info(
+            f"Environment initialized with symbol {self.symbol} and features {self.features}. Observation space shape: {self.observation_space.shape}, lookback: {self.look_back}")
+
+    def get_feature_names(self):
+        return self.data.columns.tolist()
+
+    def _get_state(self):
+        env_logger.info("STATE:get the state.")
+        state = self._extract_state(self.bar)
+        return state
+
+    def reset(self):
+        env_logger.info("RESET:Environment reset.")
+
+        self.data['action'] = 0
+        self._set_initial_parameters()
+        self.portfolio_manager.reset()
+        self.bar = self.look_back
+        self.data_processor.reset_bar(self.bar)
+
+        state = self._extract_state(self.bar)
+
+        # Initialize last_price
+        if len(self.data_) > 0:
+            self.last_price = self.data_.iloc[0]['close']
+        else:
+            self.last_price = None  # or some default value
+
+        env_logger.info(
+            f"RESET:the state shape {state.shape} & size is {state.size}")
+        return state
+
+    def _extract_state(self, bar):
+        state_slice = self.data[self.features].iloc[bar -
+                                                    self.look_back:bar].values
+        return np.array(state_slice, dtype=np.float32)
+
+    def step(self, action):
+        env_logger.info(f"STEP: Action taken: {action}")
+
+        df_row_standardized, df_row_raw, current_price = self.data_processor._extract_data_for_step(
+            self.bar)
+        self.last_price = df_row_raw['close'] if df_row_raw is not None else self.last_price
+
+        # Calculate rewards using RewardSystem
+        reward = self._calculate_rewards(
+            action, df_row_raw, current_price)
+
+        # Update state and portfolio using PortfolioManager and LoggerAndState
+        done, state = self._update_state_and_check_done(
+            action, current_price, reward)
+
+        conditions = self.data_processor._get_conditions(df_row_raw)
+        correct = action == df_row_standardized['d'] and action in [0, 2, 1]
+        self.logger_and_state._log_step_details(
+            reward, done, *conditions, correct, self.portfolio_manager.total_reward,
+            self.portfolio_manager.accuracy, self.portfolio_manager.last_action,
+            self.portfolio_manager.portfolio_balance, self.portfolio_manager.stocks_held)
+
+        return state, reward, {}, done
+
+    def _calculate_rewards(self, action, df_row_raw, current_price):
+        # Use the RewardSystem class to calculate market condition reward
+        market_condition_reward = self._compute_market_condition_reward(
+            action, df_row_raw)
+
+        # Use the RewardSystem class to calculate financial outcome reward
+        financial_outcome_reward = self.reward_system.compute_financial_outcome_reward(
+            current_price, self.last_price, action, self.portfolio_manager.stocks_held)
+
+        # Use the RewardSystem class to calculate risk-adjusted reward
+        risk_adjusted_reward = self.reward_system.compute_risk_adjusted_reward(
+            self.data_processor.data['r'])  # assuming self.data_processor.data['r'] holds returns history
+
+        drawdown_penalty, trading_penalty = self.portfolio_manager.calculate_risk()
+        # Combine rewards using RewardSystem
+        reward = self.reward_system.combined_reward(
+            market_condition_reward, financial_outcome_reward, risk_adjusted_reward, drawdown_penalty, trading_penalty)
+
+        return reward
+
+    def _update_state_and_check_done(self, action, current_price, reward):
+        # Update the portfolio balance and other state values
+        self.portfolio_manager._update_balance(action, current_price)
+
+        # Update the state values and log the step details
+        self.portfolio_manager._update_state_values(
+            action, current_price, reward)
+
+        # Check if the episode is done
+        done = self.is_episode_done()
+
+        # Get the next state
+        state = self._get_state()
+
+        return done, state
+
+    def _compute_market_condition_reward(self, action, df_row):
+        """Compute and return the reward based on the current action, data row, and current price."""
+        short_stochastic_signal, short_bollinger_outside, long_stochastic_signal, long_bollinger_outside, low_volatility, going_up_condition, going_down_condition, strong_buy_signal, strong_sell_signal, super_buy, super_sell, macd_buy, high_volatility, adx_signal, psar_signal, cdl_pattern, volume_break, resistance_break_signal = self.data_processor._get_conditions(
+            df_row)
+
+        bullish_conditions = [strong_buy_signal, super_buy, macd_buy, long_stochastic_signal, long_bollinger_outside,
+                              high_volatility, adx_signal, psar_signal, cdl_pattern, volume_break, resistance_break_signal]
+        bearish_conditions = [strong_sell_signal, super_sell,
+                              short_stochastic_signal, short_bollinger_outside]
+        neutral_conditions = [going_up_condition,
+                              going_down_condition, low_volatility]
+
+        if action == 2 and any(bullish_conditions):
+            if super_buy:
+                return 2  # Higher reward for correctly identifying a strong buy signal
+            else:
+                return 1  # Reward for other bullish conditions
+        elif action == 0 and any(bearish_conditions):
+            if super_sell:
+                return 2  # Higher reward for a strong sell signal
+            else:
+                return 1  # Reward for other bearish conditions
+        elif action == 1 and any(neutral_conditions):
+            if low_volatility:
+                return 0.2
+            elif going_up_condition:
+                return 0.5
+            elif going_down_condition:
+                return 0.5
+        else:
+            return -0.2  # Penalize when no specific condition is met
+
+    def is_episode_done(self):
+        if self.total_reward <= EARLY_STOP_REWARD_THRESHOLD:
+            env_logger.warning("STEP: Early stopping due to less rewards.")
+            return True
+        if self.bar >= len(self.data) - 1:
+            env_logger.warning("STEP: Early stopping due to no more bars.")
+            return True
+        if self.wait >= self.patience:
+            self.wait = 0
+            env_logger.warning(
+                "STEP: Early stopping due to lack of improvement.")
+            return True
+        if self.high_acc_counter >= self.high_acc_threshold:
+            env_logger.warning(
+                f"STEP: Stopping early due to sustained high accuracy: {self.accuracy}")
+            return True
+        if self.accuracy < self.min_accuracy and self.bar > self.look_back + 50:
+            self.wait = 0
+            env_logger.warning(
+                f"STEP: Stopping early due to low accuracy: {self.accuracy}")
+            return True
+        return False
+
+
+class ActionSpace:
+    """
+    Represents the space of possible actions.
+    Returns:
+    0 sell. 1 hold. 2 buy.
+    """
+
+    def __init__(self, n):
+        self.n = n
+        self.allowed: int = self.n - 1
+
+    def sample(self):
+        action = random.randint(0, self.allowed)
+        if action > 2:
+            env_logger.error(f'SAMPLE: not allowed action, action {action}')
+            raise ValueError(
+                f"Invalid action {action}. Action should be between 0 and 2.")
+        env_logger.info(f"SAMPLE: random action generated: {action}")
+        return action
+
+
+class ObservationSpace:
+    """Defines the observation space shape."""
+
+    def __init__(self, n) -> None:
+        self.shape = (n,)
+
+
+class DataProcessor:
+    def __init__(self, config, symbol, features, bar):
+        self.config = config
+        self.symbol = symbol
+        self.features = features
+        self.data = None
+        self.bar = bar
+        self.data_ = self._get_data()
+
+    def reset_bar(self, bar):
+        self.bar = bar
+
+    def _get_data(self):
+        # Get the file name from the configuration
+        pickle_file_name = self.config['Path']['2020_30m_data']
+
+        # Check if the file exists
+        if not os.path.exists(pickle_file_name):
+            env_logger.error('no data has been written')
+            return None
+
+        # Load the data from the pickle file
+        with open(pickle_file_name, 'rb') as f:
+            data_ = pickle.load(f)
+
+        # Convert the dataframe (assuming `convert_df` is a function that processes your data)
+        data = convert_df(data_)
+
+        # Adjusting for the percentage
+        percentage_to_keep = float(self.config['Data']['percentage']) / 100.0
+        rows_to_keep = int(len(data) * percentage_to_keep)
+        data = data.head(rows_to_keep)
+
+        rl_logger.info(f'df shape:{data.shape}')
+
+        return data
+
+    def compute_action(self, df):
+        return df.apply(lambda row: self._compute_action_for_row(row), axis=1)
+
+    def _create_features(self):
+        if self.data_.empty:
+            env_logger.error("Data fetch failed or returned empty data.")
+            return
+
+        env_logger.info("Data fetched successfully.")
+
+        # Generate features and tradex features
+        feature = features(self.data_.copy())
+
+        processed_features = tradex_features(self.symbol, self.data_.copy())
+
+        # Combine processed_features and feature into self.data_
+        self.data_ = pd.concat([processed_features, feature], axis=1)
+        self.data_.dropna(inplace=True)
+
+        self.data_['last_price'] = self.data_['close'].shift(1)
+        self.data = self.data_[self.features].copy()
+        self.data_['r'] = np.log(
+            self.data['close'] / self.data['close'].shift(int(self.config['env']['shifts'])))
+
+        self.data['d'] = self.compute_action(self.data_)
+        # Handle NaN values that will appear in the last 3 rows
+        self.data['d'] = self.data['d'].ffill()
+        self.data['r'] = self.data_['r']
+
+        self.data['b_wave'] = self.data_['b_wave']
+        self.data['l_wave'] = self.data_['l_wave']
+
+        self.data['rsi14'] = self.data_['rsi14']
+        self.data['rsi40'] = self.data_['rsi40']
+        self.data['ema_200'] = self.data_['ema_200']
+        self.data['s_dots'] = self.data_['s_dots']
+        self.data['dots'] = self.data_['dots']
+
+        self.data = (self.data - self.data.mean()) / self.data.std()
+        self.data['action'] = 0
+
+        env_logger.info(f"create features: Full PROCESSED data {self.data_}.")
+        env_logger.info(f"create features: observation Data {self.data}.")
+        env_logger.info("Features created.")
+
+    def _get_conditions(self, df_row):
+        """Helper method to centralize the conditions logic."""
+        current_bar_index = self.bar
+
+        # Adjusting to use self.data_
+        super_buy: bool = (df_row['dots'] == 1) & [df_row['l_wave'] >= -50]
+        super_sell: bool = (
+            df_row['dots'] == -1) & [df_row['l_wave'] >= 50]
+        low_volatility: bool = (df_row['rsi14'] >= 45) & (
+            df_row['rsi14'] <= 55)
+        strong_upward_movement: bool = df_row['rsi14'] > 70
+        strong_downward_movement: bool = df_row['rsi14'] < 30
+        going_up_condition: bool = (df_row['close'] > df_row['last_price']) & (
+            df_row['close'] > df_row['ema_200']) & (df_row['rsi40'] > 50)
+        going_down_condition: bool = (df_row['close'] < df_row['last_price']) & (
+            df_row['close'] < df_row['ema_200']) & (df_row['rsi40'] < 50)
+
+        strong_buy_signal = strong_upward_movement & ~ind.is_increasing_trend(self.data_,
+                                                                              current_bar_index)
+        strong_sell_signal = strong_downward_movement & ~ind.is_increasing_trend(self.data_,
+                                                                                 current_bar_index)  # ~ is the element-wise logical NOT
+
+        # SHORT
+        short_stochastic_signal = ~ind.short_stochastic_condition(
+            self.data_, current_bar_index)
+        short_bollinger_outside = ~ind.short_bollinger_condition(
+            self.data_, current_bar_index)
+        # LONG ONlY
+        long_stochastic_signal = ~ind.long_stochastic_condition(
+            self.data_, current_bar_index)
+        long_bollinger_outside = ~ind.long_bollinger_condition(
+            self.data_, current_bar_index)
+        macd_buy = ~ind.macd_condition(self.data_, current_bar_index)
+        high_volatility = ~ind.atr_condition(self.data_, current_bar_index)
+        adx_signal = ~ind.adx_condition(self.data_, current_bar_index)
+        psar_signal = ~ind.parabolic_sar_condition(
+            self.data_, current_bar_index)
+        cdl_pattern = ~ind.cdl_pattern(self.data_, current_bar_index)
+        volume_break = ~ind.volume_breakout(self.data_, current_bar_index)
+        resistance_break_signal = ~ind.resistance_break(
+            self.data_, current_bar_index)
+
+        return short_stochastic_signal, short_bollinger_outside, long_stochastic_signal, long_bollinger_outside, low_volatility, going_up_condition, going_down_condition, strong_buy_signal, strong_sell_signal, super_buy, super_sell, macd_buy, high_volatility, adx_signal, psar_signal, cdl_pattern, volume_break, resistance_break_signal
+
+    def _compute_action_for_row(self, df_row):
+        """Compute action based on the data row and current price."""
+        short_stochastic_signal, short_bollinger_outside, long_stochastic_signal, long_bollinger_outside, low_volatility, going_up_condition, going_down_condition, strong_buy_signal, strong_sell_signal, super_buy, super_sell, macd_buy, high_volatility, adx_signal, psar_signal, cdl_pattern, volume_break, resistance_break_signal = self._get_conditions(
+            df_row)
+
+        bullish_conditions = [strong_buy_signal, super_buy, macd_buy, long_stochastic_signal, long_bollinger_outside,
+                              high_volatility, adx_signal, psar_signal, cdl_pattern, volume_break, resistance_break_signal]
+        bearish_conditions = [strong_sell_signal, super_sell,
+                              short_stochastic_signal, short_bollinger_outside]
+        neutral_conditions = [going_up_condition,
+                              going_down_condition, low_volatility]
+
+        if any(neutral_conditions):
+            return 1  # Neutral action
+        elif any(bullish_conditions):
+            return 2  # Bullish action
+        elif any(bearish_conditions):
+            return 0  # Bearish action
+        else:
+            # Default logic if none of the above conditions are met
+            return 1
+
+    def _extract_data_for_step(self, bar):
+        self.bar = bar
+        # Extract the current row data from the standardized dataframe
+        df_row_standardized = self.data.iloc[self.bar]
+
+        # Extract the current row data from the raw dataframe
+        df_row_raw = self.data_.iloc[self.bar]
+
+        if self.bar > 0:
+            self.last_price = self.data_.iloc[self.bar - 1]['close']
+        else:
+            # For the first step, initialize the last price to current price
+            self.last_price = df_row_raw['close']
+
+        # Updated for using df_row_raw
+        current_price = df_row_raw['close']
+
+        return df_row_standardized, df_row_raw, current_price
+
+
+class RewardSystem:
+    def __init__(self):
+        # Initialization code
+        pass
+
+    def compute_financial_outcome_reward(self, current_price, last_price, action, position_size):
+        """
+        Compute the reward based on action and market data.
+
+        Parameters:
+        - current_price: Current asset price.
+        - last_price: Asset price at the last time step.
+        - action: The action taken by the agent.
+        - position_size: The size of the position.
+
+        Returns:
+        - Calculated reward.
+        """
+        p_or_l = ind.calculate_profit_or_loss(
+            current_price, last_price, action, position_size)
+
+        return p_or_l
+
+    def compute_risk_adjusted_reward(self, returns_history):
+        """
+        Compute the reward based on action and risk.
+
+        Parameters:
+        - returns_history: Historical returns for risk calculation.
+
+        Returns:
+        - Calculated reward.
+        """
+        # Calculate Sharpe Ratio for risk-adjusted return
+        sharpe_ratio = ind.calculate_sharpe_ratio(returns_history)
+
+        # Combine profit/loss and risk-adjusted return
+        # Here you can decide how to weigh these components
+        reward = sharpe_ratio  # Simple additive model as an example
+
+        return reward
+
+    def combined_reward(self, market_condition_reward, financial_outcome_reward, risk_adjusted_reward, drawdown_penalty, trading_penalty, weights=(0.4, 0.4, 0.1, 0.05, 0.05)):
+        """
+        Combine different reward components into a single reward value.
+
+        Parameters:
+        - market_condition_reward: Reward based on market conditions.
+        - financial_outcome_reward: Reward based on immediate financial outcome.
+        - risk_adjusted_reward: Reward based on risk-adjusted returns.
+        - weights: Tuple of weights for each component.
+
+        Returns:
+        - Combined reward.
+        """
+        combined = (weights[0] * market_condition_reward +
+                    weights[1] * financial_outcome_reward +
+                    weights[2] * risk_adjusted_reward +
+                    weights[3] * drawdown_penalty +
+                    weights[4] * trading_penalty)
+
+        return combined
+
+
+class PortfolioManager:
+    def __init__(self, data, lookback):
+        # Define initial portfolio parameters
+        self.data = data
+        self.trade_limit = 10
+        self.threshold = 0.2
+        self.look_back = lookback
+        self.bar = lookback
+        self.reset()
+
+    def reset(self):
+        self.max_drawdown = 0
+        self.trade_count = 0
+        self.stocks_held = 0
+        self.portfolio_balance = 1000
+        self.max_portfolio_balance = 0
+        self.total_reward = 0
+        self.last_action = None
+
+    def calculate_risk(self):
+        # Calculate penalties
+        drawdown_penalty = -1 * \
+            max(0, self.max_drawdown - self.threshold)  # Define threshold
+        trading_penalty = -1 * \
+            max(0, self.trade_count - self.trade_limit) / \
+            self.trade_limit  # Define trade_limit
+        return drawdown_penalty, trading_penalty
+
+    def _update_balance(self, action, current_price):
+        """Update portfolio balance based on the action taken.
+
+        Parameters:
+        - action (int): Action taken (0 for sell, 2 for buy).
+        - current_price (float): Current stock price.
+        - env_logger: Logger for logging information.
+
+        Returns:
+        None
+        """
+
+        env_logger.info(
+            f"Starting balance: ${self.portfolio_balance:.2f}, Stocks held: {self.stocks_held:.2f}")
+
+        # Calculate the amount to trade (10% of current balance)
+        amount_to_trade = 0.1 * self.portfolio_balance
+
+        # Update trading count if an action is taken
+        if action in [0, 2]:
+            self.trade_count += 1
+
+        # Sell action
+        if action == 0:
+            # Sell only if you have enough stocks
+            stocks_to_sell = min(
+                self.stocks_held, amount_to_trade / current_price)
+            self.portfolio_balance += stocks_to_sell * current_price
+            self.stocks_held -= stocks_to_sell
+            env_logger.info(
+                f"Selling {stocks_to_sell:.2f} stocks at ${current_price:.2f} each.")
+
+        # Buy action
+        elif action == 2:
+            # Buy only if balance allows
+            stocks_to_buy = min(amount_to_trade / current_price,
+                                self.portfolio_balance / current_price)
+            self.portfolio_balance -= stocks_to_buy * current_price
+            self.stocks_held += stocks_to_buy
+            env_logger.info(
+                f"Buying {stocks_to_buy:.2f} stocks at ${current_price:.2f} each.")
+
+        else:
+            env_logger.warning(f"Hold action: {action}. No action taken.")
+
+        # Update the maximum portfolio balance
+        self.max_portfolio_balance = max(
+            self.max_portfolio_balance, self.portfolio_balance)
+
+        # Calculate drawdown only when there's a decrease in value
+        if self.portfolio_balance < self.max_portfolio_balance:
+            current_drawdown = 1 - \
+                (self.portfolio_balance / self.max_portfolio_balance)
+            self.max_drawdown = max(self.max_drawdown, current_drawdown)
+
+        # Update last_price at the end of the method
+        self.last_price = current_price
+
+        # Log the updated balance
+        env_logger.info(
+            f"Updated balance: ${self.portfolio_balance:.2f}, Stocks held: {self.stocks_held:.2f}")
+
+    def _update_state_values(self, action, current_price, reward):
+        """Update internal state values based on the action, current price, and received reward."""
+
+        # Log update information
+        env_logger.info(
+            f"Updating the state values based on action: {action}, current_price: {current_price}, reward: {reward}")
+
+        # Update last action and price
+        if action in [0, 2] and reward in [1, 2]:
+            self.last_action = action
+
+        # Update data and bar counter
+        self.data.loc[self.data.index[self.bar], 'action'] = action
+        self.bar += 1
+
+        # Update reward and accuracy
+        self.total_reward = round(self.total_reward + reward, 2)
+        self.accuracy = round(self.total_reward /
+                              (self.bar - self.look_back), 2)
+        self.last_accuracy = self.accuracy
+
+        # Update counters based on accuracy and reward values
+        if reward > HIGH_ACC_REWARD_VALUES and self.accuracy == self.last_accuracy:
+            self.wait += 1
+        elif self.accuracy >= 1.0:
+            self.high_acc_counter += 1
+        else:
+            self.high_acc_counter = 0
+
+
+class LoggerAndState:
+    def __init__(self, logger):
+        # Initialization code
+        self.env_logger = logger
+
+    def _log_step_details(self, reward, done, short_stochastic_signal,
+                          short_bollinger_outside, long_stochastic_signal,
+                          long_bollinger_outside, low_volatility, going_up_condition,
+                          going_down_condition, strong_buy_signal, strong_sell_signal,
+                          super_buy, super_sell, macd_buy, high_volatility, adx_signal,
+                          psar_signal, cdl_pattern, volume_break, resistance_break_signal,
+                          correct, total_reward, accuracy, last_action, portfolio_balance, stocks_held):
+        env_logger.info(
+            f"LOG: volatility: {low_volatility}, going Up: {going_up_condition}, going down: {going_down_condition}\nstrong buy: {strong_buy_signal}, strong Sell: {strong_sell_signal}")
+        env_logger.info(
+            f"LOG: Super buy: {super_buy}, Super Sell: {super_sell}")
+        env_logger.info(
+            f"LOG: MACD Buy: {macd_buy}, Bollinger Outside: {short_stochastic_signal} & {long_stochastic_signal} , High Volatility: {high_volatility}, Stochastic Signal: {short_bollinger_outside} & {long_bollinger_outside}, ADX Signal: {adx_signal}, PSAR Signal: {psar_signal}, cdl_pattern: {cdl_pattern}, Volume Break: {volume_break}, Resistance Break: {resistance_break_signal}")
+        env_logger.info(
+            f"LOG: Total reward is {total_reward} | Accuracy is {accuracy}")
+        env_logger.info(f'LOG: Last action taken {last_action}')
+        env_logger.info(f"LOG: Reward: {reward}")
+        if done:
+            env_logger.info("LOG: Episode done.")
+        elif reward > HIGH_ACC_REWARD_VALUES:
+            env_logger.info("LOG: Action was correct.")
+        else:
+            env_logger.info("LOG: Action was False.")
+        # Added this line
+        env_logger.info(f"LOG: Action correctness: {correct}")
+
+        env_logger.info(
+            f"PORTFOLIO: Portfolio Balance: ${portfolio_balance}")
+        env_logger.info(f"PORTFOLIO: Stocks Held: {stocks_held}")
+        env_logger.info(f"LOG: ===========================================")
