@@ -6,9 +6,9 @@ import numpy as np
 import pandas as pd
 import pandas_ta as ta
 
+import model.reinforcement.indicators as ind
 import util.loggers as loggers
 from util.utils import convert_df, features, load_config, tradex_features
-import model.reinforcement.indicators as ind
 
 logger = loggers.setup_loggers()
 env_logger = logger['env']
@@ -60,7 +60,7 @@ class Environment:
 
     def _initialize_environment(self):
         self._set_initial_parameters()
-        self.data_ = self._get_data()
+        self.original_data = self._get_data()
         self._create_features()
         self._setup_observation_space()
 
@@ -78,8 +78,9 @@ class Environment:
         self.accuracy = 0
 
     def _setup_observation_space(self):
-        self.observation_space = ObservationSpace(len(self.data.columns))
-        self.look_back = self.observation_space.shape[0]
+        self.observation_space = ObservationSpace(
+            len(self.env_data[self.features].columns))
+        self.look_back = 1
         env_logger.info(
             f"Environment initialized with symbol {self.symbol} and features {self.features}. Observation space shape: {self.observation_space.shape}, lookback: {self.look_back}")
 
@@ -109,59 +110,63 @@ class Environment:
         return data
 
     def _create_features(self):
-        if self.data_.empty:
+        if self.original_data.empty:
             env_logger.error("Data fetch failed or returned empty data.")
             return
 
         env_logger.info("Data fetched successfully.")
 
         # Generate features and tradex features
-        feature = features(self.data_.copy())
+        feature = features(self.original_data.copy())
 
-        processed_features = tradex_features(self.symbol, self.data_.copy())
+        processed_features = tradex_features(
+            self.symbol, self.original_data.copy())
 
-        # Combine processed_features and feature into self.data_
-        self.data_ = pd.concat([processed_features, feature], axis=1)
-        self.data_.dropna(inplace=True)
+        # Combine processed_features and feature into self.original_data
+        self.original_data = pd.concat([processed_features, feature], axis=1)
+        self.original_data.dropna(inplace=True)
 
-        self.data_['last_price'] = self.data_['close'].shift(1)
-        self.data = self.data_[self.features].copy()
-        self.data_['r'] = np.log(
-            self.data['close'] / self.data['close'].shift(int(self.config['env']['shifts'])))
+        self.original_data['last_price'] = self.original_data['close'].shift(1)
+        self.env_data = self.original_data[self.features].copy()
+        self.original_data['r'] = np.log(
+            self.env_data['close'] / self.env_data['close'].shift(int(self.config['env']['shifts'])))
 
-        self.data['d'] = self.compute_action(self.data_)
+        self.env_data['d'] = self.compute_action(self.original_data)
         # Handle NaN values that will appear in the last 3 rows
-        self.data['d'] = self.data['d'].ffill()
-        self.data['r'] = self.data_['r']
+        self.env_data['d'] = self.env_data['d'].ffill()
+        self.env_data['r'] = self.original_data['r']
 
-        self.data['b_wave'] = self.data_['b_wave']
-        self.data['l_wave'] = self.data_['l_wave']
+        self.env_data['b_wave'] = self.original_data['b_wave']
+        self.env_data['l_wave'] = self.original_data['l_wave']
 
-        self.data['rsi14'] = self.data_['rsi14']
-        self.data['rsi40'] = self.data_['rsi40']
-        self.data['ema_200'] = self.data_['ema_200']
-        self.data['s_dots'] = self.data_['s_dots']
-        self.data['dots'] = self.data_['dots']
+        self.env_data['rsi14'] = self.original_data['rsi14']
+        self.env_data['rsi40'] = self.original_data['rsi40']
+        self.env_data['ema_200'] = self.original_data['ema_200']
+        self.env_data['s_dots'] = self.original_data['s_dots']
+        self.env_data['dots'] = self.original_data['dots']
 
-        self.data = (self.data - self.data.mean()) / self.data.std()
-        self.data['action'] = 0
+        self.env_data = (self.env_data - self.env_data.mean()
+                         ) / self.env_data.std()
+        self.env_data['action'] = 0
 
-        env_logger.info(f"create features: Full PROCESSED data {self.data_}.")
-        env_logger.info(f"create features: observation Data {self.data}.")
+        env_logger.info(
+            f"create features: Full PROCESSED data {self.original_data}.")
+        env_logger.info(f"create features: observation Data {self.env_data}.")
         env_logger.info("Features created.")
 
     def get_feature_names(self):
-        return self.data.columns.tolist()
+        return self.env_data.columns.tolist()
 
     def _get_state(self):
         env_logger.info("STATE:get the state.")
         state = self._extract_state(self.bar)
+        # print(f"the state shape {state.shape} & state {state}")
         return state
 
     def reset(self):
         env_logger.info("RESET:Environment reset.")
 
-        self.data['action'] = 0
+        self.env_data['action'] = 0
         self._set_initial_parameters()
         self.bar = self.look_back
 
@@ -172,21 +177,21 @@ class Environment:
         return state
 
     def _extract_state(self, bar):
-        state_slice = self.data[self.features].iloc[bar -
-                                                    self.look_back:bar].values
+        state_slice = self.env_data[self.features].iloc[bar -
+                                                        self.look_back:bar].values
         return np.array(state_slice, dtype=np.float32)
 
     def step(self, action):
         env_logger.info(f"STEP: Action taken: {action}")
 
         # Extract the current row data from the standardized dataframe
-        df_row_standardized = self.data.iloc[self.bar]
+        df_row_standardized = self.env_data.iloc[self.bar]
 
         # Extract the current row data from the raw dataframe
-        df_row_raw = self.data_.iloc[self.bar]
+        df_row_raw = self.original_data.iloc[self.bar]
 
         if self.bar > 0:
-            self.last_price = self.data_.iloc[self.bar - 1]['close']
+            self.last_price = self.original_data.iloc[self.bar - 1]['close']
         else:
             # For the first step, initialize the last price to current price
             self.last_price = df_row_raw['close']
@@ -207,7 +212,7 @@ class Environment:
         financial_outcome_reward = self.compute_financial_outcome_reward(
             current_price, self.last_price, action, self.stocks_held)
         risk_adjusted_reward = self.compute_risk_adjusted_reward(
-            self.data['r'])  # assuming self.data['r'] holds returns history
+            self.env_data['r'])  # assuming self.env_data['r'] holds returns history
 
         # Calculate penalties
         drawdown_penalty = -1 * \
@@ -239,7 +244,7 @@ class Environment:
         """Helper method to centralize the conditions logic."""
         current_bar_index = self.bar
 
-        # Adjusting to use self.data_
+        # Adjusting to use self.original_data
         super_buy: bool = (df_row['dots'] == 1) & [df_row['l_wave'] >= -50]
         super_sell: bool = (df_row['dots'] == -1) & [df_row['l_wave'] >= 50]
         low_volatility: bool = (df_row['rsi14'] >= 45) & (
@@ -251,30 +256,32 @@ class Environment:
         going_down_condition: bool = (df_row['close'] < df_row['last_price']) & (
             df_row['close'] < df_row['ema_200']) & (df_row['rsi40'] < 50)
 
-        strong_buy_signal = strong_upward_movement & ~ind.is_increasing_trend(self.data_,
+        strong_buy_signal = strong_upward_movement & ~ind.is_increasing_trend(self.original_data,
                                                                               current_bar_index)
-        strong_sell_signal = strong_downward_movement & ~ind.is_increasing_trend(self.data_,
+        strong_sell_signal = strong_downward_movement & ~ind.is_increasing_trend(self.original_data,
                                                                                  current_bar_index)  # ~ is the element-wise logical NOT
 
         # SHORT
         short_stochastic_signal = ~ind.short_stochastic_condition(
-            self.data_, current_bar_index)
+            self.original_data, current_bar_index)
         short_bollinger_outside = ~ind.short_bollinger_condition(
-            self.data_, current_bar_index)
+            self.original_data, current_bar_index)
         # LONG ONlY
         long_stochastic_signal = ~ind.long_stochastic_condition(
-            self.data_, current_bar_index)
+            self.original_data, current_bar_index)
         long_bollinger_outside = ~ind.long_bollinger_condition(
-            self.data_, current_bar_index)
-        macd_buy = ~ind.macd_condition(self.data_, current_bar_index)
-        high_volatility = ~ind.atr_condition(self.data_, current_bar_index)
-        adx_signal = ~ind.adx_condition(self.data_, current_bar_index)
+            self.original_data, current_bar_index)
+        macd_buy = ~ind.macd_condition(self.original_data, current_bar_index)
+        high_volatility = ~ind.atr_condition(
+            self.original_data, current_bar_index)
+        adx_signal = ~ind.adx_condition(self.original_data, current_bar_index)
         psar_signal = ~ind.parabolic_sar_condition(
-            self.data_, current_bar_index)
-        cdl_pattern = ~ind.cdl_pattern(self.data_, current_bar_index)
-        volume_break = ~ind.volume_breakout(self.data_, current_bar_index)
+            self.original_data, current_bar_index)
+        cdl_pattern = ~ind.cdl_pattern(self.original_data, current_bar_index)
+        volume_break = ~ind.volume_breakout(
+            self.original_data, current_bar_index)
         resistance_break_signal = ~ind.resistance_break(
-            self.data_, current_bar_index)
+            self.original_data, current_bar_index)
 
         return short_stochastic_signal, short_bollinger_outside, long_stochastic_signal, long_bollinger_outside, low_volatility, going_up_condition, going_down_condition, strong_buy_signal, strong_sell_signal, super_buy, super_sell, macd_buy, high_volatility, adx_signal, psar_signal, cdl_pattern, volume_break, resistance_break_signal
 
@@ -465,7 +472,7 @@ class Environment:
         self.last_price = current_price
 
         # Update data and bar counter
-        self.data.loc[self.data.index[self.bar], 'action'] = action
+        self.env_data.loc[self.env_data.index[self.bar], 'action'] = action
         self.bar += 1
 
         # Update reward and accuracy
@@ -511,7 +518,7 @@ class Environment:
         if self.total_reward <= EARLY_STOP_REWARD_THRESHOLD:
             env_logger.warning("STEP: Early stopping due to less rewards.")
             return True
-        if self.bar >= len(self.data) - 1:
+        if self.bar >= len(self.env_data) - 1:
             env_logger.warning("STEP: Early stopping due to no more bars.")
             return True
         if self.wait >= self.patience:

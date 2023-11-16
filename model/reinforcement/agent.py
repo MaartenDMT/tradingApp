@@ -7,13 +7,12 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 from keras.layers import BatchNormalization, Dropout
-from keras.regularizers import l1, l2
+from keras.regularizers import l2
 from tensorflow.keras.optimizers import Adam
 
 import util.loggers as loggers
-from model.reinforcement.agent_extra import (is_new_record,
-                                             multi_head_attention, save_model,
-                                             save_to_csv, transformer_block)
+from util.agent_utils import (is_new_record, save_model, save_to_csv,
+                              transformer_block)
 from util.rl_util import next_available_filename
 
 logger = loggers.setup_loggers()
@@ -53,7 +52,7 @@ class DQLAgent:
         self.train_action_history = []
         self.test_action_history = []
 
-        self.memory = deque(maxlen=1_000)
+        self.memory = deque(maxlen=100_000)
         self.osn = env.observation_space.shape[0]
         self.model = self.get_model(
             hidden_units, dropout, m_activation, self.modelname)
@@ -399,6 +398,9 @@ class DQLAgent:
 
         self.save(self.best_treward, self.env.accuracy)
         agent_logger.info(f"LEARN: Replay done. Epsilon is now {self.epsilon}")
+        self.state_history = []
+        self.reward_history = []
+        self.train_action_history = []
 
     def test(self, episodes):
         self.load()

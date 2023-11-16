@@ -405,7 +405,7 @@ class ReinforcementTabModel:
         self.model_logger = model_logger
         self.presenter = presenter
         self.model_logger.info("loading the reinforcement tab model")
-        self.features = ['close']
+        self.features = ['open', 'high', 'low', 'close', 'volume']
         self.result = None
 
         # Define a parameter grid with hyperparameters and their possible values

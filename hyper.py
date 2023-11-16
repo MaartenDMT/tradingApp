@@ -1,9 +1,10 @@
 import optuna
 import pandas as pd
+
+import util.loggers as loggers
 from model.reinforcement.agent import DQLAgent
 from model.reinforcement.env import Environment
 from util.utils import load_config
-import util.loggers as loggers
 
 # Logger and Configuration Setup
 logger = loggers.setup_loggers()
@@ -11,7 +12,7 @@ rl_logger = logger['rl']
 config = load_config()
 
 # Environment Setup
-env = Environment(symbol='BTCUSDT', features=['close'],
+env = Environment(symbol='BTCUSDT', features=['open', 'high', 'low', 'close', 'volume'],
                   limit=300, time="30m", actions=3, min_acc=float(config['Params']['min_acc']))
 
 # Objective Function for Optuna
@@ -25,7 +26,7 @@ def objective(trial):
         'learning_rate': trial.suggest_float('learning_rate', 0.001, 0.1, log=True),
         'epsilon': trial.suggest_float('epsilon', 0.9, 1.1),
         'dropout': trial.suggest_float('dropout', 0.1, 0.3),
-        'act': trial.suggest_categorical('act', ['argmax', 'softmax', 'default']),
+        'act': trial.suggest_categorical('act', ['argmax', 'softmax']),
         'm_activation': trial.suggest_categorical('m_activation', ['linear', 'tanh', 'sigmoid'])
     }
 
