@@ -29,22 +29,17 @@ def setup_individual_logger(logger_name, log_file):
     logger = logging.getLogger(logger_name)
 
     if not logger.hasHandlers():  # To ensure that handlers don't get added every time we call this function
-        logger.setLevel(logging.DEBUG)
+        logger.setLevel(logging.INFO)
 
         file_handler = RotatingFileHandler(
             log_file, maxBytes=2_000_000_000, backupCount=10)
-
-        console_handler = logging.StreamHandler()
-        console_handler.setLevel(logging.ERROR)
 
         formatter = logging.Formatter(
             '%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S'
         )
 
         file_handler.setFormatter(formatter)
-        console_handler.setFormatter(formatter)
 
         logger.addHandler(file_handler)
-        logger.addHandler(console_handler)
 
     return logger

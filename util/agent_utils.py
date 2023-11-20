@@ -2,7 +2,9 @@ import os
 from typing import List, Optional
 
 import pandas as pd
-import tensorflow as tf
+from tensorflow.keras import Model
+from tensorflow.keras.layers import (Dense, Dropout, Input, LayerNormalization,
+                                     MultiHeadAttention)
 
 MODEL_PATH = 'data/saved_model'
 CSV_PATH = "data/best_model/best_model.csv"
@@ -71,22 +73,17 @@ def save_to_csv(b_reward, acc, model_params):
         new_record.to_csv(CSV_PATH, index=False)
 
 
-def save_model(self):
-    """Save the current model."""
-    self.model.save(f"{MODEL_PATH}/{self.modelname}_model.keras")
-
-
 #####
 
 def multi_head_attention(d_model, num_heads):
     depth = d_model // num_heads
-    attention_layer = tf.keras.layers.MultiHeadAttention(
+    attention_layer = MultiHeadAttention(
         num_heads=num_heads, key_dim=depth)
 
     def attention(x):
-        q = tf.keras.layers.Dense(d_model)(x)
-        k = tf.keras.layers.Dense(d_model)(x)
-        v = tf.keras.layers.Dense(d_model)(x)
+        q = Dense(d_model)(x)
+        k = Dense(d_model)(x)
+        v = Dense(d_model)(x)
 
         output = attention_layer(query=q, key=k, value=v)
         return output
@@ -95,15 +92,15 @@ def multi_head_attention(d_model, num_heads):
 
 
 def transformer_block(d_model, num_heads, dropout):
-    inputs = tf.keras.layers.Input(shape=(None, d_model))
+    inputs = Input(shape=(None, d_model))
 
     attention_output = multi_head_attention(
         d_model, num_heads)(inputs)
-    attention_output = tf.keras.layers.Dropout(dropout)(attention_output)
-    out1 = tf.keras.layers.LayerNormalization()(inputs + attention_output)
+    attention_output = Dropout(dropout)(attention_output)
+    out1 = LayerNormalization()(inputs + attention_output)
 
-    ffn_output = tf.keras.layers.Dense(d_model, activation='relu')(out1)
-    ffn_output = tf.keras.layers.Dense(d_model)(ffn_output)
-    out2 = tf.keras.layers.LayerNormalization()(out1 + ffn_output)
+    ffn_output = Dense(d_model, activation='relu')(out1)
+    ffn_output = Dense(d_model)(ffn_output)
+    out2 = LayerNormalization()(out1 + ffn_output)
 
-    return tf.keras.Model(inputs=inputs, outputs=out2)
+    return Model(inputs=inputs, outputs=out2)

@@ -11,9 +11,8 @@ from keras.regularizers import l2
 from tensorflow.keras.optimizers import Adam
 
 import util.loggers as loggers
-from util.agent_utils import (is_new_record, save_model, save_to_csv,
-                              transformer_block)
-from util.rl_util import next_available_filename
+from model.reinforcement.rl_visual import plot_and_save_metrics
+from util.agent_utils import is_new_record, save_to_csv, transformer_block
 
 logger = loggers.setup_loggers()
 agent_logger = logger['agent']
@@ -45,6 +44,7 @@ class DQLAgent:
         self.modelname = modelname
         self.dropout = dropout
         self.m_activation = m_activation
+        self.model_count = 1
 
         # Initialize lists to keep track of states and rewards
         self.state_history = []
@@ -52,7 +52,7 @@ class DQLAgent:
         self.train_action_history = []
         self.test_action_history = []
 
-        self.memory = deque(maxlen=100_000)
+        self.memory = deque(maxlen=1_000)
         self.osn = env.observation_space.shape[0]
         self.model = self.get_model(
             hidden_units, dropout, m_activation, self.modelname)
@@ -80,7 +80,7 @@ class DQLAgent:
 
     def _build_model(self, hidden_units, dropout, m_activation):
         rl_logger.info("Standard Model loaded.")
-        model = tf.keras.Sequential()
+        model = tf.keras.Sequential(name='StandardModel')
         model.add(tf.keras.layers.Dense(64, input_dim=self.osn,
                   activation='relu', kernel_regularizer=l2(0.01)))
         model.add(BatchNormalization())
@@ -98,7 +98,7 @@ class DQLAgent:
 
     def base_dense_model(self, m_activation, dropout):
         agent_logger.info("Dense Model loaded.")
-        base_model = tf.keras.Sequential()
+        base_model = tf.keras.Sequential(name='DenseModel')
         base_model.add(tf.keras.layers.Dense(
             128, input_dim=self.osn, activation='relu'))
         base_model.add(BatchNormalization())
@@ -116,7 +116,7 @@ class DQLAgent:
 
     def base_lstm_model(self, m_activation, dropout):
         rl_logger.info("LSTM Model loaded.")
-        base_model = tf.keras.Sequential()
+        base_model = tf.keras.Sequential(name='LSTMModel')
         base_model.add(tf.keras.layers.LSTM(100, activation='relu', input_shape=(
             self.osn, 1), return_sequences=True))
         base_model.add(tf.keras.layers.Dropout(dropout))
@@ -130,7 +130,7 @@ class DQLAgent:
 
     def base_conv1d_lstm_model(self, m_activation, dropout):
         rl_logger.info("CONV1D Model loaded.")
-        base_model = tf.keras.Sequential()
+        base_model = tf.keras.Sequential(name='CONV1DModel')
         base_model.add(tf.keras.layers.Conv1D(filters=64, kernel_size=2,
                        activation='relu', input_shape=(self.osn, 1)))
         base_model.add(tf.keras.layers.MaxPool1D(pool_size=1))
@@ -175,10 +175,10 @@ class DQLAgent:
     def base_conv1d_model(self, m_activation, dropout):
         rl_logger.info("Simple CONV1D Model loaded.")
 
-        base_model = tf.keras.Sequential()
+        base_model = tf.keras.Sequential(name='SimpleCONV1D')
         base_model.add(tf.keras.layers.Conv1D(
             filters=64, kernel_size=2, activation='relu', input_shape=(self.osn, 1)))
-        base_model.add(tf.keras.layers.MaxPool1D(pool_size=2))
+        base_model.add(tf.keras.layers.MaxPool1D(pool_size=1))
         base_model.add(tf.keras.layers.Flatten())
         base_model.add(tf.keras.layers.Dense(100, activation='relu'))
         base_model.add(tf.keras.layers.Dropout(dropout))
@@ -240,13 +240,25 @@ class DQLAgent:
         if should_save:
             model_params = self.get_model_parameters()
             save_to_csv(b_reward, acc, model_params)
-            save_model(self)
+            self.save_model()
 
     def load(self):
-        if os.path.exists(MODEL_PATH):
-            self.model = tf.keras.models.load_model(
-                f"{MODEL_PATH}/{self.modelname}_model.keras")
+        while os.path.exists(self.filename):
+            self.model_count += 1
+
+        if os.path.exists(self.filename):
+            self.model = tf.keras.models.load_model(self.filename)
             agent_logger.info("Model loaded.")
+
+    def save_model(self):
+        base_filename = MODEL_PATH
+        self.filename = f'{base_filename}/{self.modelname}{self.model_count}.keras'
+
+        while os.path.exists(self.filename):
+            self.model_count += 1
+
+        self.model.save(self.filename)
+        agent_logger.info(f"Model saved as {self.filename}")
 
     def select_action(self, state, method='argmax'):
         action_methods = {
@@ -313,30 +325,6 @@ class DQLAgent:
             self.epsilon *= self.epsilon_decay
         agent_logger.info(f"REPLAY: done. Epsilon is now {self.epsilon}")
 
-    def save_model(self):
-        base_filename = MODEL_PATH
-        model_count = 1
-        acc = self.env.accuracy
-        b_reward = self.best_treward
-
-        while os.path.exists(f'{base_filename}/{self.modelname}{model_count}.keras'):
-            model_count += 1
-
-        filename = f'{base_filename}/{self.modelname}{model_count}.keras'
-        self.model.save(filename)
-        agent_logger.info(f"Model saved as {filename}")
-
-        # Save model score to CSV
-        score_df = pd.DataFrame({'accuracy': [acc], 'reward': [b_reward]})
-        score_filename = "data/best_model/best_model_scores.csv"
-
-        if os.path.isfile(score_filename):
-            df = pd.read_csv(score_filename)
-            df = df.append(score_df, ignore_index=True)
-            df.to_csv(score_filename, index=False)
-        else:
-            score_df.to_csv(score_filename, index=False)
-
     def learn(self, episodes):
         trewards = []
         # Initialize some variables for early stopping
@@ -375,6 +363,10 @@ class DQLAgent:
                 state = next_state
                 agent_logger.info(
                     f"LEARN:episode {e} ===========================================")
+
+            if e % 5 == 0:
+                plot_and_save_metrics(
+                    self.reward_history, self.train_action_history, e, self.modelname)
 
             if sum_of_rewards > self.best_treward:
                 self.best_treward = sum_of_rewards
@@ -448,54 +440,3 @@ class DQLAgent:
 
         agent_logger.info(f"TEST: Episode reward: {episode_reward}")
         return episode_reward
-
-    def calculate_correlations(self, fn=None, ax=None):
-        # If feature_names is None, use generic names
-        if fn is None:
-            fn = [f'feature_{i}' for i in range(self.osn)]
-
-        # Convert state history and reward history to a DataFrame
-        agent_logger.info("Length of fn:", len(fn))
-        agent_logger.info("Number of columns in state_history:", len(
-            self.state_history[0]) if self.state_history else "state_history is empty")
-
-        if self.modelname in ["LSTM_Model", "CONV1D_LSTM_Model"]:
-            state_df = pd.DataFrame(self.state_history.squeeze(), columns=fn)
-        else:
-            state_df = pd.DataFrame(self.state_history, columns=fn)
-
-        state_df = pd.DataFrame(self.state_history, columns=fn)
-        reward_df = pd.DataFrame(self.reward_history, columns=['reward'])
-
-        # Combine them into one DataFrame
-        combined_df = pd.concat([state_df, reward_df], axis=1)
-
-        # Compute correlation
-        correlation_matrix = combined_df.corr()
-        reward_correlations = correlation_matrix['reward'].drop('reward')
-
-        agent_logger.info("Feature-Reward Correlations:")
-        agent_logger.info(reward_correlations)
-
-        # Save correlations to a CSV
-        csv_filename = next_available_filename("reward_corr", "csv")
-        reward_correlations.to_csv(csv_filename)
-        agent_logger.info(f"Saved correlations to {csv_filename}")
-
-        # Create a list of colors (same length as reward_correlations)
-        colors = plt.cm.viridis(np.linspace(0, 1, len(reward_correlations)))
-
-        # Sort correlations
-        sorted_correlations = reward_correlations.sort_values()
-
-        # Plot correlations
-        if ax is None:
-            plt.figure(figsize=(10, 6))
-            ax = plt.gca()  # Get current axis
-
-        sorted_correlations.plot(kind='barh', color=colors)
-        plt.xlabel('Correlation Coefficient')
-        plt.ylabel('Feature')
-        plt.title('Feature-Reward Correlations')
-        plt.colorbar(plt.cm.ScalarMappable(cmap=plt.cm.viridis), ax=ax,
-                     orientation='vertical', label='Color Scale')

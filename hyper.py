@@ -31,8 +31,8 @@ def objective(trial):
     }
 
     agent = DQLAgent(env=env, **hyperparameters)
-    agent.learn(episodes=100)
-    test_rewards = agent.test(episodes=20)
+    agent.learn(episodes=5)
+    test_rewards = agent.test(episodes=5)
     return sum(test_rewards) / len(test_rewards)
 
 

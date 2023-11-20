@@ -107,30 +107,15 @@ def is_increasing_trend(df, current_bar_index):
 
 # ========================================================
 
-def calculate_profit_or_loss(current_price, last_price, action, position_size):
-    """
-    Calculate the profit or loss from an action.
 
-    Parameters:
-    - current_price: Current asset price.
-    - last_price: Asset price at the last time step.
-    - action: The action taken (0 for sell, 1 for hold, 2 for buy).
-    - position_size: The size of the position.
+def calculate_holding_reward(holding_time, pnl):
+    # Define a reward function based on holding time and PnL
+    scaling_factor = pnl / 10000  # Adjust the scaling factor as needed
+    return holding_time * pnl * scaling_factor
 
-    Returns:
-    - Profit or loss value.
-    """
-    if last_price is None:
-        return 0  # or handle it as you see fit
-
-    if action == 2:  # Buy
-        profit_or_loss = (current_price - last_price) * position_size
-    elif action == 0:  # Sell
-        profit_or_loss = (last_price - current_price) * position_size
-    else:  # Hold or any other action
-        profit_or_loss = 0
-
-    return profit_or_loss
+    # time-dependingScaling, s= 0.01 * (holding_time/ 10)
+    # Performance-Based Scaling, s= pnl / 10000
+    # Linear, s= 0.01
 
 
 def calculate_sharpe_ratio(returns, risk_free_rate=0):
@@ -146,3 +131,20 @@ def calculate_sharpe_ratio(returns, risk_free_rate=0):
     """
     excess_returns = returns - risk_free_rate
     return excess_returns.mean() / excess_returns.std()
+
+
+def is_correct_action(taken_action, optimal_action):
+    """Compare taken action with the optimal action."""
+    return optimal_action
+
+
+def get_optimal_action(reward):
+    """Determine the optimal action for a given state."""
+    # Implement the logic to determine the optimal action
+    # This can be environment specific
+    if reward > 0.5:
+        optimal_action = True
+    else:
+        optimal_action = False
+
+    return optimal_action

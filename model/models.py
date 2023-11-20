@@ -13,9 +13,10 @@ import util.loggers as loggers
 from model.autobot import AutoBot
 from model.features import Tradex_indicator
 from model.machinelearning import MachineLearning
-from model.reinforcement.agent import DQLAgent
-from model.reinforcement.env import Environment
-from model.reinforcement.rl_visual import plotting
+from model.reinforcement.env import MultiAgentEnvironment
+from model.reinforcement.MAPDDG.agent2 import MAPDDGAgent
+from model.reinforcement.rl_visual import plot_and_save_metrics, plotting
+from model.reinforcement.visual_plot import plotLearning
 from model.trading import Trading
 from util.utils import load_config
 
@@ -403,6 +404,7 @@ class ChartTabModel:
 class ReinforcementTabModel:
     def __init__(self, model_logger, presenter) -> None:
         self.model_logger = model_logger
+        self.rl_logger = logger['rl']
         self.presenter = presenter
         self.model_logger.info("loading the reinforcement tab model")
         self.features = ['open', 'high', 'low', 'close', 'volume']
@@ -410,19 +412,11 @@ class ReinforcementTabModel:
 
         # Define a parameter grid with hyperparameters and their possible values
         self.param_grid = {
-            'modelname': str(config['Params']['modelname']),
             'gamma': float(config['Params']['gamma']),
-            'hidden_units': int(config['Params']['hidden_units']),
             'learning_rate': float(config['Params']['learning_rate']),
             'batch_size': int(config['Params']['batch_size']),
             'epsilon_min': float(config['Params']['epsilon_min']),
             'epsilon_decay': float(config['Params']['epsilon_decay']),
-            'dropout': float(config['Params']['dropout']),
-            'act': str(config['Params']['act']),  # softmax, argmax
-            # linear, tanh, sigmoid
-            'm_activation': str(config['Params']['m_activation']),
-
-            'loss': str(config['Params']['loss'])
         }
 
         self.params = {
@@ -435,32 +429,89 @@ class ReinforcementTabModel:
     # Define a function for training and evaluating the DQL agent
 
     def train_and_evaluate(self, params):
+        num_agents = 2
         # Initialize Environment and Agent with specific hyperparameters
-        env = Environment(symbol='BTCUSDT', features=self.features,
-                          limit=300, time="30m", actions=params['env_actions'], min_acc=params['min_acc'])
-        fn = env.get_feature_names()
+        env = MultiAgentEnvironment(num_agents=num_agents, symbol='BTCUSDT', features=self.features,
+                                    limit=300, time="30m", actions=params['env_actions'], min_acc=params['min_acc'])
 
-        self.model_logger.info(
-            f"Performance with data {env.data}")
-        self.model_logger.info(
-            f"observation space: {env.observation_space.shape}")
-        self.model_logger.info(
-            f"look back: {env.look_back}")
-        self.model_logger.info(self.param_grid)
+        # self.rl_logger.info(
+        #     f"Performance with data {env.env_data}")
+        # self.rl_logger.info(
+        #     f"observation space: {env.observation_space.shape}")
+        # self.rl_logger.info(
+        #     f"look back: {env.look_back}")
+        # self.rl_logger.info(self.param_grid)
 
-        agent = DQLAgent(**self.param_grid, env=env)
+        agent = MAPDDGAgent(**self.param_grid, env=env, num_agents=num_agents)
 
-        # Train the agent
-        agent.learn(episodes=params['episodes'])
+        scores = []
+        actions = []
+        eps_history = []
+        best_scores = [None] * num_agents
+        load_checkpoint = False
 
-        # Evaluate the agent's performance (you can use your custom evaluation metric)
-        performance = agent.test(params['test_episodes'])
+        if load_checkpoint:
+            agent.load()
+
+        for i in range(params['episodes']):
+            done = [False] * num_agents
+            episode_scores = [0] * num_agents
+            observation = env.reset()  # Observations for all agents
+            while not all(done):
+                agent_actions = agent.choose_actions(observation)
+                observation_, reward, info, done = env.step(
+                    agent_actions[i])
+
+                # Check if reward is a scalar and convert it to a list if necessary
+                if np.isscalar(reward):
+                    observation = [observation] * num_agents
+                    observation_ = [observation_] * num_agents
+                    agent_actions = [agent_actions] * num_agents
+                    reward = [reward] * num_agents
+                    done = [done] * num_agents
+
+                for j in range(num_agents):
+                    episode_scores[j] += reward[j]
+                agent.store_transitions(
+                    observation, agent_actions, reward, observation_, done)
+                observation = observation_
+
+            if not load_checkpoint:
+                agent.learn()
+
+            eps_history.append(agent.epsilon)
+            scores.append(episode_scores)  # Track scores for each agent
+
+            avg_scores = [np.mean([score[j] for score in scores[-100:]])
+                          for j in range(num_agents)]
+
+            # Logging and checking for best scores
+            for j in range(num_agents):
+                self.rl_logger.info(
+                    'episode: %d agent: %d score: %.2f average score %.2f epsilon %.2f',
+                    i, j, episode_scores[j], avg_scores[j], agent.epsilon)
+
+                if best_scores[j] is None or avg_scores[j] > best_scores[j]:
+                    best_scores[j] = avg_scores[j]
+                    if not load_checkpoint:
+                        # Consider saving model for each agent separately
+                        agent.save()
+
+            if i % 5 == 0:
+                plot_and_save_metrics(scores, actions, i, "standard")
+
+        if not load_checkpoint:
+            x = [i+1 for i in range(params['episodes'])]
+            plotLearning(x, scores, eps_history)
+
+        # # Evaluate the agent's performance (you can use your custom evaluation metric)
+        # performance = agent.test(params['test_episodes'])
 
         # plot everything & save everything
-        plotting(agent, env, fn)
+        # plotting(agent, env, fn)
 
-        # Return the mean performance (customize this based on your evaluation metric)
-        self.result = np.mean(performance)
+        # # Return the mean performance (customize this based on your evaluation metric)
+        # self.result = np.mean(performance)
 
     def start(self):
         try:
