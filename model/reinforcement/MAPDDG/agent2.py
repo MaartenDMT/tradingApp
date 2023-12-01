@@ -27,26 +27,33 @@ class MAPDDGAgent:
         self.env_actions = env.action_space.n
         self.osn = env.observation_space.shape
 
-        # replay buffer for memory
-        self.memory = buffer.Replaybuffer(
-            100_000, num_agents, state_shape=self.osn, action_dim=self.env_actions)
+        self.centralized_critic = network.CentralizedCriticNetwork(
+            num_agents)
+        self.target_critic = tf.keras.models.clone_model(
+            self.centralized_critic)
 
-        self.agents = [Agent(self.env_actions, learning_rate, gamma, epsilon, epsilon_min, epsilon_decay, self.env_actions, self.memory, i)
+        # Initialize optimizers
+        self.centralized_critic_optimizer = Adam(learning_rate=learning_rate)
+        # Assuming you also have an actor optimizer
+        self.actor_optimizer = Adam(learning_rate=learning_rate)
+
+        # Create a replay buffer if not provided
+        if replay_buffer is None:
+            self.memory = buffer.ReplayBuffer(
+                100_000, num_agents, state_shape=self.osn, action_dim=self.env_actions)
+
+        # Create agents and pass optimizers
+        self.agents = [Agent(self.env_actions, learning_rate, gamma, epsilon, epsilon_min, epsilon_decay, self.memory, batch_size, self.osn, i, self.actor_optimizer, self.centralized_critic_optimizer)
                        for i in range(num_agents)]
 
-    def store_transitions(self, observations, actions, rewards, next_observations, dones):
-        # Ensure that rewards and dones are lists of the appropriate length
-        if np.isscalar(rewards):
-            rewards = [rewards] * self.num_agents
-        if np.isscalar(dones):
-            dones = [dones] * self.num_agents
+        # Update target networks
+        self.update_target_networks(tau=1)
 
+    def store_transitions(self, observations, actions, rewards, next_observations, dones):
         # Store transitions for each agent
         for i, agent in enumerate(self.agents):
-
             agent.store_transition(
-                observations, actions, rewards, next_observations, dones
-            )
+                observations[i], actions[i], rewards[i], next_observations[i], dones[i], i)
 
     def choose_actions(self, observations):
         actions = []
@@ -64,54 +71,85 @@ class MAPDDGAgent:
         states, actions, rewards, next_states, dones = self.memory.sample_buffer(
             self.batch_size)
 
+        # Flatten the second and third dimensions for states and actions
+        states_flattened = states.reshape(
+            self.batch_size, -1)  # Reshaping to (32, 2*6)
+        actions_flattened = actions.reshape(
+            self.batch_size, -1)  # Reshaping to (32, 2*5)
+
+        # Now concatenate along the last dimension
+        joint_state = np.concatenate([states_flattened], axis=-1)
+        joint_action = np.concatenate([actions_flattened], axis=-1)
+
+        agent_logger.info(
+            f"Joint state shape after reshaping: {joint_state.shape}")
+        agent_logger.info(
+            f"Joint action shape after reshaping: {joint_action.shape}")
+
         for agent in self.agents:
-            # Learning logic for each agent
-            # You will need to adapt this based on your specific requirements
-            agent.learn(states, actions, rewards, next_states, dones)
+            agent.learn(states, actions, rewards, next_states,
+                        dones, joint_state, joint_action, self.centralized_critic, self.target_critic)
             agent.decay_epsilon()
+        # Soft update target networks
+        self.update_target_networks()
 
+    def save(self, directory=MODEL_PATH):
+        if not os.path.exists(directory):
+            os.makedirs(directory)
 
-class Agent:
-    def __init__(self, action_dim, learning_rate, gamma, epsilon, epsilon_min, epsilon_decay, env_actions, shared_memory, agent_number):
-        self.gamma = gamma
-        self.epsilon = epsilon
-        self.epsilon_min = epsilon_min
-        self.epsilon_decay = epsilon_decay
-        self.env_actions = env_actions
-        self.agent_idx = agent_number
-        self.memory = shared_memory
+        for i, agent in enumerate(self.agents):
+            agent.save(os.path.join(directory, str(i)))
 
-        self.actor = network.ActorNetwork(action_dim)
-        # Adjust the constructor based on your state and action dimensions
-        self.critic = network.CriticNetwork()
-        self.target_actor = tf.keras.models.clone_model(self.actor)
-        self.target_critic = tf.keras.models.clone_model(self.critic)
-        self.actor.compile(optimizer=Adam(
-            learning_rate=learning_rate), loss='mean_squared_error')
-        self.critic.compile(optimizer=Adam(
-            learning_rate=learning_rate), loss='mean_squared_error')
-        self.target_actor.compile(optimizer=Adam(
-            learning_rate=learning_rate), loss='mean_squared_error')
-        self.target_critic.compile(optimizer=Adam(
-            learning_rate=learning_rate), loss='mean_squared_error')
+        # Log the successful save operation
+        agent_logger.info("Models and state saved successfully.")
 
-        # Update target networks
-        self.update_target_networks(tau=1)
+    def load(self, directory=MODEL_PATH):
+        for i, agent in enumerate(self.agents):
+            agent.load(os.path.join(directory, str(i)))
+
+        # Log the successful load operation
+        agent_logger.info("Models and state loaded successfully.")
 
     def update_target_networks(self, tau=0.005):
         # Update weights with a factor of tau for soft updates
-        new_actor_weights = [(tau * aw + (1 - tau) * tw) for aw, tw in zip(
-            self.actor.get_weights(), self.target_actor.get_weights())]
-        new_critic_weights = [(tau * cw + (1 - tau) * tw) for cw, tw in zip(
-            self.critic.get_weights(), self.target_critic.get_weights())]
+        for i, agent in enumerate(self.agents):
+            new_actor_weights = [(tau * aw + (1 - tau) * tw) for aw, tw in zip(
+                agent.actor.get_weights(), agent.target_actor.get_weights())]
+            agent.target_actor.set_weights(new_actor_weights)
 
-        self.target_actor.set_weights(new_actor_weights)
+        new_critic_weights = [(tau * cw + (1 - tau) * tw) for cw, tw in zip(
+            self.centralized_critic.get_weights(), self.target_critic.get_weights())]
         self.target_critic.set_weights(new_critic_weights)
 
         # Log the soft update of target networks
         agent_logger.info("Soft update of target networks")
 
+
+class Agent():
+    def __init__(self, action_dim, learning_rate, gamma, epsilon, epsilon_min, epsilon_decay, shared_memory, batch_size, osn, agent_number, actor_optimizer, centralized_critic_optimizer):
+
+        self.gamma = gamma
+        self.epsilon = epsilon
+        self.epsilon_min = epsilon_min
+        self.epsilon_decay = epsilon_decay
+        self.env_actions = action_dim
+        self.agent_idx = agent_number
+        self.memory = shared_memory
+        self.batch_size = batch_size
+        self.osn = osn
+
+        self.actor = network.ActorNetwork(action_dim)
+        self.target_actor = tf.keras.models.clone_model(self.actor)
+
+        # Store the optimizers
+        self.actor_optimizer = actor_optimizer
+        self.centralized_critic_optimizer = centralized_critic_optimizer
+
+        self.actor.compile(optimizer=Adam(learning_rate=learning_rate))
+        self.target_actor.compile(optimizer=Adam(learning_rate=learning_rate))
+
     # Add methods for action selection, learning, storing transitions, etc.
+
     def choose_action(self, observation):
         """
         Choose an action based on epsilon-greedy strategy.
@@ -129,77 +167,77 @@ class Agent:
         agent_logger.info(f"Chose action: {action}")
         return action
 
-    def store_transition(self, state, action, reward, new_state, done):
-        self.memory.store_transition(state, action, reward, new_state, done)
+    def store_transition(self, state, action, reward, new_state, done, i):
+        self.memory.store_transition(state, action, reward, new_state, done, i)
         # Log the stored transition
         agent_logger.info(
-            f"Stored transition agent: state={state}, action={action}, reward={reward}, new_state={new_state}, done={done}")
+            f"Stored transition agent {i}: action={action}, reward={reward}, done={done}")
 
     def decay_epsilon(self):
         self.epsilon = max(self.epsilon_min, self.epsilon_decay * self.epsilon)
 
-    def learn(self):
+    def learn(self, states, actions, rewards, next_states, dones, joint_state, joint_action, centralized_critic, target_critic):
         if self.memory.mem_cntr < self.batch_size:
             return
+        self.centralized_critic = centralized_critic
+        self.target_critic = target_critic
 
-        states, actions, rewards, next_states, dones = self.memory.sample_buffer(
-            self.batch_size)
-
+        agent_logger.info(f"origenal agent shape: {rewards.shape}")
         # Agent-specific states, actions, rewards, and dones
         agent_states = states[:, self.agent_idx, :]
         agent_next_states = next_states[:, self.agent_idx, :]
-        agent_actions = actions[:, self.agent_idx, :]
+        agent_actions = actions[:, self.agent_idx]
         agent_rewards = rewards[:, self.agent_idx]
         agent_dones = dones[:, self.agent_idx]
 
-        # Reshape agent-specific states and next_states based on their dimensionality
-        if agent_states.ndim == 3:
-            agent_states = agent_states.reshape(self.batch_size, -1)
-            agent_next_states = agent_next_states.reshape(self.batch_size, -1)
-        elif agent_states.ndim == 2 and agent_states.shape[1] != -1:
-            agent_states = agent_states.reshape(self.batch_size, -1)
-            agent_next_states = agent_next_states.reshape(self.batch_size, -1)
-        elif agent_states.ndim == 1:
-            agent_states = agent_states.reshape(self.batch_size, 1)
-            agent_next_states = agent_next_states.reshape(self.batch_size, 1)
-
-        # Predict target actions for the next states using all agents' information
-        target_actions = self.target_actor.predict(next_states)
-
-        # Predict the target critic value for next state-action pairs using all agents' information
-        target_critic_values = self.target_critic.predict(
-            [next_states, target_actions])
-        target_critic_values = target_critic_values.reshape(
-            self.batch_size, -1)
-
-        # Compute the critic target using agent-specific rewards and dones
-        critic_targets = agent_rewards + self.gamma * \
-            (1 - agent_dones) * target_critic_values
-
-        # Update critic network using all agents' states and actions
+        # Update the centralized critic
         with tf.GradientTape() as tape:
-            critic_value = self.critic([states, actions], training=True)
+            critic_value = self.centralized_critic(
+                [joint_state, joint_action], training=True)
+            agent_logger.info(f"agent shape: {rewards.shape}")
+            agent_logger.info(f"critic shape: {critic_value.shape}")
+
             critic_loss = tf.keras.losses.mean_squared_error(
-                critic_targets, critic_value)
+                rewards, critic_value)
         critic_grad = tape.gradient(
-            critic_loss, self.critic.trainable_variables)
-        self.critic.optimizer.apply_gradients(
-            zip(critic_grad, self.critic.trainable_variables))
+            critic_loss, self.centralized_critic.trainable_variables)
+        self.centralized_critic_optimizer.apply_gradients(
+            zip(critic_grad, self.centralized_critic.trainable_variables))
 
-        # Update actor network using agent-specific states
+        # Update the actor network of the current agent
         with tf.GradientTape() as tape:
+            # Predict new actions based on the current agent's state
             new_actions = self.actor(agent_states, training=True)
-            critic_value = self.critic([states, new_actions], training=True)
+
+            # Assuming self.agent_idx corresponds to the index of the current agent
+            # and each agent has an action dimension of 5 (since new_actions shape is (32, 5))
+            # Calculate total number of agents
+            num_agents = joint_action.shape[1] // 5
+            action_dim_per_agent = 5
+
+            # Calculate the start and end indices for slicing
+            start_idx = self.agent_idx * action_dim_per_agent
+            end_idx = start_idx + action_dim_per_agent
+
+            # Replace the actions of the current agent in joint_action with new_actions
+            new_joint_action = np.concatenate([
+                # Actions before the current agent
+                joint_action[:, :start_idx],
+                new_actions,      # New actions for the current agent
+                # Actions after the current agent
+                joint_action[:, end_idx:]
+            ], axis=-1)
+            agent_logger.info(f"new agent actions shape: {new_actions.shape}")
+            agent_logger.info(
+                f"the joint action shape : {new_joint_action.shape}")
+            agent_logger.info(f"the joint state shape : {joint_state.shape}")
+
+            critic_value = self.centralized_critic(
+                [joint_state, new_joint_action], training=True)
             actor_loss = -tf.math.reduce_mean(critic_value)
         actor_grad = tape.gradient(actor_loss, self.actor.trainable_variables)
-        self.actor.optimizer.apply_gradients(
+        self.actor_optimizer.apply_gradients(
             zip(actor_grad, self.actor.trainable_variables))
-
-        # Soft update target networks
-        self.update_target_networks()
-
-        # Decay epsilon
-        self.epsilon = max(self.epsilon_min, self.epsilon_decay * self.epsilon)
 
         # Log updates and process
         agent_logger.info(f"Updated epsilon: {self.epsilon}")

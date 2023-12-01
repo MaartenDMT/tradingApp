@@ -8,45 +8,30 @@ from tensorflow.keras.layers import (LSTM, Add, Concatenate, Conv1D, Dense,
 from util.agent_utils import transformer_block
 
 
-class CriticNetwork(keras.Model):
-    def __init__(self):
-        super(CriticNetwork, self).__init__()
-        # Layers for processing state input
-        self.state_d1 = Dense(64, activation='relu')
-        self.state_d2 = Dense(32, activation='relu')
+class CentralizedCriticNetwork(keras.Model):
+    def __init__(self, num_agents):
+        super(CentralizedCriticNetwork, self).__init__()
 
-        # Adjust these layers to match the size of your action inputs
-        # Assuming the action input size is 3
-        # First layer for action input
-        self.action_d1 = Dense(64, activation='relu')
-        # Second layer for action input
-        self.action_d2 = Dense(32, activation='relu')
-
-        # Concatenation layer
-        self.concat = Concatenate()
-
-        # Further layers after concatenation
-        self.d3 = Dense(32, activation='relu')
-        self.d4 = Dense(32, activation='relu')
-        self.output_layer = Dense(1, activation=None)
+        # Define layers for the Centralized Critic Network
+        self.d1 = Dense(64, activation='relu', input_shape=(26,))
+        self.d2 = Dense(64, activation='relu')
+        self.output_layer = Dense(num_agents, activation=None)
 
     def call(self, inputs):
-        state_input, action_input = inputs
+        joint_state, joint_action = inputs
 
-        # Process state input
-        state_flattened = Flatten()(state_input)
-        state_out = self.state_d1(state_flattened)
-        state_out = self.state_d2(state_out)
+        # Flatten inputs if they're not already flat
+        joint_state_flattened = Flatten()(joint_state)
+        joint_action_flattened = Flatten()(joint_action)
 
-        # Process action input
-        action_flattened = Flatten()(action_input)
-        action_out = self.action_d1(action_flattened)
-        action_out = self.action_d2(action_out)
+        # Concatenate joint state and joint action inputs
+        concatenated = Concatenate()(
+            [joint_state_flattened, joint_action_flattened])
 
-        # Concatenate processed state and action outputs
-        concatenated = self.concat([state_out, action_out])
-        x = self.d3(concatenated)
-        x = self.d4(x)
+        # Pass through dense layers
+        x = self.d1(concatenated)
+        x = self.d2(x)
+
         return self.output_layer(x)
 
 

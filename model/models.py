@@ -407,7 +407,8 @@ class ReinforcementTabModel:
         self.rl_logger = logger['rl']
         self.presenter = presenter
         self.model_logger.info("loading the reinforcement tab model")
-        self.features = ['open', 'high', 'low', 'close', 'volume']
+        self.features = ['open', 'high', 'low',
+                         'close', 'volume', 'portfolio_balance']
         self.result = None
 
         # Define a parameter grid with hyperparameters and their possible values
@@ -436,11 +437,11 @@ class ReinforcementTabModel:
 
         # self.rl_logger.info(
         #     f"Performance with data {env.env_data}")
-        # self.rl_logger.info(
-        #     f"observation space: {env.observation_space.shape}")
-        # self.rl_logger.info(
-        #     f"look back: {env.look_back}")
-        # self.rl_logger.info(self.param_grid)
+        self.rl_logger.info(
+            f"observation space: {env.observation_space.shape}")
+        self.rl_logger.info(
+            f"look back: {env.look_back}")
+        self.rl_logger.info(self.param_grid)
 
         agent = MAPDDGAgent(**self.param_grid, env=env, num_agents=num_agents)
 
@@ -459,8 +460,7 @@ class ReinforcementTabModel:
             observation = env.reset()  # Observations for all agents
             while not all(done):
                 agent_actions = agent.choose_actions(observation)
-                observation_, reward, info, done = env.step(
-                    agent_actions[i])
+                observation_, reward, info, done = env.step(agent_actions)
 
                 # Check if reward is a scalar and convert it to a list if necessary
                 if np.isscalar(reward):

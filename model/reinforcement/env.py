@@ -23,14 +23,15 @@ class MultiAgentEnvironment:
     def __init__(self, num_agents, *args, **kwargs):
         self.num_agents = num_agents
         self.agents = [Environment(*args, **kwargs) for _ in range(num_agents)]
+
+        self.action_spaces = [agent.action_space for agent in self.agents]
+        self.observation_spaces = [
+            agent.observation_space for agent in self.agents]
+        self.look_backs = [agent.look_back for agent in self.agents]
+
         self.action_space = self.get_action_space()
         self.observation_space = self.get_observation_space()
         self.look_back = self.get_look_back()
-
-        self.action_space = [agent.action_space for agent in self.agents]
-        self.observation_space = [
-            agent.observation_space for agent in self.agents]
-        self.look_back = [agent.look_back for agent in self.agents]
 
     def reset(self):
         observations = [agent.reset() for agent in self.agents]
@@ -47,13 +48,13 @@ class MultiAgentEnvironment:
         return states, rewards, infos, dones
 
     def get_action_space(self):
-        return self.action_space[0]
+        return self.action_spaces[0]
 
     def get_observation_space(self):
-        return self.observation_space[0]
+        return self.observation_spaces[0]
 
     def get_look_back(self):
-        return self.look_back[0]
+        return self.look_backs[0]
 
 
 class ActionSpace:
@@ -121,9 +122,12 @@ class Environment:
         self.trade_result = 0
 
     def _setup_observation_space(self):
-        self.observation_space = ObservationSpace(
-            len(self.env_data[self.features].columns))
+        # Get the number of features in the observation space
+        num_features = len(self.env_data[self.features].columns)
+
+        self.observation_space = ObservationSpace(num_features)
         self.look_back = 1
+
         env_logger.info(
             f"Environment initialized with symbol {self.symbol} and features {self.features}. Observation space shape: {self.observation_space.shape}, lookback: {self.look_back}")
 
@@ -170,6 +174,8 @@ class Environment:
         self.original_data.dropna(inplace=True)
 
         self.original_data['last_price'] = self.original_data['close'].shift(1)
+        # Add portfolio_balance as a new column in env_data
+        self.original_data['portfolio_balance'] = self.portfolio_balance
         self.env_data = self.original_data[self.features].copy()
         self.original_data['r'] = np.log(
             self.env_data['close'] / self.env_data['close'].shift(int(self.config['env']['shifts'])))
@@ -230,6 +236,7 @@ class Environment:
         env_logger.info(f"STEP: Action taken: {action}")
         # Extract the current row data from the raw dataframe
         df_row_raw = self.original_data.iloc[self.bar]
+        env_row_raw = self.env_data.iloc[self.bar].copy()
 
         if self.bar > 1:
             self.last_price = self.original_data.iloc[self.bar - 1]['close']
@@ -242,6 +249,7 @@ class Environment:
 
         # Execute trade or update balance based on action
         self.trade_result = self.execute_trade(action, self.current_price)
+        env_row_raw['portfolio_balance'] = self.portfolio_balance
         self.pnl = self.tradingEnv.calculate_pnl()
 
         # Calculate reward
@@ -276,6 +284,7 @@ class Environment:
             env_logger.error(
                 f'there is no environment with an action space of {self.action_space.n}')
             return None
+
         return trade_result
 
     def calculate_reward(self, action, df_row_raw):
@@ -442,7 +451,7 @@ class Environment:
 
         return reward
 
-    def combined_reward(self, market_condition_reward, financial_outcome_reward, risk_adjusted_reward, drawdown_penalty, trading_penalty, weights=(0.2, 0.5, 0.1, 0.05, 0.05)):
+    def combined_reward(self, market_condition_reward, financial_outcome_reward, risk_adjusted_reward, drawdown_penalty, trading_penalty, weights=(0.2, 0.5, 0.2, 0.05, 0.05)):
         """
         Combine different reward components into a single reward value.
 

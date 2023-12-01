@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class Replaybuffer:
+class ReplayBuffer:
     def __init__(self, max_size, num_agents, state_shape, action_dim):
         self.mem_size = max_size
         self.num_agents = num_agents
@@ -17,14 +17,14 @@ class Replaybuffer:
         self.terminal_memory = np.zeros(
             (self.mem_size, num_agents), dtype=np.bool_)
 
-    def store_transition(self, state, action, reward, state_, done):
+    def store_transition(self, state, action, reward, state_, done, i):
         index = self.mem_cntr % self.mem_size
-        for i in range(self.num_agents):
-            self.state_memory[index, i] = state[i]
-            self.new_state_memory[index, i] = state_[i]
-            self.action_memory[index, i] = action[i]
-            self.reward_memory[index, i] = reward[i]
-            self.terminal_memory[index, i] = done[i]
+
+        self.state_memory[index, i] = state
+        self.new_state_memory[index, i] = state_
+        self.action_memory[index, i] = action
+        self.reward_memory[index, i] = reward
+        self.terminal_memory[index, i] = done
         self.mem_cntr += 1
 
     def sample_buffer(self, batch_size):
