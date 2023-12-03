@@ -1,6 +1,7 @@
 import tensorflow.keras as keras
 from keras.layers import BatchNormalization, Dropout
 from keras.regularizers import l2
+from tensorflow.keras import regularizers
 from tensorflow.keras.layers import (LSTM, Add, Concatenate, Conv1D, Dense,
                                      Flatten, GlobalAveragePooling1D,
                                      MaxPool1D)
@@ -9,12 +10,14 @@ from util.agent_utils import transformer_block
 
 
 class CentralizedCriticNetwork(keras.Model):
-    def __init__(self, num_agents):
+    def __init__(self, num_agents, fc1_dims=128, fc2_dims=128, l2_reg=0.01):
         super(CentralizedCriticNetwork, self).__init__()
 
-        # Define layers for the Centralized Critic Network
-        self.d1 = Dense(64, activation='relu', input_shape=(26,))
-        self.d2 = Dense(64, activation='relu')
+        # Define layers for the Centralized Critic Network with L2 regularization
+        self.fc1 = Dense(fc1_dims, activation='relu',
+                         kernel_regularizer=regularizers.l2(l2_reg))
+        self.fc2 = Dense(fc2_dims, activation='relu',
+                         kernel_regularizer=regularizers.l2(l2_reg))
         self.output_layer = Dense(num_agents, activation=None)
 
     def call(self, inputs):
@@ -29,24 +32,30 @@ class CentralizedCriticNetwork(keras.Model):
             [joint_state_flattened, joint_action_flattened])
 
         # Pass through dense layers
-        x = self.d1(concatenated)
-        x = self.d2(x)
+        x = self.fc1(concatenated)
+        x = self.fc2(x)
 
         return self.output_layer(x)
 
 
 class ActorNetwork(keras.Model):
-    def __init__(self, action_dimension):
+    def __init__(self, action_dimension, fc1_dims=128, fc2_dims=128, l2_reg=0.01):
         super(ActorNetwork, self).__init__()
-        self.d1 = Dense(64, activation='relu')
-        self.d2 = Dense(64, activation='relu')
-        self.output_layer = Dense(action_dimension, activation='softmax')
+        # First fully connected layer with L2 regularization
+        self.fc1 = Dense(fc1_dims, activation='relu',
+                         kernel_regularizer=regularizers.l2(l2_reg))
+        # Second fully connected layer with L2 regularization
+        self.fc2 = Dense(fc2_dims, activation='relu',
+                         kernel_regularizer=regularizers.l2(l2_reg))
+        # Output layer - replace 'softmax' with 'linear' for continuous action spaces
+        self.output_layer = Dense(
+            action_dimension, activation='softmax')
 
     def call(self, state_input):
         # Flatten the state input if it's not already 1D
         state_flattened = Flatten()(state_input)
-        x = self.d1(state_flattened)
-        x = self.d2(x)
+        x = self.fc1(state_flattened)
+        x = self.fc2(x)
         return self.output_layer(x)
 
 

@@ -132,76 +132,76 @@ class Environment:
             f"Environment initialized with symbol {self.symbol} and features {self.features}. Observation space shape: {self.observation_space.shape}, lookback: {self.look_back}")
 
     def _get_data(self):
-        # Get the file name from the configuration
         pickle_file_name = self.config['Path']['2020_30m_data']
 
-        # Check if the file exists
         if not os.path.exists(pickle_file_name):
-            env_logger.error('no data has been written')
-            return None
+            env_logger.error('No data has been written')
+            return pd.DataFrame()  # Return an empty DataFrame instead of None for consistency
 
-        # Load the data from the pickle file
         with open(pickle_file_name, 'rb') as f:
             data_ = pickle.load(f)
 
-        # Convert the dataframe (assuming `convert_df` is a function that processes your data)
+        if data_.empty:
+            env_logger.error("Loaded data is empty.")
+            return pd.DataFrame()
+
         data = convert_df(data_)
 
-        # Adjusting for the percentage
+        if data.empty or data.isnull().values.any():
+            env_logger.error("Converted data is empty or contains NaN values.")
+            return pd.DataFrame()
+
         percentage_to_keep = float(self.config['Data']['percentage']) / 100.0
         rows_to_keep = int(len(data) * percentage_to_keep)
         data = data.head(rows_to_keep)
 
-        rl_logger.info(f'df shape:{data.shape}')
-
+        rl_logger.info(f'Dataframe shape: {data.shape}')
         return data
 
     def _create_features(self):
         if self.original_data.empty:
-            env_logger.error("Data fetch failed or returned empty data.")
+            env_logger.error("Original data is empty.")
             return
 
-        env_logger.info("Data fetched successfully.")
-
-        # Generate features and tradex features
         feature = features(self.original_data.copy())
-
         processed_features = tradex_features(
             self.symbol, self.original_data.copy())
 
-        # Combine processed_features and feature into self.original_data
+        if feature.empty or processed_features.empty:
+            env_logger.error(
+                "Feature generation failed, resulting in empty data.")
+            return
+
         self.original_data = pd.concat([processed_features, feature], axis=1)
-        self.original_data.dropna(inplace=True)
+        self.original_data.dropna(inplace=True)  # Remove rows with NaN values
 
         self.original_data['last_price'] = self.original_data['close'].shift(1)
-        # Add portfolio_balance as a new column in env_data
         self.original_data['portfolio_balance'] = self.portfolio_balance
         self.env_data = self.original_data[self.features].copy()
-        self.original_data['r'] = np.log(
-            self.env_data['close'] / self.env_data['close'].shift(int(self.config['env']['shifts'])))
+
+        if self.env_data.isnull().values.any():
+            env_logger.error("NaN values detected in environment data.")
+            return
+
+        # Ensure there are no division by zero or invalid operations
+        self.original_data['r'] = np.log(self.env_data['close'] / self.env_data['close'].shift(
+            int(self.config['env']['shifts'])).replace(0, np.nan))
+        self.env_data['r'] = self.original_data['r'].fillna(
+            0)  # Fill NaNs resulted from log operation
 
         self.env_data['d'] = self.compute_action(self.original_data)
-        # Handle NaN values that will appear in the last 3 rows
-        self.env_data['d'] = self.env_data['d'].ffill()
-        self.env_data['r'] = self.original_data['r']
+        self.env_data['d'] = self.env_data['d'].fillna(
+            method='ffill')  # Forward fill to handle NaNs
 
-        self.env_data['b_wave'] = self.original_data['b_wave']
-        self.env_data['l_wave'] = self.original_data['l_wave']
-
-        self.env_data['rsi14'] = self.original_data['rsi14']
-        self.env_data['rsi40'] = self.original_data['rsi40']
-        self.env_data['ema_200'] = self.original_data['ema_200']
-        self.env_data['s_dots'] = self.original_data['s_dots']
-        self.env_data['dots'] = self.original_data['dots']
-
+        # Normalize data, handle any NaNs that may arise from normalization
         self.env_data = (self.env_data - self.env_data.mean()
                          ) / self.env_data.std()
+        # Replace any NaNs resulted from normalization
+        self.env_data.fillna(0, inplace=True)
+
         self.env_data['action'] = 0
 
-        env_logger.info(
-            f"create features: Full PROCESSED data {self.original_data}.")
-        env_logger.info(f"create features: observation Data {self.env_data}.")
-        env_logger.info("Features created.")
+        env_logger.info("Features created successfully.")
 
     def get_feature_names(self):
         return self.env_data.columns.tolist()
@@ -232,36 +232,34 @@ class Environment:
         return np.array(state_slice, dtype=np.float32)
 
     def step(self, action):
-
         env_logger.info(f"STEP: Action taken: {action}")
-        # Extract the current row data from the raw dataframe
+
+        # Validate index range
+        if self.bar >= len(self.original_data):
+            env_logger.error("Index out of range. Returning default state.")
+            return np.zeros_like(self.env_data.iloc[0]), 0, {}, True
+
         df_row_raw = self.original_data.iloc[self.bar]
         env_row_raw = self.env_data.iloc[self.bar].copy()
 
-        if self.bar > 1:
-            self.last_price = self.original_data.iloc[self.bar - 1]['close']
-        else:
-            # For the first step, initialize the last price to current price
-            self.last_price = df_row_raw['close']
+        self.last_price = df_row_raw['close'] if pd.notna(
+            df_row_raw['close']) else self.last_price
+        self.current_price = df_row_raw['close'] if pd.notna(
+            df_row_raw['close']) else self.last_price
 
-        # Updated for using df_row_raw
-        self.current_price = df_row_raw['close']
-
-        # Execute trade or update balance based on action
         self.trade_result = self.execute_trade(action, self.current_price)
         env_row_raw['portfolio_balance'] = self.portfolio_balance
-        self.pnl = self.tradingEnv.calculate_pnl()
+        self.pnl = self.tradingEnv.shortterm_pnl()
 
-        # Calculate reward
-        reward = self.calculate_reward(action, df_row_raw)
+        reward = self.calculate_reward(
+            action, df_row_raw) if pd.notna(df_row_raw).all() else 0
 
-        correct = ind.is_correct_action(
-            action, ind.get_optimal_action(reward))
-
+        correct = ind.is_correct_action(action, ind.get_optimal_action(reward))
         self._update_state_values(action, self.current_price, reward)
         done = self.is_episode_done()
 
-        state = self._get_state()
+        state = self._get_state() if pd.notna(
+            self._get_state()).all() else np.zeros_like(self._get_state())
         info = {}
 
         self._log_step_details(
@@ -419,7 +417,7 @@ class Environment:
         """
 
         # Get the PnL from the TradingEnvironment
-        pnl = self.tradingEnv.pnl
+        pnl = self.tradingEnv.longterm_pnl()
 
         if action == 1 and pnl > 0:  # Reward for holding if in profit
             # Calculate holding reward based on holding time and PnL
@@ -451,7 +449,7 @@ class Environment:
 
         return reward
 
-    def combined_reward(self, market_condition_reward, financial_outcome_reward, risk_adjusted_reward, drawdown_penalty, trading_penalty, weights=(0.2, 0.5, 0.2, 0.05, 0.05)):
+    def combined_reward(self, market_condition_reward, financial_outcome_reward, risk_adjusted_reward, drawdown_penalty, trading_penalty, weights=(0.2, 0.4, 0.2, 0.1, 0.1)):
         """
         Combine different reward components into a single reward value.
 
@@ -466,17 +464,26 @@ class Environment:
         """
         self.market_condition_reward_weighted = weights[0] * \
             market_condition_reward
+
         self.financial_outcome_reward_weighted = weights[1] * \
             financial_outcome_reward
-        self.risk_adjusted_reward_weighted = weights[2] * risk_adjusted_reward
+
+        self.risk_adjusted_reward_weighted = weights[2] * \
+            risk_adjusted_reward
         self.drawdown_penalty_weighted = weights[3] * drawdown_penalty
         self.trading_penalty_weighted = weights[4] * trading_penalty
 
-        combined = (self.market_condition_reward_weighted +
-                    self.financial_outcome_reward_weighted +
-                    self.risk_adjusted_reward_weighted +
-                    self.drawdown_penalty_weighted +
-                    self.trading_penalty_weighted)
+        rl_logger.info(
+            f"Financial Outcome Reward: { self.financial_outcome_reward_weighted}")
+        rl_logger.info(
+            f"Risk Adjusted Reward: { self.risk_adjusted_reward_weighted}")
+        rl_logger.info(f"Weights: {weights}")
+
+        combined = (round(self.market_condition_reward_weighted, 2) +
+                    round(self.financial_outcome_reward_weighted, 2) +
+                    round(self.risk_adjusted_reward_weighted, 2) +
+                    round(self.drawdown_penalty_weighted, 2) +
+                    round(self.trading_penalty_weighted, 2))
 
         return combined
 
@@ -570,7 +577,8 @@ class Environment:
 
 
 class TradingEnvironment:
-    def __init__(self, initial_balance: float, leverage, transaction_costs, trade_limit, drawdown_threshold, symbol):
+    def __init__(self, initial_balance: float, leverage, transaction_costs, trade_limit, drawdown_threshold, symbol, trading_mode='futures'):
+        self.trading_mode = trading_mode  # 'futures' or 'spot'
         self.initial_balance = initial_balance
         self.leverage = leverage
         self.transaction_costs = transaction_costs
@@ -666,14 +674,15 @@ class TradingEnvironment:
 
         # Reset entry price if positions are closed
         if self.open_positions['long'] == 0:
-            self.entry_prices['long'] = None
+            self.entry_prices['long'] = 0
         if self.open_positions['short'] == 0:
-            self.entry_prices['short'] = None
+            self.entry_prices['short'] = 0
 
         # Update tracking after trade
         self.update_position_tracking(action, current_price)
         self.update_current_price(current_price)
-        self.calculate_pnl()  # Update PnL after the trade
+        self.shortterm_pnl()
+        self.longterm_pnl()
 
         return trade_result, self.portfolio_balance
 
@@ -761,57 +770,47 @@ class TradingEnvironment:
             self.update_position_tracking(action, current_price)
 
         self.update_current_price(current_price)
-        self.calculate_pnl()  # Update PnL after the trade
+        self.shortterm_pnl()  # Update PnL after the trade
+        self.longterm_pnl()
 
         return trade_result, self.portfolio_balance, self.max_drawdown, self.max_portfolio_balance, self.stocks_held
 
-    def calculate_pnl(self):
-        """Calculate both short-term and long-term PnL."""
-        self.shortterm_pnl()
-        self.longterm_pnl()
-
     def shortterm_pnl(self):
-        """
-        Calculate the Profit and Loss (PnL) for the current portfolio.
+        if self.trading_mode == 'futures':
+            trading_volume = self.position_size
+        else:  # spot trading
+            trading_volume = self.stocks_held
 
-        Returns:
-            pnl_percentage (float): The calculated profit or loss as a percentage.
-        """
-        if self.stocks_held == 0:
-            return 0.0  # No open positions
+        pnl_long = (self.current_price -
+                    self.entry_prices['long']) * trading_volume if trading_volume > 0 else 0
+        pnl_short = (self.entry_prices['short'] - self.current_price) * \
+            abs(trading_volume) if trading_volume < 0 else 0
 
-        # Calculate PnL for long and short positions
-        # Assuming self.entry_price['long'] and self.entry_price['short'] are managed during trading
-        # Method to get the current price of the asset
-        pnl_long = (self.current_price - self.entry_price['long']) * \
-            self.stocks_held if self.stocks_held > 0 else 0
-        pnl_short = (self.entry_price['short'] - self.current_price) * \
-            abs(self.stocks_held) if self.stocks_held < 0 else 0
-
-        # Combine PnL from long and short positions
         total_pnl = pnl_long + pnl_short
-
-        # Calculate initial asset value for percentage calculation
-        initial_asset_value = self.initial_balance  # or other appropriate initial value
-
-        # Calculate PnL as a percentage
-        pnl_percentage = (total_pnl / initial_asset_value) * 100
-
+        pnl_percentage = (total_pnl / self.initial_balance) * \
+            100 if self.initial_balance != 0 else 0
         return pnl_percentage
 
     def longterm_pnl(self):
-        # Calculate the PnL based on current holdings, prices, and trade actions
-        # This method should be updated based on your specific requirements for PnL calculation
-        if self.stocks_held > 0:  # Long positions
-            pnl = (self.current_price -
-                   self.entry_prices['long']) * self.stocks_held
-        elif self.stocks_held < 0:  # Short positions
-            pnl = (self.entry_prices['short'] -
-                   self.current_price) * abs(self.stocks_held)
-        else:
-            pnl = 0
+        if self.trading_mode == 'futures':
+            trading_volume = self.position_size
+        else:  # spot trading
+            trading_volume = self.stocks_held
 
-        self.pnl = pnl
+        pnl = 0
+        if trading_volume > 0 and self.entry_prices['long'] is not None:
+            pnl += (self.current_price -
+                    self.entry_prices['long']) * trading_volume
+        elif trading_volume < 0 and self.entry_prices['short'] is not None:
+            pnl += (self.entry_prices['short'] -
+                    self.current_price) * abs(trading_volume)
+
+        # Calculate PnL as a percentage of the initial balance
+        pnl_percentage = (
+            pnl / self.initial_balance) if self.initial_balance != 0 else 0
+
+        self.pnl = pnl_percentage  # Update the pnl attribute to store the percentage
+        return pnl_percentage
 
     def update_position_tracking(self, action, current_price):
         """
@@ -831,7 +830,7 @@ class TradingEnvironment:
         elif action == 4:  # Sell Back (close long position)
             self.open_positions['long'] -= 1
             if self.open_positions['long'] == 0:
-                self.entry_prices['long'] = None
+                self.entry_prices['long'] = 0
 
         # Handling short positions
         if action == 0:  # Sell (open short)
@@ -844,7 +843,7 @@ class TradingEnvironment:
         elif action == 3:  # Buy Back (close short position)
             self.open_positions['short'] -= 1
             if self.open_positions['short'] == 0:
-                self.entry_prices['short'] = None
+                self.entry_prices['short'] = 0
 
     def update_current_price(self, current_price):
         self.current_price = current_price
@@ -854,3 +853,11 @@ class TradingEnvironment:
 
     def calculate_trading_penalty(self):
         return -1 * max(0, self.trade_count - self.trade_limit) / self.trade_limit
+
+    def execute_trade(self, action, current_price):
+        if self.trading_mode == 'futures':
+            return self.future_trading(action, current_price)
+        elif self.trading_mode == 'spot':
+            return self.spot_trading(action, current_price)
+        else:
+            raise ValueError("Invalid trading mode")
