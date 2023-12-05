@@ -1,6 +1,7 @@
 import glob
 import logging
 
+import numpy as np
 import pandas as pd
 
 
@@ -105,3 +106,5 @@ def best_csv(b_reward, acc) -> bool:
     return True
 
 
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))

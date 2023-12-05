@@ -18,7 +18,7 @@ class ReplayBuffer:
 
         self.state_memory[index] = state.reshape(-1)
         self.new_state_memory[index] = state_.reshape(-1)
-        self.action_memory[index] = action
+        self.action_memory[index] = action.reshape(-1)
         self.reward_memory[index] = reward
         self.terminal_memory[index] = done
 

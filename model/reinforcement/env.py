@@ -1,19 +1,21 @@
 import os
 import pickle
-import random
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import pandas_ta as ta
 
 import model.reinforcement.indicators as ind
 import util.loggers as loggers
+from model.reinforcement.rl_env.env_uttils import (ActionSpace,
+                                                   DynamicFeatureSelector,
+                                                   ObservationSpace,
+                                                   TradingEnvironment)
 from util.utils import convert_df, features, load_config, tradex_features
 
 logger = loggers.setup_loggers()
 env_logger = logger['env']
 rl_logger = logger['rl']
+
 
 # Constants
 EARLY_STOP_REWARD_THRESHOLD = -5.0
@@ -22,67 +24,47 @@ EARLY_STOP_REWARD_THRESHOLD = -5.0
 class MultiAgentEnvironment:
     def __init__(self, num_agents, *args, **kwargs):
         self.num_agents = num_agents
+        self.single_agent_mode = num_agents == 1  # Check if only one agent
         self.agents = [Environment(*args, **kwargs) for _ in range(num_agents)]
 
-        self.action_spaces = [agent.action_space for agent in self.agents]
-        self.observation_spaces = [
-            agent.observation_space for agent in self.agents]
-        self.look_backs = [agent.look_back for agent in self.agents]
-
-        self.action_space = self.get_action_space()
-        self.observation_space = self.get_observation_space()
-        self.look_back = self.get_look_back()
+        # Action space and observation space are set based on the first agent
+        self.action_space = self.agents[0].action_space
+        self.observation_space = self.agents[0].observation_space
+        self.look_back = self.agents[0].look_back
 
     def reset(self):
-        observations = [agent.reset() for agent in self.agents]
-        return observations
+        if self.single_agent_mode:
+            return self.agents[0].reset()  # Single agent reset
+        else:
+            return [agent.reset() for agent in self.agents]
 
     def step(self, actions):
-        states, rewards, infos, dones = [], [], [], []
-        for agent, action in zip(self.agents, actions):
-            state, reward, info, done = agent.step(action)
-            states.append(state)
-            rewards.append(reward)
-            infos.append(info)
-            dones.append(done)
-        return states, rewards, infos, dones
+        if self.single_agent_mode:
+            # Single action for single agent
+            return self.agents[0].step(actions)
+        else:
+            # Handle multiple agents
+            states, rewards, infos, dones = [], [], [], []
+            for agent, action in zip(self.agents, actions):
+                state, reward, info, done = agent.step(action)
+                states.append(state)
+                rewards.append(reward)
+                infos.append(info)
+                dones.append(done)
+            return states, rewards, infos, dones
 
+    # No changes needed for these methods as they already reference the first agent
     def get_action_space(self):
-        return self.action_spaces[0]
+        return self.action_space
 
     def get_observation_space(self):
-        return self.observation_spaces[0]
+        return self.observation_space
 
     def get_look_back(self):
-        return self.look_backs[0]
+        return self.look_back
 
-
-class ActionSpace:
-    """
-    Represents the space of possible actions.
-    Returns:
-    0 sell. 1 hold. 2 buy. 3 buy back short. 4. sell back long
-    """
-
-    def __init__(self, n):
-        self.n = n
-        self.allowed: int = self.n - 1
-
-    def sample(self):
-        action = random.randint(0, self.allowed)
-        if action > 4:
-            env_logger.error(f'SAMPLE: not allowed action, action {action}')
-            raise ValueError(
-                f"Invalid action {action}. Action should be between 0 and 2.")
-        env_logger.info(f"SAMPLE: random action generated: {action}")
-        return action
-
-
-class ObservationSpace:
-    """Defines the observation space shape."""
-
-    def __init__(self, n) -> None:
-        self.shape = (n,)
+    def update_and_adjust_features(self):
+        [agent.update_and_adjust_features() for agent in self.agents]
 
 
 class Environment:
@@ -94,8 +76,6 @@ class Environment:
         self.limit, self.time = limit, time
         self.action_space = ActionSpace(actions)
         self.min_accuracy = min_acc
-        self.portfolio_balance = float(
-            self.config['tradingenv']['portfolio_balance'])
         self._initialize_environment()
 
     def _initialize_environment(self):
@@ -112,7 +92,7 @@ class Environment:
         self.trade_limit, self.threshold = 5, 0.2
         self.last_price, self.last_accuracy = None, None
         self.high_acc_counter, self.patience = 0, int(
-            self.config['env']['patience'])
+            self.config['Env']['patience'])
         self.wait, self.high_acc_threshold = 0, 5
         self.stocks_held = 0.0
         self.max_portfolio_balance, self.total_reward = 0, 0
@@ -120,16 +100,31 @@ class Environment:
         self.accuracy, self.holding_time = 0, 0
         self.correct_actions, self.last_action = 0, None
         self.trade_result = 0
+        # List to store recent trade results
+        self.recent_trade_results = [0] * 5
+        self.current_risk_level = 0     # Initialize current risk level
+        self.market_volatility = 0      # Initialize market volatility
+        self.portfolio_balance = float(
+            self.config['Tradingenv']['portfolio_balance'])
 
     def _setup_observation_space(self):
-        # Get the number of features in the observation space
-        num_features = len(self.env_data[self.features].columns)
+        # Calculate the original number of features in the observation space
+        num_original_features = len(self.env_data[self.features].columns)
 
-        self.observation_space = ObservationSpace(num_features)
+        # Calculate the size of the new elements added to the state
+        num_recent_trade_results = 5  # Assuming we store the last 5 trade results
+        num_additional_metrics = 2    # For current risk level and market volatility
+
+        # Calculate the total number of features in the enhanced observation space
+        total_features = num_original_features + \
+            num_recent_trade_results + num_additional_metrics
+
+        # Update the observation space to reflect the new shape
+        self.observation_space = ObservationSpace(total_features)
         self.look_back = 1
 
         env_logger.info(
-            f"Environment initialized with symbol {self.symbol} and features {self.features}. Observation space shape: {self.observation_space.shape}, lookback: {self.look_back}")
+            f"Environment initialized with symbol {self.symbol}, features {self.features}, and enhanced observation space. Observation space shape: {self.observation_space.shape}, lookback: {self.look_back}")
 
     def _get_data(self):
         pickle_file_name = self.config['Path']['2020_30m_data']
@@ -175,6 +170,9 @@ class Environment:
         self.original_data = pd.concat([processed_features, feature], axis=1)
         self.original_data.dropna(inplace=True)  # Remove rows with NaN values
 
+        # Initialize DynamicFeatureSelector
+        self.feature_selector = DynamicFeatureSelector(self.original_data)
+
         self.original_data['last_price'] = self.original_data['close'].shift(1)
         self.original_data['portfolio_balance'] = self.portfolio_balance
         self.env_data = self.original_data[self.features].copy()
@@ -185,13 +183,13 @@ class Environment:
 
         # Ensure there are no division by zero or invalid operations
         self.original_data['r'] = np.log(self.env_data['close'] / self.env_data['close'].shift(
-            int(self.config['env']['shifts'])).replace(0, np.nan))
+            int(self.config['Env']['shifts'])).replace(0, np.nan))
         self.env_data['r'] = self.original_data['r'].fillna(
             0)  # Fill NaNs resulted from log operation
 
         self.env_data['d'] = self.compute_action(self.original_data)
-        self.env_data['d'] = self.env_data['d'].fillna(
-            method='ffill')  # Forward fill to handle NaNs
+        # Forward fill to handle NaNs
+        self.env_data['d'] = self.env_data['d'].ffill()
 
         # Normalize data, handle any NaNs that may arise from normalization
         self.env_data = (self.env_data - self.env_data.mean()
@@ -203,8 +201,19 @@ class Environment:
 
         env_logger.info("Features created successfully.")
 
-    def get_feature_names(self):
-        return self.env_data.columns.tolist()
+    def update_and_adjust_features(self):
+        # This method should be called periodically to update and adjust features
+        # Example: You can call this method after every trading action or at regular intervals
+
+        # Evaluate feature performance based on your criteria (profitability, accuracy, etc.)
+        for feature in self.feature_selector.get_features():
+            performance_impact = self.feature_selector.evaluate_feature_performance(
+                feature, self.original_data,  'r')
+            self.feature_selector.update_feature_performance(
+                feature, performance_impact)
+
+        # Adjust features based on performance
+        self.feature_selector.adjust_features()
 
     def _get_state(self):
         env_logger.info("STATE:get the state.")
@@ -227,9 +236,22 @@ class Environment:
         return state
 
     def _extract_state(self, bar):
-        state_slice = self.env_data[self.features].iloc[bar -
-                                                        self.look_back:bar].values
-        return np.array(state_slice, dtype=np.float32)
+        # Extract the original state slice based on existing features
+        original_state_slice = self.env_data[self.features].iloc[bar -
+                                                                 self.look_back:bar].values.flatten()
+
+        # Combine all elements to form the complete state
+        complete_state = np.concatenate([original_state_slice, self.recent_trade_results, [
+                                        self.current_risk_level, self.market_volatility]])
+
+        # Check for large values and normalize if necessary
+        if np.any(np.abs(complete_state) > np.finfo(np.float32).max):
+            env_logger.warning(
+                "Overflow detected in state values, applying normalization.")
+            complete_state = (
+                complete_state - np.mean(complete_state)) / np.std(complete_state)
+
+        return np.array(complete_state, dtype=np.float32)
 
     def step(self, action):
         env_logger.info(f"STEP: Action taken: {action}")
@@ -247,7 +269,7 @@ class Environment:
         self.current_price = df_row_raw['close'] if pd.notna(
             df_row_raw['close']) else self.last_price
 
-        self.trade_result = self.execute_trade(action, self.current_price)
+        self.execute_trade(action, self.current_price)
         env_row_raw['portfolio_balance'] = self.portfolio_balance
         self.pnl = self.tradingEnv.shortterm_pnl()
 
@@ -271,54 +293,29 @@ class Environment:
         return state, reward, info, done
 
     def execute_trade(self, action, current_price):
-        if self.action_space.n in [5]:
-            trade_result, self.portfolio_balance = self.tradingEnv.future_trading(
-                action, current_price)
-        elif self.action_space.n == 4:
-            # Unpack all returned values from spot_trading
-            trade_result, self.portfolio_balance, self.max_drawdown, self.max_portfolio_balance, self.stocks_held = self.tradingEnv.spot_trading(
-                action, current_price)
-        else:
-            env_logger.error(
-                f'there is no environment with an action space of {self.action_space.n}')
-            return None
-
-        return trade_result
-
-    def calculate_reward(self, action, df_row_raw):
-        # Here, add logic to compute the reward
-        market_condition_reward = self.compute_market_condition_reward(
-            action, df_row_raw)
-        financial_outcome_reward = self.compute_financial_outcome_reward(
-            action)
-        risk_adjusted_reward = self.compute_risk_adjusted_reward(
-            self.env_data['r'])  # assuming self.env_data['r'] holds returns history
-        drawdown_penalty = self.tradingEnv.calculate_drawdown_penalty()
-        trading_penalty = self.tradingEnv.calculate_trading_penalty()
-
-        return self.combined_reward(market_condition_reward, financial_outcome_reward,
-                                    risk_adjusted_reward, drawdown_penalty, trading_penalty)
+        self.trade_result, self.portfolio_balance = self.tradingEnv.execute_trade(
+            action, current_price)
 
     def _get_conditions(self, df_row):
         """Helper method to centralize the conditions logic."""
         current_bar_index = self.bar
 
         # Adjusting to use self.original_data
-        super_buy: bool = (df_row['dots'] == 1) & [df_row['l_wave'] >= -50]
-        super_sell: bool = (df_row['dots'] == -1) & [df_row['l_wave'] >= 50]
-        low_volatility: bool = (df_row['rsi14'] >= 45) & (
-            df_row['rsi14'] <= 55)
-        strong_upward_movement: bool = df_row['rsi14'] > 70
-        strong_downward_movement: bool = df_row['rsi14'] < 30
-        going_up_condition: bool = (df_row['close'] > df_row['last_price']) & (
+        super_buy = (df_row['dots'] == 1) & (df_row['l_wave'] >= -50)
+        super_sell = (df_row['dots'] == -1) & (df_row['l_wave'] >= 50)
+        low_volatility = (df_row['rsi14'] >= 45) & (df_row['rsi14'] <= 55)
+        strong_upward_movement = df_row['rsi14'] > 70
+        strong_downward_movement = df_row['rsi14'] < 30
+        going_up_condition = (df_row['close'] > df_row['last_price']) & (
             df_row['close'] > df_row['ema_200']) & (df_row['rsi40'] > 50)
-        going_down_condition: bool = (df_row['close'] < df_row['last_price']) & (
+        going_down_condition = (df_row['close'] < df_row['last_price']) & (
             df_row['close'] < df_row['ema_200']) & (df_row['rsi40'] < 50)
 
-        strong_buy_signal = strong_upward_movement & ~ind.is_increasing_trend(self.original_data,
-                                                                              current_bar_index)
-        strong_sell_signal = strong_downward_movement & ~ind.is_increasing_trend(self.original_data,
-                                                                                 current_bar_index)  # ~ is the element-wise logical NOT
+        # Use parentheses for each condition to avoid ambiguity
+        strong_buy_signal = strong_upward_movement & ~ind.is_increasing_trend(
+            self.original_data, self.bar)
+        strong_sell_signal = strong_downward_movement & ~ind.is_increasing_trend(
+            self.original_data, self.bar)
 
         # SHORT
         short_stochastic_signal = ~ind.short_stochastic_condition(
@@ -344,6 +341,20 @@ class Environment:
 
         return short_stochastic_signal, short_bollinger_outside, long_stochastic_signal, long_bollinger_outside, low_volatility, going_up_condition, going_down_condition, strong_buy_signal, strong_sell_signal, super_buy, super_sell, macd_buy, high_volatility, adx_signal, psar_signal, cdl_pattern, volume_break, resistance_break_signal
 
+    def calculate_reward(self, action, df_row_raw):
+        # Here, add logic to compute the reward
+        market_condition_reward = self.compute_market_condition_reward(
+            action, df_row_raw)
+        financial_outcome_reward = self.compute_financial_outcome_reward(
+            action)
+        risk_adjusted_reward = ind.compute_risk_adjusted_reward(
+            self.original_data['r'])  # assuming self.env_data['r'] holds returns history
+        drawdown_penalty = self.tradingEnv.calculate_drawdown_penalty()
+        trading_penalty = self.tradingEnv.calculate_trading_penalty()
+
+        return self.combined_reward(market_condition_reward, financial_outcome_reward,
+                                    risk_adjusted_reward, drawdown_penalty, trading_penalty)
+
     def compute_action(self, df):
         return df.apply(lambda row: self._compute_action_for_row(row), axis=1)
 
@@ -358,7 +369,8 @@ class Environment:
                               short_stochastic_signal, short_bollinger_outside]
         neutral_conditions = [going_up_condition,
                               going_down_condition, low_volatility]
-
+        print(
+            f'neutral condition up & down: {going_up_condition} {going_down_condition}')
         if any(neutral_conditions):
             self.holding_time += 1
             return 1  # Neutral action
@@ -377,14 +389,12 @@ class Environment:
         """Compute and return the reward based on the current action, data row, and current price."""
         short_stochastic_signal, short_bollinger_outside, long_stochastic_signal, long_bollinger_outside, low_volatility, going_up_condition, going_down_condition, strong_buy_signal, strong_sell_signal, super_buy, super_sell, macd_buy, high_volatility, adx_signal, psar_signal, cdl_pattern, volume_break, resistance_break_signal = self._get_conditions(
             df_row)
-
         bullish_conditions = [strong_buy_signal, super_buy, macd_buy, long_stochastic_signal, long_bollinger_outside,
                               high_volatility, adx_signal, psar_signal, cdl_pattern, volume_break, resistance_break_signal]
         bearish_conditions = [strong_sell_signal, super_sell,
                               short_stochastic_signal, short_bollinger_outside]
         neutral_conditions = [going_up_condition,
                               going_down_condition, low_volatility]
-
         if action == 2 and any(bullish_conditions):
             if super_buy:
                 return 2  # Higher reward for correctly identifying a strong buy signal
@@ -419,33 +429,18 @@ class Environment:
         # Get the PnL from the TradingEnvironment
         pnl = self.tradingEnv.longterm_pnl()
 
-        if action == 1 and pnl > 0:  # Reward for holding if in profit
-            # Calculate holding reward based on holding time and PnL
+        # Reward for holding if in profit
+        if action == 1 and pnl > 0:
             holding_reward = ind.calculate_holding_reward(
                 self.holding_time, pnl)
             reward = holding_reward
+        elif action == 1 and pnl < 0:  # Penalize for holding if in loss
+            holding_penalty = ind.calculate_holding_penalty(
+                self.holding_time, pnl)
+            reward = holding_penalty
         else:
             # For buy or sell actions, the reward is directly based on PnL
             reward = pnl
-
-        return reward
-
-    def compute_risk_adjusted_reward(self, returns_history):
-        """
-        Compute the reward based on action and risk.
-
-        Parameters:
-        - returns_history: Historical returns for risk calculation.
-
-        Returns:
-        - Calculated reward.
-        """
-        # Calculate Sharpe Ratio for risk-adjusted return
-        sharpe_ratio = ind.calculate_sharpe_ratio(returns_history)
-
-        # Combine profit/loss and risk-adjusted return
-        # Here you can decide how to weigh these components
-        reward = sharpe_ratio  # Simple additive model as an example
 
         return reward
 
@@ -514,6 +509,19 @@ class Environment:
         self.total_reward = round(self.total_reward + reward, 2)
         self.accuracy = self.calculate_accuracy()
 
+        # Update recent trade results
+        self.recent_trade_results.append(self.trade_result)
+        if len(self.recent_trade_results) > 5:  # Keep only the last 5 results
+            self.recent_trade_results.pop(0)
+
+        # Update current risk level
+        self.current_risk_level = ind.calculate_current_risk_level(
+            self.recent_trade_results)
+
+        # Update market volatility
+        self.market_volatility = ind.calculate_market_volatility(
+            self.original_data, self.bar)
+
     def _log_step_details(self, reward, done, *conditions, correct=False):
 
         # Log reward component details
@@ -575,289 +583,5 @@ class Environment:
             return True
         return False
 
-
-class TradingEnvironment:
-    def __init__(self, initial_balance: float, leverage, transaction_costs, trade_limit, drawdown_threshold, symbol, trading_mode='futures'):
-        self.trading_mode = trading_mode  # 'futures' or 'spot'
-        self.initial_balance = initial_balance
-        self.leverage = leverage
-        self.transaction_costs = transaction_costs
-        self.symbol = symbol
-        self.trade_limit = trade_limit
-        self.drawdown_threshold = drawdown_threshold
-        self.reset()
-
-    def reset(self):
-        self.portfolio_balance = self.initial_balance
-        self.open_positions = {'long': 0, 'short': 0}
-        self.entry_prices = {'long': None, 'short': None}
-        self.max_drawdown, self.max_portfolio_balance = 0, 0
-        self.stocks_held, self.position_size = 0.0, 0
-        self.current_price, self.pnl = 0, 0.0
-        self.trade_count = 0
-
-    def future_trading(self, action, current_price):
-        """
-        Execute a trade based on the action.
-        Actions: 0: Sell (open short), 2: Buy (open long), 
-                 3: Buy Back (close short), 4: Sell Back (close long)
-
-        Parameters:
-        - action (int): Action taken.
-        - current_price (float): Current stock price.
-
-        Returns:
-        - float: The profit or loss from the trade.
-        - float: The updated portfolio balance.
-        """
-        # if action not in [0, 1, 2, 3, 4]:
-        #     raise ValueError(
-        #         "Invalid action. Action must be 0 (sell), 2 (buy), 3 (buy back), or 4 (sell back).")
-
-        trade_result: float = 0.0
-        # No action taken for 'Hold'
-        if action == 1:
-            env_logger.info("Hold action taken. No change in portfolio.")
-            return 0, self.portfolio_balance
-        elif action == 0:  # Sell (open a short position)
-            self.open_positions['short'] += 1
-            self.entry_prices['short'] = current_price if self.entry_prices['short'] is None else self.entry_prices['short']
-            self.position_size += 1
-
-        elif action == 2:  # Buy (open a long position)
-            self.open_positions['long'] += 1
-            self.entry_prices['long'] = current_price if self.entry_prices['long'] is None else self.entry_prices['long']
-            self.position_size += 1
-
-        elif action == 3:  # Buy Back (close a short position)
-            if self.open_positions['short'] <= 0:
-                env_logger.info(
-                    "Attempted to close a short position when none were open.")
-                return 0, self.portfolio_balance  # Return zero trade result and current balance
-            trade_result = (
-                self.entry_prices['short'] - current_price) * self.leverage
-            self.open_positions['short'] -= 1
-            self.position_size -= 1
-        elif action == 4:  # Sell Back (close a long position)
-            if self.open_positions['long'] <= 0:
-                env_logger.info(
-                    "Attempted to close a long position when none were open.")
-                return 0, self.portfolio_balance  # Return zero trade result and current balance
-            trade_result = (
-                current_price - self.entry_prices['long']) * self.leverage
-            self.open_positions['long'] -= 1
-            self.position_size -= 1
-
-        if action in [0, 2]:
-            # Update trade count
-            self.trade_count += 1
-
-        # Calculate the transaction cost as a percentage of the trade value
-        trade_value = current_price * self.position_size
-        transaction_cost = trade_value * self.transaction_costs
-
-        # Apply transaction costs
-        trade_result -= transaction_cost
-
-        # Update portfolio balance
-        self.portfolio_balance += trade_result
-
-        # Update max portfolio balance
-        self.max_portfolio_balance = max(
-            self.max_portfolio_balance, self.portfolio_balance)
-
-        # Calculate and update drawdown
-        if self.portfolio_balance < self.max_portfolio_balance:
-            current_drawdown = (self.max_portfolio_balance -
-                                self.portfolio_balance) / self.max_portfolio_balance
-            self.max_drawdown = max(self.max_drawdown, current_drawdown)
-
-        # Reset entry price if positions are closed
-        if self.open_positions['long'] == 0:
-            self.entry_prices['long'] = 0
-        if self.open_positions['short'] == 0:
-            self.entry_prices['short'] = 0
-
-        # Update tracking after trade
-        self.update_position_tracking(action, current_price)
-        self.update_current_price(current_price)
-        self.shortterm_pnl()
-        self.longterm_pnl()
-
-        return trade_result, self.portfolio_balance
-
-    def spot_trading(self, action, current_price):
-        """
-        Update portfolio balance based on the action taken for spot trading.
-        Actions: 0: Sell (or short sell), 1: Hold, 2: Buy, 5: Buy Back (close short position)
-        Parameters:
-        - action (int): Action taken.
-        - current_price (float): Current stock price.
-        Returns:
-        - Tuple: Trade result, updated portfolio balance, max drawdown, max portfolio balance, and stocks held.
-        """
-
-        env_logger.info(
-            f"Starting balance: ${self.portfolio_balance:.2f}, Stocks held: {self.stocks_held}")
-
-        amount_to_trade = 0.1 * self.portfolio_balance
-        trade_result: float = 0.0
-        # No action taken for 'Hold'
-        if action == 1:
-            env_logger.info("Hold action taken. No change in portfolio.")
-            return 0, self.portfolio_balance, self.max_drawdown, self.max_portfolio_balance, self.stocks_held
-
-        elif action == 0:  # Sell or short sell
-            if self.stocks_held > 0:  # Selling long position
-                stocks_to_sell = min(
-                    self.stocks_held, amount_to_trade / current_price)
-                trade_result = stocks_to_sell * \
-                    (current_price - self.entry_price['long'])
-                self.stocks_held -= stocks_to_sell
-                env_logger.info(
-                    f"Selling {stocks_to_sell:.2f} stocks at ${current_price:.2f} each.")
-            else:  # Short selling
-                stocks_to_short = amount_to_trade / current_price
-                self.stocks_held -= stocks_to_short  # Negative value for short positions
-                self.entry_price['short'] = current_price
-                env_logger.info(
-                    f"Short selling {stocks_to_short:.2f} stocks at ${current_price:.2f} each.")
-
-        elif action == 2:  # Buy
-            stocks_to_buy = min(amount_to_trade / current_price,
-                                self.portfolio_balance / current_price)
-            self.stocks_held += stocks_to_buy
-            self.entry_price['long'] = current_price if self.stocks_held > 0 else None
-            env_logger.info(
-                f"Buying {stocks_to_buy:.2f} stocks at ${current_price:.2f} each.")
-
-        elif action == 3:  # Buy Back (closing short position)
-            if self.stocks_held < 0:  # Has short positions
-                stocks_to_buy_back = min(
-                    abs(self.stocks_held), amount_to_trade / current_price)
-                trade_result = stocks_to_buy_back * \
-                    (self.entry_price['short'] - current_price)
-                self.stocks_held += stocks_to_buy_back
-                env_logger.info(
-                    f"Buying back {stocks_to_buy_back:.2f} shorted stocks at ${current_price:.2f} each.")
-            else:
-                env_logger.info("No short positions to buy back.")
-
-        if action in [0, 2]:
-            # Update trade count
-            self.trade_count += 1
-
-        # Calculate transaction cost and update portfolio balance
-        trade_value = current_price * \
-            abs(stocks_to_sell if action == 0 else stocks_to_buy)
-        transaction_cost = trade_value * self.transaction_costs
-        trade_result -= transaction_cost
-        self.portfolio_balance += trade_result
-
-        # Update max portfolio balance and drawdown
-        self.max_portfolio_balance = max(
-            self.max_portfolio_balance, self.portfolio_balance)
-        if self.portfolio_balance < self.max_portfolio_balance:
-            current_drawdown = 1 - \
-                (self.portfolio_balance / self.max_portfolio_balance)
-            self.max_drawdown = max(self.max_drawdown, current_drawdown)
-
-        env_logger.info(
-            f"Updated balance: ${self.portfolio_balance:.2f}, Stocks held: {self.stocks_held}")
-
-        # Update tracking after trade
-        if action in [0, 2, 3]:
-            self.update_position_tracking(action, current_price)
-
-        self.update_current_price(current_price)
-        self.shortterm_pnl()  # Update PnL after the trade
-        self.longterm_pnl()
-
-        return trade_result, self.portfolio_balance, self.max_drawdown, self.max_portfolio_balance, self.stocks_held
-
-    def shortterm_pnl(self):
-        if self.trading_mode == 'futures':
-            trading_volume = self.position_size
-        else:  # spot trading
-            trading_volume = self.stocks_held
-
-        pnl_long = (self.current_price -
-                    self.entry_prices['long']) * trading_volume if trading_volume > 0 else 0
-        pnl_short = (self.entry_prices['short'] - self.current_price) * \
-            abs(trading_volume) if trading_volume < 0 else 0
-
-        total_pnl = pnl_long + pnl_short
-        pnl_percentage = (total_pnl / self.initial_balance) * \
-            100 if self.initial_balance != 0 else 0
-        return pnl_percentage
-
-    def longterm_pnl(self):
-        if self.trading_mode == 'futures':
-            trading_volume = self.position_size
-        else:  # spot trading
-            trading_volume = self.stocks_held
-
-        pnl = 0
-        if trading_volume > 0 and self.entry_prices['long'] is not None:
-            pnl += (self.current_price -
-                    self.entry_prices['long']) * trading_volume
-        elif trading_volume < 0 and self.entry_prices['short'] is not None:
-            pnl += (self.entry_prices['short'] -
-                    self.current_price) * abs(trading_volume)
-
-        # Calculate PnL as a percentage of the initial balance
-        pnl_percentage = (
-            pnl / self.initial_balance) if self.initial_balance != 0 else 0
-
-        self.pnl = pnl_percentage  # Update the pnl attribute to store the percentage
-        return pnl_percentage
-
-    def update_position_tracking(self, action, current_price):
-        """
-        Update tracking of open positions and entry prices.
-        Parameters:
-        - action (int): Action taken.
-        - current_price (float): Current stock price.
-        """
-        # Handling long positions
-        if action == 2:  # Buy
-            self.entry_prices['long'] = current_price if self.open_positions['long'] == 0 else (
-                (self.entry_prices['long'] * self.open_positions['long'] + current_price) /
-                (self.open_positions['long'] + 1)
-            )
-            self.open_positions['long'] += 1
-
-        elif action == 4:  # Sell Back (close long position)
-            self.open_positions['long'] -= 1
-            if self.open_positions['long'] == 0:
-                self.entry_prices['long'] = 0
-
-        # Handling short positions
-        if action == 0:  # Sell (open short)
-            self.entry_prices['short'] = current_price if self.open_positions['short'] == 0 else (
-                (self.entry_prices['short'] * self.open_positions['short'] + current_price) /
-                (self.open_positions['short'] + 1)
-            )
-            self.open_positions['short'] += 1
-
-        elif action == 3:  # Buy Back (close short position)
-            self.open_positions['short'] -= 1
-            if self.open_positions['short'] == 0:
-                self.entry_prices['short'] = 0
-
-    def update_current_price(self, current_price):
-        self.current_price = current_price
-
-    def calculate_drawdown_penalty(self):
-        return -1 * max(0, self.max_drawdown - self.drawdown_threshold)
-
-    def calculate_trading_penalty(self):
-        return -1 * max(0, self.trade_count - self.trade_limit) / self.trade_limit
-
-    def execute_trade(self, action, current_price):
-        if self.trading_mode == 'futures':
-            return self.future_trading(action, current_price)
-        elif self.trading_mode == 'spot':
-            return self.spot_trading(action, current_price)
-        else:
-            raise ValueError("Invalid trading mode")
+    def get_feature_names(self):
+        return self.env_data.columns.tolist()

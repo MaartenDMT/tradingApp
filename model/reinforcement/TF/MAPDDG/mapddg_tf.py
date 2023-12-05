@@ -2,15 +2,10 @@ import os
 
 import numpy as np
 import tensorflow as tf
-from tensorflow.keras.models import load_model
 from tensorflow.keras.optimizers import Adam
 
 import util.loggers as loggers
-from model.reinforcement.MAPDDG import buffer, network
-from model.reinforcement.rl_visual import plot_and_save_metrics
-from util.agent_utils import is_new_record, save_to_csv
-
-from model.reinforcement
+from model.reinforcement.TF.MAPDDG import buffer, network
 
 logger = loggers.setup_loggers()
 agent_logger = logger['agent']

@@ -13,9 +13,9 @@ import util.loggers as loggers
 from model.autobot import AutoBot
 from model.features import Tradex_indicator
 from model.machinelearning import MachineLearning
+from model.reinforcement.rl_models import mappddg, sac
 from model.trading import Trading
 from util.utils import load_config
-from model.reinforcement.rl_models import (MAPDDG, SAC)
 
 config = load_config()
 
@@ -425,12 +425,12 @@ class ReinforcementTabModel:
     # Define a function for training and evaluating the DQL agent
 
     def train_and_evaluate(self, params, logger):
-        SAC(params, logger)
+        sac(params, logger)
 
     def start(self):
         try:
             evaluation_thread = threading.Thread(
-                target=self.train_and_evaluate, args=(self.params, self.logger,))
+                target=self.train_and_evaluate, args=(self.params, self.rl_logger,))
             evaluation_thread.setDaemon(True)
             evaluation_thread.start()
         except Exception as e:

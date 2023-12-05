@@ -9,11 +9,12 @@ def setup_loggers():
         {'name': 'presenter', 'file': 'data/logs/presenter.log'},
         {'name': 'model', 'file': 'data/logs/model.log'},
         {'name': 'view', 'file': 'data/logs/view.log'},
-        {'name': 'manual', 'file': 'data/logs/manual.log'},
+        {'name': 'rl_trading', 'file': 'data/logs/rl_trading.log'},
         {'name': 'app', 'file': 'data/logs/app.log'},
         {'name': 'rl', 'file': 'data/logs/rl.log'},
         {'name': 'env', 'file': 'data/logs/env.log'},
         {'name': 'agent', 'file': 'data/logs/agent.log'},
+        {'name': 'manual', 'file': 'data/logs/manual.log'},
     ]
 
     loggers = {}

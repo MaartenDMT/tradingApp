@@ -1,17 +1,17 @@
-import model.reinforcement.TF.MAPDDG as MAPDDG
-import model.reinforcement.TF.DDQN as DDQN
-import model.reinforcement.TF.SAC as SAC
-import model.reinforcement.TF.AC as AC
-import model.reinforcement.TF.PG as PG
-import model.reinforcement.TF.PPO as PPO
-
-from model.reinforcement.env import MultiAgentEnvironment
-from model.reinforcement.rl_visual import plot_and_save_metrics, plotting
-from model.reinforcement.visual_plot import plotLearning
 import numpy as np
 
+import model.reinforcement.TF.AC.ac_tf as AC
+import model.reinforcement.TF.DDQN.ddqn_tf as DDQN
+import model.reinforcement.TF.MAPDDG.mapddg_tf as MAPDDG
+import model.reinforcement.TF.PG.pg_tf as PG
+import model.reinforcement.TF.PPO.ppo_tf as PPO
+import model.reinforcement.TF.SAC.sac_tf as SAC
+from model.reinforcement.env import MultiAgentEnvironment
+from model.reinforcement.rl_visual import plot_and_save_metrics, plotting
+from model.reinforcement.visual_plot import plot_learning_curve, plotLearning
 
-def MAPDDG(params, rl_logger):
+
+def mappddg(params, rl_logger):
     num_agents = 2
     # Initialize Environment and Agent with specific hyperparamseters
     env = MultiAgentEnvironment(num_agents=num_agents, symbol='BTCUSDT', features=params['features'],
@@ -25,7 +25,7 @@ def MAPDDG(params, rl_logger):
         f"look back: {env.look_back}")
     rl_logger.info(params)
 
-    agent = MAPDDG.mapddg_tf.MAPDDGAgent(
+    agent = MAPDDG.MAPDDGAgent(
         **params, env=env, num_agents=num_agents)
 
     scores = []
@@ -81,49 +81,47 @@ def MAPDDG(params, rl_logger):
                     agent.save()
 
         if i % 5 == 0:
-            plot_and_save_metrics(scores, actions, i, "standard")
+            plot_and_save_metrics(num_agents, scores, actions, i, "mapddg")
 
     if not load_checkpoint:
         x = [i+1 for i in range(params['episodes'])]
         plotLearning(x, scores, eps_history)
 
 
-def SAC(params, rl_logger):
+def sac(params, rl_logger):
     num_agents = 1
     env = MultiAgentEnvironment(num_agents=num_agents, symbol='BTCUSDT', features=params['features'],
                                 limit=300, time="30m", actions=params['env_actions'], min_acc=params['min_acc'])
 
-    agent = SAC.sac_tf.Agent(input_dims=env.observation_space.shape,
-                             env=env, n_actions=env.action_space.n)
+    agent = SAC.Agent(input_dims=env.observation_space.shape,
+                      env=env, n_actions=env.action_space.n)
 
     n_episodes = 200
 
-    filename = 'SAC_dqn_tf.png'
+    filename = 'data/png/reinforcement/SAC_dqn_tf.png'
 
     best_score = None
     score_history = []
     load_checkpoint = False
-    eps_history = []
 
     if load_checkpoint:
         agent.load_models()
 
     for i in range(n_episodes):
         done = False
-        score = 0
+        scores = 0
         observation = env.reset()
         while not done:
             action = agent.choose_action(observation)
             observation_, reward, info, done = env.step(action)
-            score += reward
+            scores += reward
             agent.remember(observation, action, reward, observation_, done)
             if not load_checkpoint:
                 agent.learn()
             observation = observation_
 
-        score_history.append(score)
+        score_history.append(scores)
         avg_score = np.mean(score_history[-100:])
-        eps_history.append(agent.epsilon)
 
         if best_score == None:
             best_score = avg_score
@@ -133,9 +131,15 @@ def SAC(params, rl_logger):
             if not load_checkpoint:
                 agent.save_models()
 
-        rl_logger('episode: ', i, 'score: %.2f' % score,
-                  ' average score %.2f' % avg_score)
+        if i % 5 == 0:
+            plot_and_save_metrics(num_agents, scores, action, i, "sac")
+
+        if i % 10 == 0:
+            env.update_and_adjust_features()
+
+        rl_logger.info(
+            'episode: %d, score: %.2f, average score %.2f', i, scores, avg_score)
 
     if not load_checkpoint:
-        x = [i+1 for i in range(params['episodes'])]
-        plotLearning(x, score_history, eps_history)
+        x = [i + 1 for i in range(n_episodes)]
+        plot_learning_curve(x, score_history, filename)

@@ -9,7 +9,7 @@ from tensorflow.keras.layers import Dense
 
 class CriticNetwork(keras.Model):
     def __init__(self, n_actions, fc1_dims=256, fc2_dims=256,
-                 name='critic', chkpt_dir='tmp/sac'):
+                 name='critic', chkpt_dir='data/reinforcement/SAC'):
         super(CriticNetwork, self).__init__()
         self.fc1_dims = fc1_dims
         self.fc2_dims = fc2_dims
@@ -33,7 +33,7 @@ class CriticNetwork(keras.Model):
 
 class ValueNetwork(keras.Model):
     def __init__(self, fc1_dims=256, fc2_dims=256,
-                 name='value', chkpt_dir='tmp/sac'):
+                 name='value', chkpt_dir='data/reinforcement/SAC'):
         super(ValueNetwork, self).__init__()
         self.fc1_dims = fc1_dims
         self.fc2_dims = fc2_dims
@@ -56,7 +56,7 @@ class ValueNetwork(keras.Model):
 
 class ActorNetwork(keras.Model):
     def __init__(self, max_action, fc1_dims=256,
-                 fc2_dims=256, n_actions=3, name='actor', chkpt_dir='tmp/sac'):
+                 fc2_dims=256, n_actions=3, name='actor', chkpt_dir='data/reinforcement/SAC'):
         super(ActorNetwork, self).__init__()
         self.fc1_dims = fc1_dims
         self.fc2_dims = fc2_dims
@@ -69,49 +69,33 @@ class ActorNetwork(keras.Model):
 
         self.fc1 = Dense(self.fc1_dims, activation='relu')
         self.fc2 = Dense(self.fc2_dims, activation='relu')
-        # softmax for probability distribution
-        self.pi = Dense(n_actions, activation='softmax')
+        self.mu = Dense(self.n_actions, activation=None)
+        self.sigma = Dense(self.n_actions, activation=None)
 
     def call(self, state):
         prob = self.fc1(state)
         prob = self.fc2(prob)
 
-        pi = self.pi(prob)  # Probability distribution over actions
+        mu = self.mu(prob)
+        sigma = self.sigma(prob)
+        # might want to come back and change this, perhaps tf plays more nicely with
+        # a sigma of ~0
+        sigma = tf.clip_by_value(sigma, self.noise, 1)
 
-        return pi
+        return mu, sigma
 
     def sample_normal(self, state, reparameterize=True):
-        probability_distribution = self.call(state)
-        actions = tf.random.categorical(
-            tf.math.log(probability_distribution), 1)
-        action = tf.squeeze(actions, axis=-1)
+        mu, sigma = self.call(state)
+        probabilities = tfp.distributions.Normal(mu, sigma)
 
-        return action.numpy()  # Return a numpy array
+        if reparameterize:
+            actions = probabilities.sample()  # + something else if you want to implement
+        else:
+            actions = probabilities.sample()
 
-    # def call(self, state):
-    #     prob = self.fc1(state)
-    #     prob = self.fc2(prob)
+        action = tf.math.tanh(actions)*self.max_action
+        log_probs = probabilities.log_prob(actions)
+        log_probs -= tf.math.log(1-tf.math.pow(action, 2)+self.noise)
+        log_probs = tf.math.reduce_sum(log_probs, axis=1, keepdims=True)
 
-    #     mu = self.mu(prob)
-    #     sigma = self.sigma(prob)
-    #     # might want to come back and change this, perhaps tf plays more nicely with
-    #     # a sigma of ~0
-    #     sigma = tf.clip_by_value(sigma, self.noise, 1)
-
-    #     return mu, sigma
-
-    # def sample_normal(self, state, reparameterize=True):
-    #     mu, sigma = self.call(state)
-    #     probabilities = tfp.distributions.Normal(mu, sigma)
-
-    #     if reparameterize:
-    #         actions = probabilities.sample()
-    #     else:
-    #         actions = probabilities.sample()
-
-    #     action = tf.math.tanh(actions)*self.max_action
-    #     log_probs = probabilities.log_prob(actions)
-    #     log_probs -= tf.math.log(1-tf.math.pow(action, 2)+self.noise)
-    #     log_probs = tf.math.reduce_sum(log_probs, axis=1, keepdims=True)
-
-    #     return action, log_probs
+        return action, log_probs

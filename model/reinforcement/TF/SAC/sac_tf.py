@@ -3,9 +3,16 @@ import os
 import numpy as np
 import tensorflow as tf
 import tensorflow.keras as keras
-from buffer import ReplayBuffer
-from network import ActorNetwork, CriticNetwork, ValueNetwork
 from tensorflow.keras.optimizers import Adam
+
+import util.loggers as loggers
+from model.reinforcement.TF.SAC.buffer import ReplayBuffer
+from model.reinforcement.TF.SAC.network import (ActorNetwork, CriticNetwork,
+                                                ValueNetwork)
+
+logger = loggers.setup_loggers()
+agent_logger = logger['agent']
+rl_logger = logger['rl']
 
 
 class Agent:
@@ -36,14 +43,16 @@ class Agent:
 
     def choose_action(self, observation):
         state = tf.convert_to_tensor(np.array(observation).reshape(1, -1))
-        actions = self.actor.sample_normal(state, reparameterize=False)
-        # action = tf.argmax(actions[0]).numpy()
+        actions, _ = self.actor.sample_normal(state, reparameterize=False)
+        action = np.argmax(actions)
+        agent_logger.info(f'the chosen action is {action}')
 
-        # print(f'the choose action {actions}')
-        return actions[0]
+        return action
 
     def remember(self, state, action, reward, new_state, done):
         self.memory.store_transition(state, action, reward, new_state, done)
+        agent_logger.info(
+            f"Stored transition agent: action={action}, reward={reward}, done={done}")
 
     def update_network_parameters(self, tau=None):
         if tau is None:
@@ -55,9 +64,10 @@ class Agent:
             weights.append(weight * tau + targets[i]*(1-tau))
 
         self.target_value.set_weights(weights)
+        agent_logger.info("Soft update of target networks")
 
     def save_models(self):
-        print('... saving models ...')
+        agent_logger.info('... saving models ...')
         self.actor.save_weights(self.actor.checkpoint_file)
         self.critic_1.save_weights(self.critic_1.checkpoint_file)
         self.critic_2.save_weights(self.critic_2.checkpoint_file)
@@ -65,7 +75,7 @@ class Agent:
         self.target_value.save_weights(self.target_value.checkpoint_file)
 
     def load_models(self):
-        print('... loading models ...')
+        agent_logger.info('... loading models ...')
         self.actor.load_weights(self.actor.checkpoint_file)
         self.critic_1.load_weights(self.critic_1.checkpoint_file)
         self.critic_2.load_weights(self.critic_2.checkpoint_file)
@@ -73,38 +83,34 @@ class Agent:
         self.target_value.load_weights(self.target_value.checkpoint_file)
 
     def learn(self):
+        agent_logger.info("Learning...")
         if self.memory.mem_cntr < self.batch_size:
+            agent_logger.info(
+                "Memory size is not sufficient for learning. Skipping...")
             return
 
         state, action, reward, new_state, done = \
             self.memory.sample_buffer(self.batch_size)
 
+        agent_logger.debug(f"State: {state}")
+        agent_logger.debug(f"Action: {action}")
+
         states = tf.convert_to_tensor(state, dtype=tf.float32)
         states_ = tf.convert_to_tensor(new_state, dtype=tf.float32)
         rewards = tf.convert_to_tensor(reward, dtype=tf.float32)
         actions = tf.convert_to_tensor(action)
+        
 
         with tf.GradientTape() as tape:
             value = tf.squeeze(self.value(states), 1)
             value_ = tf.squeeze(self.target_value(states_), 1)
-
-            probabilities = self.actor(states)
-            actions_int = tf.cast(actions, tf.int32)  # Cast actions to int32
-
-            # Convert actions to one-hot encoding
-            actions_one_hot = tf.one_hot(actions_int, depth=self.n_actions)
-
-            # Calculate the log probabilities
-            picked_action_probs = tf.reduce_sum(
-                probabilities * actions_one_hot, axis=1, keepdims=True)
-            log_probs = tf.math.log(picked_action_probs)
-
+            current_policy_actions, log_probs = self.actor.sample_normal(states,
+                                                                         reparameterize=False)
             log_probs = tf.squeeze(log_probs, 1)
-            q1_new_policy = self.critic_1(states, log_probs)
-            q2_new_policy = self.critic_2(states, log_probs)
+            q1_new_policy = self.critic_1(states, current_policy_actions)
+            q2_new_policy = self.critic_2(states, current_policy_actions)
             critic_value = tf.squeeze(
                 tf.math.minimum(q1_new_policy, q2_new_policy), 1)
-
             value_target = critic_value - log_probs
             value_loss = 0.5 * keras.losses.MSE(value, value_target)
 
@@ -116,13 +122,16 @@ class Agent:
         with tf.GradientTape() as tape:
             # in the original paper, they reparameterize here. We don't implement
             # this so it's just the usual action.
-            new_policy_actions = self.actor.sample_normal(states)
+            new_policy_actions, log_probs = self.actor.sample_normal(states,
+                                                                     reparameterize=True)
+            log_probs = tf.squeeze(log_probs, 1)
             q1_new_policy = self.critic_1(states, new_policy_actions)
             q2_new_policy = self.critic_2(states, new_policy_actions)
             critic_value = tf.squeeze(tf.math.minimum(
                 q1_new_policy, q2_new_policy), 1)
 
-            actor_loss = -tf.math.reduce_mean(critic_value)
+            actor_loss = log_probs - critic_value
+            actor_loss = tf.math.reduce_mean(actor_loss)
 
         actor_network_gradient = tape.gradient(actor_loss,
                                                self.actor.trainable_variables)
@@ -131,11 +140,9 @@ class Agent:
 
         with tf.GradientTape(persistent=True) as tape:
             # I didn't know that these context managers shared values?
-            q_hat = self.scale*reward + self.gamma*value_*(1-done)
-            q1_old_policy = tf.squeeze(
-                self.critic_1(state, action), 1)
-            q2_old_policy = tf.squeeze(
-                self.critic_2(state, action), 1)
+            q_hat = self.scale*rewards + self.gamma * value_ * (1-done)
+            q1_old_policy = tf.squeeze(self.critic_1(states, actions), 1)
+            q2_old_policy = tf.squeeze(self.critic_2(states, actions), 1)
             critic_1_loss = 0.5 * keras.losses.MSE(q1_old_policy, q_hat)
             critic_2_loss = 0.5 * keras.losses.MSE(q2_old_policy, q_hat)
 
@@ -150,3 +157,4 @@ class Agent:
             critic_2_network_gradient, self.critic_2.trainable_variables))
 
         self.update_network_parameters()
+        agent_logger.info("Learning completed.")

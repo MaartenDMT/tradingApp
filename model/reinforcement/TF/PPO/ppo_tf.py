@@ -2,9 +2,10 @@ import numpy as np
 import tensorflow as tf
 import tensorflow.keras as keras
 import tensorflow_probability as tfp
-from memory import PPOMemory
-from networks import ActorNetwork, CriticNetwork
 from tensorflow.keras.optimizers import Adam
+
+from model.reinforcement.TF.PPO.memory import PPOMemory
+from model.reinforcement.TF.PPO.networks import ActorNetwork, CriticNetwork
 
 
 class Agent:
@@ -53,7 +54,7 @@ class Agent:
 
     def learn(self):
         for _ in range(self.n_epochs):
-            state_arr, action_arr, old_prob_arr, vals_arr,\
+            state_arr, action_arr, old_prob_arr, vals_arr, \
                 reward_arr, dones_arr, batches = \
                 self.memory.generate_batches()
 
@@ -103,8 +104,8 @@ class Agent:
                 critic_params = self.critic.trainable_variables
                 critic_grads = tape.gradient(critic_loss, critic_params)
                 self.actor.optimizer.apply_gradients(
-                        zip(actor_grads, actor_params))
+                    zip(actor_grads, actor_params))
                 self.critic.optimizer.apply_gradients(
-                        zip(critic_grads, critic_params))
+                    zip(critic_grads, critic_params))
 
         self.memory.clear_memory()
