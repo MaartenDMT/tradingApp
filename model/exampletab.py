@@ -6,12 +6,13 @@ from tkinter import BOTH, BOTTOM, LEFT, RIGHT, TOP, messagebox
 
 import ccxt
 import pandas as pd
-from autobot import AutoBot
 from dotenv import load_dotenv
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from ttkbootstrap import (Button, Entry, Frame, Label, Notebook, OptionMenu,
                           StringVar, Window)
+
+from model.machinelearning.autobot import AutoBot
 
 # Set the path to the .env file
 dotenv_path = r'.env'

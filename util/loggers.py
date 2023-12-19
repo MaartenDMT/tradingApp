@@ -30,7 +30,7 @@ def setup_individual_logger(logger_name, log_file):
     logger = logging.getLogger(logger_name)
 
     if not logger.hasHandlers():  # To ensure that handlers don't get added every time we call this function
-        logger.setLevel(logging.INFO)
+        logger.setLevel(logging.DEBUG)
 
         file_handler = RotatingFileHandler(
             log_file, maxBytes=2_000_000_000, backupCount=10)

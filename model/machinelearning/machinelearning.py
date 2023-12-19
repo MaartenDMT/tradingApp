@@ -19,18 +19,21 @@ from sklearn.model_selection import (GridSearchCV, RandomizedSearchCV,
 from sklearn.preprocessing import StandardScaler
 from skopt import BayesSearchCV
 
+import util.loggers as loggers
 from util.ml_models import get_model
 from util.ml_util import (classifier, column_1d, future_score_clas,
                           future_score_reg, regression, spot_score_clas,
                           spot_score_reg)
 from util.utils import array_min2d, tradex_features
 
+logger = loggers.setup_loggers()
+
 
 class MachineLearning:
-    def __init__(self, exchange, symbol, logger) -> None:
+    def __init__(self, exchange, symbol) -> None:
         self.exchange = exchange
         self.symbol = symbol
-        self.logger = logger
+        self.logger = logger['model']
 
     def predict(self, model, df=None, t='30m', symbol='BTC/USDT') -> int:
         # TODO: predict(self, model, features)

@@ -76,6 +76,7 @@ class Environment:
         self.limit, self.time = limit, time
         self.action_space = ActionSpace(actions)
         self.min_accuracy = min_acc
+
         self._initialize_environment()
 
     def _initialize_environment(self):
@@ -84,6 +85,7 @@ class Environment:
             self.portfolio_balance, 5, 0.05, self.trade_limit, self.threshold, self.symbol)
 
         self.original_data = self._get_data()
+        self.env_data = self.original_data
         self._create_features()
         self._setup_observation_space()
 
@@ -91,8 +93,8 @@ class Environment:
         self.last_price, self.bar = None, 0
         self.trade_limit, self.threshold = 5, 0.2
         self.last_price, self.last_accuracy = None, None
-        self.high_acc_counter, self.patience = 0, int(
-            self.config['Env']['patience'])
+        # int(self.config['Env']['patience'])
+        self.high_acc_counter, self.patience = 0, 20
         self.wait, self.high_acc_threshold = 0, 5
         self.stocks_held = 0.0
         self.max_portfolio_balance, self.total_reward = 0, 0
@@ -104,10 +106,15 @@ class Environment:
         self.recent_trade_results = [0] * 5
         self.current_risk_level = 0     # Initialize current risk level
         self.market_volatility = 0      # Initialize market volatility
-        self.portfolio_balance = float(
-            self.config['Tradingenv']['portfolio_balance'])
+        # float(self.config['Tradingenv']['portfolio_balance'])
+        self.portfolio_balance = 10_000
 
     def _setup_observation_space(self):
+        if not all(feature in self.env_data.columns for feature in self.features):
+            # Handle the missing columns case
+            env_logger.error("Missing required features in env_data.")
+            return
+
         # Calculate the original number of features in the observation space
         num_original_features = len(self.env_data[self.features].columns)
 
@@ -122,12 +129,12 @@ class Environment:
         # Update the observation space to reflect the new shape
         self.observation_space = ObservationSpace(total_features)
         self.look_back = 1
-
         env_logger.info(
             f"Environment initialized with symbol {self.symbol}, features {self.features}, and enhanced observation space. Observation space shape: {self.observation_space.shape}, lookback: {self.look_back}")
 
     def _get_data(self):
-        pickle_file_name = self.config['Path']['2020_30m_data']
+        # self.config['Path']['2020_30m_data']
+        pickle_file_name = 'data/pickle/all/30m_data_all.pkl'
 
         if not os.path.exists(pickle_file_name):
             env_logger.error('No data has been written')
@@ -146,7 +153,8 @@ class Environment:
             env_logger.error("Converted data is empty or contains NaN values.")
             return pd.DataFrame()
 
-        percentage_to_keep = float(self.config['Data']['percentage']) / 100.0
+        # float(self.config['Data']['percentage'])
+        percentage_to_keep = 15 / 100.0
         rows_to_keep = int(len(data) * percentage_to_keep)
         data = data.head(rows_to_keep)
 
@@ -158,6 +166,8 @@ class Environment:
             env_logger.error("Original data is empty.")
             return
 
+        self.original_data['volume'] = self.original_data['volume'].astype(
+            float).round(6)
         feature = features(self.original_data.copy())
         processed_features = tradex_features(
             self.symbol, self.original_data.copy())
@@ -175,21 +185,24 @@ class Environment:
 
         self.original_data['last_price'] = self.original_data['close'].shift(1)
         self.original_data['portfolio_balance'] = self.portfolio_balance
-        self.env_data = self.original_data[self.features].copy()
 
         if self.env_data.isnull().values.any():
             env_logger.error("NaN values detected in environment data.")
             return
 
         # Ensure there are no division by zero or invalid operations
-        self.original_data['r'] = np.log(self.env_data['close'] / self.env_data['close'].shift(
-            int(self.config['Env']['shifts'])).replace(0, np.nan))
-        self.env_data['r'] = self.original_data['r'].fillna(
-            0)  # Fill NaNs resulted from log operation
+        self.original_data['r'] = np.log(
+            self.original_data['close'] / self.original_data['close'].shift(5).replace(0, np.nan))
+
+        if self.original_data.isnull().values.any():
+            self.original_data.dropna(inplace=True)
+
+        self.env_data = self.original_data[self.features].copy()
+        self.env_data['r'] = self.original_data['r'].bfill()
 
         self.env_data['d'] = self.compute_action(self.original_data)
         # Forward fill to handle NaNs
-        self.env_data['d'] = self.env_data['d'].ffill()
+        self.env_data['d'] = self.env_data['d']
 
         # Normalize data, handle any NaNs that may arise from normalization
         self.env_data = (self.env_data - self.env_data.mean()
@@ -198,6 +211,9 @@ class Environment:
         self.env_data.fillna(0, inplace=True)
 
         self.env_data['action'] = 0
+
+        env_logger.info(self.original_data)
+        env_logger.info(self.env_data)
 
         env_logger.info("Features created successfully.")
 
@@ -259,7 +275,7 @@ class Environment:
         # Validate index range
         if self.bar >= len(self.original_data):
             env_logger.error("Index out of range. Returning default state.")
-            return np.zeros_like(self.env_data.iloc[0]), 0, {}, True
+            return np.zeros_like(self.env_data.iloc[0], 0, {}, True)
 
         df_row_raw = self.original_data.iloc[self.bar]
         env_row_raw = self.env_data.iloc[self.bar].copy()
@@ -312,31 +328,31 @@ class Environment:
             df_row['close'] < df_row['ema_200']) & (df_row['rsi40'] < 50)
 
         # Use parentheses for each condition to avoid ambiguity
-        strong_buy_signal = strong_upward_movement & ~ind.is_increasing_trend(
-            self.original_data, self.bar)
-        strong_sell_signal = strong_downward_movement & ~ind.is_increasing_trend(
-            self.original_data, self.bar)
+        strong_buy_signal: bool = bool(strong_upward_movement & ~ind.is_increasing_trend(
+            self.original_data, self.bar))
+        strong_sell_signal: bool = (strong_downward_movement & ~ind.is_increasing_trend(
+            self.original_data, self.bar))
 
         # SHORT
-        short_stochastic_signal = ~ind.short_stochastic_condition(
+        short_stochastic_signal = ind.short_stochastic_condition(
             self.original_data, current_bar_index)
-        short_bollinger_outside = ~ind.short_bollinger_condition(
+        short_bollinger_outside = ind.short_bollinger_condition(
             self.original_data, current_bar_index)
         # LONG ONlY
-        long_stochastic_signal = ~ind.long_stochastic_condition(
+        long_stochastic_signal = ind.long_stochastic_condition(
             self.original_data, current_bar_index)
-        long_bollinger_outside = ~ind.long_bollinger_condition(
+        long_bollinger_outside = ind.long_bollinger_condition(
             self.original_data, current_bar_index)
-        macd_buy = ~ind.macd_condition(self.original_data, current_bar_index)
-        high_volatility = ~ind.atr_condition(
+        macd_buy = ind.macd_condition(self.original_data, current_bar_index)
+        high_volatility = ind.atr_condition(
             self.original_data, current_bar_index)
-        adx_signal = ~ind.adx_condition(self.original_data, current_bar_index)
-        psar_signal = ~ind.parabolic_sar_condition(
+        adx_signal = ind.adx_condition(self.original_data, current_bar_index)
+        psar_signal = ind.parabolic_sar_condition(
             self.original_data, current_bar_index)
-        cdl_pattern = ~ind.cdl_pattern(self.original_data, current_bar_index)
-        volume_break = ~ind.volume_breakout(
+        cdl_pattern = ind.cdl_pattern(self.original_data, current_bar_index)
+        volume_break = ind.volume_breakout(
             self.original_data, current_bar_index)
-        resistance_break_signal = ~ind.resistance_break(
+        resistance_break_signal = ind.resistance_break(
             self.original_data, current_bar_index)
 
         return short_stochastic_signal, short_bollinger_outside, long_stochastic_signal, long_bollinger_outside, low_volatility, going_up_condition, going_down_condition, strong_buy_signal, strong_sell_signal, super_buy, super_sell, macd_buy, high_volatility, adx_signal, psar_signal, cdl_pattern, volume_break, resistance_break_signal
@@ -369,8 +385,7 @@ class Environment:
                               short_stochastic_signal, short_bollinger_outside]
         neutral_conditions = [going_up_condition,
                               going_down_condition, low_volatility]
-        print(
-            f'neutral condition up & down: {going_up_condition} {going_down_condition}')
+
         if any(neutral_conditions):
             self.holding_time += 1
             return 1  # Neutral action

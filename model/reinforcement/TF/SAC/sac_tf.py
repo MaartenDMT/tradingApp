@@ -26,7 +26,7 @@ class Agent:
         self.n_actions = n_actions
 
         self.actor = ActorNetwork(n_actions=n_actions, name='actor',
-                                  max_action=n_actions)
+                                  max_action=env.action_space.n)
         self.critic_1 = CriticNetwork(n_actions=n_actions, name='critic_1')
         self.critic_2 = CriticNetwork(n_actions=n_actions, name='critic_2')
         self.value = ValueNetwork(name='value')
@@ -42,12 +42,10 @@ class Agent:
         self.update_network_parameters(tau=1)
 
     def choose_action(self, observation):
-        state = tf.convert_to_tensor(np.array(observation).reshape(1, -1))
+        state = tf.convert_to_tensor([observation])
         actions, _ = self.actor.sample_normal(state, reparameterize=False)
-        action = np.argmax(actions)
-        agent_logger.info(f'the chosen action is {action}')
-
-        return action
+        agent_logger.info(f'the chosen action is {actions}')
+        return actions[0]
 
     def remember(self, state, action, reward, new_state, done):
         self.memory.store_transition(state, action, reward, new_state, done)
@@ -92,18 +90,15 @@ class Agent:
         state, action, reward, new_state, done = \
             self.memory.sample_buffer(self.batch_size)
 
-        agent_logger.debug(f"State: {state}")
-        agent_logger.debug(f"Action: {action}")
-
         states = tf.convert_to_tensor(state, dtype=tf.float32)
         states_ = tf.convert_to_tensor(new_state, dtype=tf.float32)
         rewards = tf.convert_to_tensor(reward, dtype=tf.float32)
-        actions = tf.convert_to_tensor(action)
-        
+        actions = tf.convert_to_tensor(action, dtype=tf.float32)
 
         with tf.GradientTape() as tape:
             value = tf.squeeze(self.value(states), 1)
             value_ = tf.squeeze(self.target_value(states_), 1)
+
             current_policy_actions, log_probs = self.actor.sample_normal(states,
                                                                          reparameterize=False)
             log_probs = tf.squeeze(log_probs, 1)
@@ -111,6 +106,7 @@ class Agent:
             q2_new_policy = self.critic_2(states, current_policy_actions)
             critic_value = tf.squeeze(
                 tf.math.minimum(q1_new_policy, q2_new_policy), 1)
+
             value_target = critic_value - log_probs
             value_loss = 0.5 * keras.losses.MSE(value, value_target)
 
@@ -140,9 +136,9 @@ class Agent:
 
         with tf.GradientTape(persistent=True) as tape:
             # I didn't know that these context managers shared values?
-            q_hat = self.scale*rewards + self.gamma * value_ * (1-done)
-            q1_old_policy = tf.squeeze(self.critic_1(states, actions), 1)
-            q2_old_policy = tf.squeeze(self.critic_2(states, actions), 1)
+            q_hat = self.scale*reward + self.gamma*value_*(1-done)
+            q1_old_policy = tf.squeeze(self.critic_1(state, action), 1)
+            q2_old_policy = tf.squeeze(self.critic_2(state, action), 1)
             critic_1_loss = 0.5 * keras.losses.MSE(q1_old_policy, q_hat)
             critic_2_loss = 0.5 * keras.losses.MSE(q2_old_policy, q_hat)
 

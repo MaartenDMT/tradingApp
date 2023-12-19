@@ -1,12 +1,12 @@
 import logging
 from configparser import ConfigParser
+from time import sleep
 from tkinter import END
 
 import numpy as np
 import pandas as pd
 
 from model.features import Tradex_indicator
-from time import sleep
 
 
 def load_config():
@@ -63,21 +63,32 @@ class ListboxHandler(logging.Handler):
 
 def tradex_features(symbol, df):
 
-    df['volume'].astype(float)
     tradex = Tradex_indicator(
         symbol=symbol, timeframe='1h', t=None, get_data=False, data=df.copy())
-    tradex.run()
-    sleep(2)
 
-    # Assuming tradex.trend, tradex.screener, etc., are instances of their respective classes
-    # Call get_trend on the instance of Trend class
-    trend = tradex.trend.get_trend()
-    screener = tradex.screener.get_screener()  # Similarly for other attributes
-    real_time = tradex.real_time.get_real_time()
-    scanner = tradex.scanner.get_scanner()
+    done = tradex.run()
 
-    processed_features = pd.concat(
-        [df, trend, screener, real_time, scanner], axis=1)
+    if done:
+        # Assuming tradex.trend, tradex.screener, etc., are instances of their respective classes
+        # Call get_trend on the instance of Trend class
+        trend = tradex.trend.get_trend()
+        screener = tradex.screener.get_screener()  # Similarly for other attributes
+        real_time = tradex.real_time.get_real_time()
+        scanner = tradex.scanner.get_scanner()
+
+        processed_features = pd.concat(
+            [df, trend, screener, real_time, scanner], axis=1)
+    else:
+        sleep(2)
+        # Assuming tradex.trend, tradex.screener, etc., are instances of their respective classes
+        # Call get_trend on the instance of Trend class
+        trend = tradex.trend.get_trend()
+        screener = tradex.screener.get_screener()  # Similarly for other attributes
+        real_time = tradex.real_time.get_real_time()
+        scanner = tradex.scanner.get_scanner()
+
+        processed_features = pd.concat(
+            [df, trend, screener, real_time, scanner], axis=1)
 
     return processed_features.drop_duplicates()
 

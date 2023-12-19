@@ -1,7 +1,6 @@
 import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
-from tensorflow.keras.optimizers import Adam
 
 from model.reinforcement.TF.AC.network import ActorCriticNetwork
 
@@ -15,7 +14,8 @@ class Agent:
 
         self.actor_critic = ActorCriticNetwork(n_actions=n_actions)
 
-        self.actor_critic.compile(optimizer=Adam(learning_rate=alpha))
+        self.actor_critic.compile(
+            optimizer=tf.keras.optimizers.Adam(learning_rate=alpha))
 
     def choose_action(self, observation):
         state = tf.convert_to_tensor(

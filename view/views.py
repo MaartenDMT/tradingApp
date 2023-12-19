@@ -112,10 +112,9 @@ class MainView(Frame):
 
         # Add a list box for displaying the trade history on the history page
         self.history_list = Listbox(self)
-        # self.history_list2 = Treeview(self)
 
         # Create the main window with a tabbed interface
-        self.notebook = Notebook(self, width='600')
+        self.notebook = Notebook(self, width='800')
         self.trade_tab = TradeTab(self.notebook, self._presenter)
         self.exchange_tab = ExchangeTab(self.notebook, self._presenter)
         self.bot_tab = BotTab(self.notebook, self._presenter)
@@ -133,7 +132,6 @@ class MainView(Frame):
         # Tkinter App main page ----------------------------------------------
         self.notebook.grid(row=1, column=0, padx=5)
         self.history_list.grid(row=2, column=0, padx=5, pady=2, sticky='nsew')
-        # self.history_list2.grid(row=3, column=0, padx=5, pady=2, sticky='nsew')
 
     def changer(self, theme) -> None:
         Style().theme_use(theme)
@@ -142,8 +140,4 @@ class MainView(Frame):
         if self.history_list.size() >= 10:
             self.history_list.delete(0)
 
-        # if len(self.history_list2.get_children()) >= 10:
-        #     self.history_list2.delete(self.history_list2.get_children()[0])
-
         self.history_list.insert(END, text)
-        # self.history_list2.insert('', 'end', text=text)

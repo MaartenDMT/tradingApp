@@ -97,6 +97,8 @@ class TradingEnvironment:
         self.trading_mode = trading_mode  # 'futures' or 'spot'
         self.initial_balance = initial_balance
         self.leverage = leverage
+        self.validate_transaction_costs(transaction_costs)
+        self.transaction_costs = transaction_costs
         self.transaction_costs = transaction_costs
         self.symbol = symbol
         self.trade_limit = trade_limit
@@ -116,10 +118,20 @@ class TradingEnvironment:
         self.position_size_l = 0
         self.position_size_s = 0
 
+    def validate_action(self, action, valid_actions):
+        if action not in valid_actions:
+            raise ValueError(f"Invalid action: {action}")
+
+    def validate_price(self, current_price):
+        if not self.is_valid_price(current_price):
+            raise ValueError(f"Invalid current price: {current_price}")
+
     def future_trading(self, action, current_price):
+        rl_trading.info(
+            f"Entering future_trading with action: {action}, current_price: {current_price}")
         # Validate the action
         valid_actions = [0, 1, 2, 3, 4]
-        if action not in valid_actions:
+        if self.validate_action(action, valid_actions=valid_actions):
             raise ValueError(f"Invalid action: {action}")
 
         if not self.is_valid_price(current_price):
@@ -146,7 +158,7 @@ class TradingEnvironment:
             else:
                 return self.handle_hold_action()
         except Exception as e:
-            env_logger.error(f"Error during future trading: {e}")
+            rl_trading.error(f"Error during future trading: {e}")
             raise
 
         if action in [0, 2, 3, 4]:
@@ -154,13 +166,14 @@ class TradingEnvironment:
 
         if action in [0, 2]:
             self.trade_count += 1
-
+        rl_trading.debug(
+            f"Completed future trading with result: {trade_result}, balance: {portfolio_balance}")
         return trade_result, portfolio_balance
 
     def spot_trading(self, action, current_price):
         # Validate the action
         valid_actions = [0, 1, 2, 4]
-        if action not in valid_actions:
+        if self.validate_action(action, valid_actions=valid_actions):
             raise ValueError(f"Invalid action: {action}")
 
         if not self.is_valid_price(current_price):
@@ -185,7 +198,7 @@ class TradingEnvironment:
                 return self.handle_hold_action()
 
         except Exception as e:
-            env_logger.error(f"Error during spot trading: {e}")
+            rl_trading.error(f"Error during spot trading: {e}")
             raise
 
         if action in [0, 2, 3]:
@@ -196,86 +209,78 @@ class TradingEnvironment:
 
         return trade_result, portfolio_balance
 
-    def finalize_trade(self, trade_result,  trading_volume, current_price, ):
-        # Calculate the transaction cost as a percentage of the trade value
+    def finalize_trade(self, trade_result, trading_volume, current_price):
+        """ Finalize the trade by applying transaction costs and updating the balance. """
+        rl_trading.debug(
+            f"Finalizing trade. Initial trade result: {trade_result}, Volume: {trading_volume}, Price: {current_price}")
         trade_value = current_price * abs(trading_volume)
         transaction_cost = trade_value * self.transaction_costs
+        rl_trading.debug(f"Calculated transaction cost: {transaction_cost}")
 
         # Apply transaction costs
         trade_result -= transaction_cost
+        rl_trading.debug(
+            f"Trade result after transaction cost: {trade_result}")
 
         # Update portfolio balance
         self.portfolio_balance += trade_result
+        rl_trading.info(f"Updated portfolio balance: {self.portfolio_balance}")
 
-        # Update max portfolio balance
+        # Update max portfolio balance and drawdown
         self.max_portfolio_balance = max(
             self.max_portfolio_balance, self.portfolio_balance)
-
-        # Calculate and update drawdown
-        if self.max_portfolio_balance > 0:  # Add check to avoid division by zero
-            current_drawdown = 1 - \
-                (self.portfolio_balance / self.max_portfolio_balance)
-            self.max_drawdown = max(self.max_drawdown, current_drawdown)
-        else:
-            # Set to 0 or an appropriate default value if max_portfolio_balance is 0
-            current_drawdown = 0
-
-        # Reset open_trade_pnl if all positions are closed
-        if self.open_positions['long'] == 0 and self.open_positions['short'] == 0:
-            self.open_trade_pnl = 0
-
-        # Update tracking after trade
-        self.update_current_price(current_price)
-
-        rl_trading.info(
-            f"Updated balance ({self.trading_mode}): ${self.portfolio_balance:.2f}, volume held: {trading_volume}")
+        self.update_drawdown()
 
         return trade_result, self.portfolio_balance
 
     def handle_hold_action(self):
-        env_logger.info("Hold action taken. No change in portfolio.")
+        rl_trading.info("Hold action taken. No change in portfolio.")
         return 0, self.portfolio_balance
 
     def handle_sell_action(self, current_price, is_future):
+        rl_trading.debug(
+            f"Handling sell action. Current price: {current_price}, is_future: {is_future}")
+        # existing code...
         trade_result: float = 0.0
         if is_future:
-            # Logic for selling in futures trading
             self.entry_prices['short'] = current_price if self.entry_prices['short'] is None else self.entry_prices['short']
-            trading_volume = self.portfolio_balance * self.pos_to_trade
-            self.position_size_s += trading_volume
+            trading_volume = self.calculate_futures_trade_volume()
+            self.update_short_position_size(trading_volume)
         else:
             rl_trading.info(
                 f"Starting balance: ${self.portfolio_balance:.2f}, Stocks held: {self.stocks_held}")
             if self.stocks_held <= 0:
                 raise ValueError("No stocks available to sell.")
-            amount_to_trade = self.portfolio_balance * 0.1
-            # Logic for selling in spot trading
 
-            stocks_to_sell = min(
-                self.stocks_held, amount_to_trade / current_price)
-            trade_result = stocks_to_sell * \
-                (current_price - self.entry_prices['long'])
-            self.stocks_held -= stocks_to_sell
+            amount_to_trade = self.calculate_trade_amount()
+            stocks_to_sell = self.determine_stocks_to_sell(
+                amount_to_trade, current_price)
+            trade_result = self.calculate_trade_result(
+                stocks_to_sell, current_price)
+            self.update_stocks_held(stocks_to_sell)
             rl_trading.info(
                 f"Selling {stocks_to_sell:.2f} stocks at ${current_price:.2f} each.")
 
         trading_volume = self.stocks_held if not is_future else self.position_size_s
+        rl_trading.info(
+            f"Completed sell action. trading volume: {trading_volume}, Portfolio balance: {self.portfolio_balance}")
         return self.finalize_trade(trade_result, trading_volume, current_price)
 
     def handle_buy_action(self, current_price, is_future):
+        rl_trading.debug(
+            f"Handling buy action. Current price: {current_price}, is_future: {is_future}")
+        # existing code...
         trade_result: float = 0.0
         if is_future:
             # Logic for buying in futures trading
             self.entry_prices['long'] = current_price if self.entry_prices['long'] is None else self.entry_prices['long']
-            trading_volume = self.portfolio_balance * self.pos_to_trade
-            if trading_volume > self.portfolio_balance:
-                raise ValueError("Trading amount exceeds available balance.")
-            self.position_size_l += trading_volume
+            trading_volume = self.calculate_buy_volume_for_futures()
+            self.update_long_position_size(trading_volume)
         else:
             rl_trading.info(
                 f"Starting balance: ${self.portfolio_balance:.2f}, Stocks held: {self.stocks_held}")
-            amount_to_trade = self.portfolio_balance * 0.1
-            if amount_to_trade > self.portfolio_balance:
+            amount_to_trade = self.calculate_trade_amount()
+            if self.portfolio_balance > 0:
                 raise ValueError("Trading amount exceeds available balance.")
             # Logic for buying in spot trading
             stocks_to_buy = min(amount_to_trade / current_price,
@@ -287,6 +292,8 @@ class TradingEnvironment:
             trade_result = -amount_to_trade  # Negative because it's a cost
 
         trading_volume = self.stocks_held if not is_future else self.position_size_l
+        rl_trading.info(
+            f"Completed sell action. trading volume: {trading_volume}, Portfolio balance: {self.portfolio_balance}")
         return self.finalize_trade(trade_result, current_price, trading_volume)
 
     def handle_buy_back_action(self, current_price, is_future):
@@ -297,9 +304,8 @@ class TradingEnvironment:
                 rl_trading.info(
                     "Attempted to close a short position when none were open.")
                 return 0, self.portfolio_balance  # Return zero trade result and current balance
-            trade_result = (
-                self.entry_prices['short'] - current_price) * self.leverage
-            self.position_size_s -= self.position_size_s
+            trade_result, trading_volume = self.close_short_position(
+                current_price)
 
         trading_volume = self.stocks_held if not is_future else self.position_size_s
         return self.finalize_trade(trade_result, trading_volume, current_price)
@@ -311,22 +317,18 @@ class TradingEnvironment:
                 rl_trading.info(
                     "Attempted to close a long position when none were open.")
                 return 0, self.portfolio_balance  # Return zero trade result and current balance
-            trade_result = (
-                current_price - self.entry_prices['long']) * self.leverage
-            self.position_size_l -= self.position_size_l
+            trade_result, trading_volume = self.close_long_position(
+                current_price)
         else:
             # In spot trading, sell back would mean selling the stocks you hold
             if self.stocks_held <= 0:
                 rl_trading.info("No stocks to sell back.")
                 return 0, self.portfolio_balance  # No stocks to sell back
 
-            # Calculate the number of stocks to sell
             stocks_to_sell = self.stocks_held
-
-            # Calculate profit or loss from the sell-back action
-            trade_result = stocks_to_sell * \
-                (current_price - self.entry_prices['long'])
-            self.stocks_held -= stocks_to_sell
+            trade_result = self.calculate_trade_result(
+                stocks_to_sell, current_price)
+            self.stocks_held = 0
 
             rl_trading.info(
                 f"Sell back {stocks_to_sell:.2f} stocks at ${current_price:.2f} each.")
@@ -445,10 +447,18 @@ class TradingEnvironment:
         # Calculate the new average entry price
         total_cost = entry_price * self.open_positions[position_type]
         total_positions = self.open_positions[position_type] + 1
+
+        if total_positions == 0:
+            # Handle the case where total positions are zero
+            return current_price  # Or some other default value
+
         return (total_cost + current_price) / total_positions
 
     def update_current_price(self, current_price):
+        rl_trading.debug(
+            f"Updating current price from {self.current_price} to {current_price}")
         self.current_price = current_price
+        rl_trading.debug(f"Updated current price to {self.current_price}")
 
     def calculate_drawdown_penalty(self):
         if self.max_drawdown is None or self.drawdown_threshold is None:
@@ -458,16 +468,21 @@ class TradingEnvironment:
         current_drawdown = 1 - (self.portfolio_balance / self.initial_balance)
 
         # Check if drawdown exceeds threshold
-        if current_drawdown > self.max_drawdown:
-            # Calculate penalty (negative value)
-            penalty = -abs(current_drawdown - self.max_drawdown)
+        if current_drawdown > self.drawdown_threshold:
+            penalty = -abs(current_drawdown - self.drawdown_threshold)
         else:
             penalty = 0
 
         return penalty
 
     def calculate_trading_penalty(self):
-        return -1 * max(0, self.trade_count - self.trade_limit) / self.trade_limit
+        if self.trade_limit == 0:
+            return 0  # Avoid division by zero
+
+        over_limit = max(0, self.trade_count - self.trade_limit)
+        penalty = -over_limit / (self.trade_limit * 1.1)  # 10% buffer
+
+        return penalty
 
     def execute_trade(self, action, current_price):
         if self.trading_mode == 'futures':
@@ -477,6 +492,15 @@ class TradingEnvironment:
         else:
             raise ValueError("Invalid trading mode")
 
+    def update_drawdown(self):
+        """ Update the drawdown based on the current portfolio balance. """
+        if self.max_portfolio_balance > 0:
+            current_drawdown = 1 - \
+                (self.portfolio_balance / self.max_portfolio_balance)
+            self.max_drawdown = max(self.max_drawdown, current_drawdown)
+        else:
+            self.max_drawdown = 0
+
     def is_valid_price(self, price):
         """Validate the given price."""
         return price > 0
@@ -485,3 +509,146 @@ class TradingEnvironment:
         """Check if the trading amount exceeds the balance limit."""
         if amount > self.portfolio_balance:
             raise ValueError("Trading amount exceeds available balance.")
+
+    def calculate_trade_amount(self):
+        return self.portfolio_balance * 0.1  # Or other logic
+
+    def determine_stocks_to_sell(self, amount_to_trade, current_price):
+        """
+        Determine the number of stocks to sell.
+
+        Parameters:
+        - amount_to_trade: The amount of money to be traded.
+        - current_price: The current price of the stock.
+
+        Returns:
+        - float: The number of stocks to sell.
+        """
+        if self.stocks_held <= 0:
+            raise ValueError("No stocks available to sell.")
+
+        return min(self.stocks_held, amount_to_trade / current_price)
+
+    def calculate_trade_result(self, stocks_to_sell, current_price):
+        """
+        Calculate the result of the trade (profit or loss).
+        Parameters:
+        - stocks_to_sell: The number of stocks to sell.
+        - current_price: The current price of the stock.
+        Returns:
+        - float: The result of the trade.
+
+        """
+        rl_trading.debug(
+            f"Calculating trade result for stocks_to_sell: {stocks_to_sell}, current_price: {current_price}")
+        trade_result = stocks_to_sell * \
+            (current_price - self.entry_prices['long'])
+        rl_trading.debug(f"Calculated trade result: {trade_result}")
+        return
+
+    def update_stocks_held(self, stocks_to_sell):
+        """
+        Update the number of stocks held after selling.
+        Parameters:
+        - stocks_to_sell: The number of stocks that were sold.
+        """
+        self.stocks_held -= stocks_to_sell
+
+    def calculate_futures_trade_volume(self):
+        """
+        Calculate the trade volume for futures trading.
+
+        Returns:
+        - float: The trade volume for futures trading.
+        """
+        return self.portfolio_balance * self.pos_to_trade
+
+    def update_short_position_size(self, trading_volume):
+        """
+        Update the size of the short position in futures trading.
+
+        Parameters:
+        - trading_volume: The volume of the trade.
+        """
+        self.position_size_s += trading_volume
+
+    def calculate_buy_volume_for_futures(self):
+        """
+        Calculate the volume of assets to be bought for futures trading.
+
+        Returns:
+        - float: The volume for futures trading.
+        """
+        trading_volume = self.portfolio_balance * self.pos_to_trade
+        if trading_volume > self.portfolio_balance:
+            trading_volume = self.portfolio_balance
+        return trading_volume
+
+    def update_long_position_size(self, trading_volume):
+        """
+        Update the size of the long position in futures trading.
+
+        Parameters:
+        - trading_volume: The volume of the trade.
+        """
+        self.position_size_l += trading_volume
+
+    def close_short_position(self, current_price):
+        """
+        Close a short position in futures trading.
+
+        Parameters:
+        - current_price: The current market price.
+
+        Returns:
+        - tuple: Trade result and the updated portfolio balance.
+        """
+        rl_trading.info(
+            f"Closing short position with current_price: {current_price}")
+        if self.open_positions['short'] <= 0:
+            rl_trading.warning("No short positions open to close.")
+            return 0, self.portfolio_balance
+
+        trade_result = (
+            self.entry_prices['short'] - current_price) * self.leverage
+        rl_trading.debug(
+            f"Trade result for closing short: {trade_result}, Leverage: {self.leverage}")
+        self.position_size_s -= self.position_size_s
+
+        rl_trading.info(
+            f"Short position closed. Updated position size: {self.position_size_s}, New portfolio balance: {self.portfolio_balance}")
+        return trade_result, self.portfolio_balance
+
+    def close_long_position(self, current_price):
+        """
+        Close a long position in futures trading.
+
+        Parameters:
+        - current_price: The current market price.
+
+        Returns:
+        - tuple: Trade result and the updated portfolio balance.
+        """
+        rl_trading.info(
+            f"Closing long position with current_price: {current_price}")
+        if self.open_positions['long'] <= 0:
+            rl_trading.warning("No long positions open to close.")
+            return 0, self.portfolio_balance
+
+        trade_result = (
+            current_price - self.entry_prices['long']) * self.leverage
+        rl_trading.debug(
+            f"Trade result for closing long: {trade_result}, Leverage: {self.leverage}")
+        self.position_size_l -= self.position_size_l
+
+        rl_trading.info(
+            f"Long position closed. Updated position size: {self.position_size_l}, New portfolio balance: {self.portfolio_balance}")
+        return trade_result, self.portfolio_balance
+
+    def validate_transaction_costs(self, transaction_costs):
+        """ Validate that the transaction costs are within a reasonable range. """
+        rl_trading.debug(f"Validating transaction_costs: {transaction_costs}")
+        if not 0 <= transaction_costs <= 0.05:  # 0% to 5% range
+            rl_trading.warning(
+                f"Transaction costs {transaction_costs} out of expected range (0-5%)")
+            raise ValueError("Transaction costs should be between 0% and 5%.")

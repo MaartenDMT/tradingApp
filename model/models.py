@@ -4,18 +4,18 @@ import threading
 import traceback
 
 import ccxt
-import numpy as np
 import pandas as pd
 import psycopg2
 from dotenv import load_dotenv
 
 import util.loggers as loggers
-from model.autobot import AutoBot
 from model.features import Tradex_indicator
-from model.machinelearning import MachineLearning
-from model.reinforcement.rl_models import mappddg, sac
-from model.trading import Trading
+from model.machinelearning.autobot import AutoBot
+from model.machinelearning.machinelearning import MachineLearning
+from model.manualtrading.trading import Trading
+from model.reinforcement.rl_models import TensorflowModel, TorchModel
 from util.utils import load_config
+from time import sleep
 
 config = load_config()
 
@@ -37,32 +37,32 @@ class Models:
     def create_tabmodels(self, presenter) -> None:
         self._presenter = presenter
         self.model_logger.info("Starting loading the models")
-        self.mainview_model = MainviewModel(self.model_logger, self._presenter)
-        self.tradetab_model = TradeTabModel(self.model_logger, self._presenter)
-        self.exchangetab_model = ExchangeTabModel(
-            self.model_logger, self._presenter)
-        self.bottab_model = BotTabModel(self.model_logger, self._presenter)
-        self.charttab_model = ChartTabModel(self.model_logger, self._presenter)
-        self.rltab_model = ReinforcementTabModel(
-            self.model_logger, self._presenter)
+        self.mainview_model = MainviewModel(self._presenter)
+        self.tradetab_model = TradeTabModel(self._presenter)
+        self.exchangetab_model = ExchangeTabModel(self._presenter)
+        self.bottab_model = BotTabModel(self._presenter)
+        self.charttab_model = ChartTabModel(self._presenter)
+        self.rltab_model = ReinforcementTabModel(self._presenter)
         self.model_logger.info("Finished loading the models")
 
     def get_ML(self) -> MachineLearning:
         ml = MachineLearning(self.tradetab_model.exchange,
-                             self.tradetab_model.symbol, self.model_logger)
+                             self.tradetab_model.symbol)
         return ml
 
     def get_exchange(self):
+        exchange = None
         try:
-            # Create an instance of the exchange using the CCXT library
-            exchange = ccxt.binance({
-                # 'options': {
-                #     'adjustForTimeDifference': True,
-                # },
-                'apiKey': os.environ.get('API_KEY_BIN_TEST'),
-                'secret': os.environ.get('API_SECRET_BIN_TEST'),
-                'enableRateLimit': True,
-            })
+            exchange = getattr(ccxt, "phemex")({
+                'apiKey': os.environ.get('API_KEY_PHE_TEST'),
+                'secret': os.environ.get('API_SECRET_PHE_TEST'),
+                'rateLimit': 2000,
+                'options': {
+                    'defaultType': 'future',
+                    'adjustForTimeDifference': True,
+                },
+                'enableRateLimit': True})
+
             exchange.set_sandbox_mode(True)
             # self.model_logger.info(exchange.fetch_free_balance())
             if not exchange.check_required_credentials():
@@ -141,21 +141,20 @@ class LoginModel:
 
 
 class MainviewModel:
-    def __init__(self, model_logger, presenter) -> None:
-        self.model_logger = model_logger
+    def __init__(self, presenter) -> None:
+        self.model_logger = logger['model']
         self.presenter = presenter
         self.model_logger.info("loading the Main view model")
 
 
 class TradeTabModel:
-    def __init__(self, model_logger, presenter) -> None:
-        self.model_logger = model_logger
+    def __init__(self, presenter) -> None:
+        self.model_logger = logger['model']
         self.presenter = presenter
-        self.model_logger.info("loading the Trade tab model")
+        self.model_logger.info("Loading the Trade tab model")
         self._trading = self.get_trading()
 
-    def get_trading(self, symbol='BTC/USDT') -> Trading:
-
+    def get_trading(self, symbol='BTC/USDT', trade_type='spot') -> Trading:
         self.exchange = self.presenter.get_exchange()
         # self.exchange.set_sandbox_mode(True)
         self.symbol = symbol
@@ -163,51 +162,74 @@ class TradeTabModel:
         self.max_drawdown = 0.001
         self.moving_average_period = 50
         self.decision_tree_depth = 2
+        self.trade_type = trade_type
 
         trading = Trading(self.exchange, self.symbol, self.position_size, self.max_drawdown,
-                          self.moving_average_period, self.decision_tree_depth)
+                          self.moving_average_period, self.decision_tree_depth, self.trade_type)
+
         return trading
 
     def get_balance(self):
-        return self._trading.getBalance()
+        return self._trading.get_balance()
+
+    def place_trade(self, symbol, side, trade_type, amount, price, stoploss, takeprofit):
+        self._trading.place_trade(
+            symbol, side, trade_type, amount, price, stoploss, takeprofit)
+        sleep(3)
+        self.fetch_open_trades(symbol)
 
     def update_stoploss(self, stop_loss) -> None:
-
-        # Modify the stop loss level of the trade
         try:
-            self._trading.exchange.update_order(
-                self._trading.trade_id, {'stopLoss': stop_loss})
+            self._trading.modify_takeprofit_stoploss(
+                self._trading.trade_id, stop_loss=stop_loss)
             self.model_logger.info(
-                f"Trade ID: {self._trading.trade_id} Modify Stoploss {stop_loss} ")
+                f"Trade ID: {self._trading.trade_id} Modify Stoploss {stop_loss}")
         except Exception as e:
-            self.model_logger.error(f"in the modify_stop_loss Error: {e}")
+            self.model_logger.error(f"In the modify_stop_loss Error: {e}")
 
     def update_takeprofit(self, take_profit) -> None:
-
-        # Modify the take profit level of the trade
         try:
-            self._trading.exchange.update_order(
-                self._trading.trade_id, {'takeProfit': take_profit})
+            self._trading.modify_takeprofit_stoploss(
+                self._trading.trade_id, take_profit=take_profit)
             self.model_logger.info(
-                f"Trade ID: {self._trading.trade_id} Modify TakeProfit {take_profit} ")
+                f"Trade ID: {self._trading.trade_id} Modify TakeProfit {take_profit}")
         except Exception as e:
-            self.model_logger.error(f"in the modify_take_profit Error: {e}")
+            self.model_logger.error(f"In the modify_take_profit Error: {e}")
 
-    def place_trade(self, trade_type, amount, price, stoploss, takeprofit, file) -> None:
-        ml = self.presenter.ml_tab.get_ml()
-        model = ml.load_model(file)
+    # Additional method to get the current bid and ask prices
+    def get_bid_ask(self):
+        return self._trading.getBidAsk()
 
-        # Make predictions using the scaled test data
-        y_pred = ml.predict(model)
+    # Additional method to fetch open trades
+    def fetch_open_trades(self, symbol):
+        return self._trading.fetch_open_trades(symbol)
 
-        # check and place the trade using the specified parameters
-        self._trading.check_and_place_trade(
-            trade_type, amount, price, takeprofit, stoploss, y_pred)
+    # Additional method to get the current ticker price
+
+    def get_ticker_price(self):
+        return self._trading.get_ticker_price()
+
+    def get_real_time_data(self):
+        # Method to access the latest real-time data
+        return self._trading.get_real_time_data()
+
+    def start_real_time_updates(self):
+        self._trading.start_real_time_updates()
+
+    def stop_real_time_updates(self):
+        self._trading.stop_real_time_updates()
+
+    def scale_in_out(self, amount):
+        self._trading.scale_in_out(amount)
+
+    def set_symbol(self):
+        symbol = self.presenter.trading_presenter.get_symbol()
+        self._trading.set_symbol(symbol)
 
 
 class ExchangeTabModel:
-    def __init__(self, model_logger, presenter) -> None:
-        self.model_logger = model_logger
+    def __init__(self, presenter) -> None:
+        self.model_logger = logger['model']
         self._presenter = presenter
         self.model_logger.info("loading the Exchange tab model")
         self.exchange = []
@@ -248,8 +270,8 @@ class ExchangeTabModel:
 
 
 class BotTabModel:
-    def __init__(self, model_logger, presenter) -> None:
-        self.model_logger = model_logger
+    def __init__(self, presenter) -> None:
+        self.model_logger = logger['model']
         self._presenter = presenter
         self.model_logger.info("loading the Bot tab model")
         self.bots = []
@@ -338,8 +360,8 @@ class BotTabModel:
 
 
 class ChartTabModel:
-    def __init__(self, model_logger, presenter) -> None:
-        self.model_logger = model_logger
+    def __init__(self, presenter) -> None:
+        self.model_logger = logger['model']
         self.presenter = presenter
         self.model_logger.info("loading the Chart tab model")
         self.stop_event_chart = threading.Event()
@@ -399,15 +421,15 @@ class ChartTabModel:
 
 
 class ReinforcementTabModel:
-    def __init__(self, model_logger, presenter) -> None:
-        self.model_logger = model_logger
+    def __init__(self, presenter) -> None:
+        self.model_logger = logger['model']
         self.rl_logger = logger['rl']
         self.presenter = presenter
-        self.model_logger.info("loading the reinforcement tab model")
+
         self.features = ['open', 'high', 'low',
                          'close', 'volume', 'portfolio_balance']
         self.result = None
-
+        self.model_logger.info("loading the reinforcement tab model")
         # Define a parameter grid with hyperparameters and their possible values
         self.params = {
             'gamma': float(config['Params']['gamma']),
@@ -425,7 +447,7 @@ class ReinforcementTabModel:
     # Define a function for training and evaluating the DQL agent
 
     def train_and_evaluate(self, params, logger):
-        sac(params, logger)
+        TensorflowModel(params, logger).sac()
 
     def start(self):
         try:

@@ -89,74 +89,100 @@ class MainListBox:
 
 class TradePresenter:
     def __init__(self, model, view, presenter) -> None:
-        self._model = model
+        self._model = model.tradetab_model
         self.main_view = view
         self.presenter = presenter
-    # Implement the methods related to the Trade Tab here
 
     def trade_tab(self) -> Frame:
         trade_tab_view = self.main_view.trade_tab
         return trade_tab_view
 
-    def update_stoploss(self) -> None:
-        trade_tab_view = self.trade_tab()
-        stoploss_slider = trade_tab_view.stoploss_slider.get()
-        self.presenter.main_listbox.set_text(stoploss_slider)
-        self._model.tradetab_model.update_stoploss(stoploss_slider)
-
-    def update_takeprofit(self) -> None:
-        trade_tab_view = self.trade_tab()
-        takeprofit_slider = trade_tab_view.takeprofit_slider.get()
-        self.presenter.main_listbox.set_text(takeprofit_slider)
-        self._model.tradetab_model.update_takeprofit(takeprofit_slider)
-
-    def place_trade(self) -> None:
-        trade_tab_view = self.trade_tab()
-
-        # Get the trade type, amount, and price from the GUI
-        trade_type = trade_tab_view.type_var.get()
-        amount = float(trade_tab_view.amount_entry.get())
-        price = float(trade_tab_view.price_entry.get())
-
-        # Create a Trading instance with the selected exchange, symbol, side, stop loss, and take profit levels, and the API key
-
-        allowed_position = self._model.tradetab_model._trading.getBalancUSDT * MAX_POSITION_SIZE
-        if abs(float(amount)) > allowed_position:
-            messagebox.showerror(
-                "Error", "Trade size exceeds maximum position size")
-            return
-
-        bid = self._model.tradetab_model._trading.getBidAsk()[0]
-        # Check if the stop loss level is above the minimum level
-        if trade_type == "stop" and price < float(bid) * MIN_STOP_LOSS_LEVEL:
-            messagebox.showerror(
-                "Error", "Stop loss level is below minimum level")
-            return
-
-        # Get the stop loss and take profit levels from the sliders
-        stoploss = price - \
-            (price * (float(trade_tab_view.stoploss_slider.get())))
-        takeprofit = price + \
-            (price * (float(trade_tab_view.takeprofit_slider.get())))
-
-        ml_tab = self.ml_tab_view()
-
-        file = ml_tab.type_var.get()
-
-        self._model.tradetab_model.place_trade(
-            trade_type, amount, price, stoploss, takeprofit, file)
-
-        self.presenter.main_listbox.set_text(
-            f"Type: {trade_type} {amount} at {price}")
-        self._model.logger.info(f"Type: {trade_type} {amount} at {price}")
-        # Update the trade history list
-        # self.trade_tab.update_history()
-
-    def get_balance(self) -> None:
-        usdt, btc = self._model.tradetab_model.get_balance()
+    def update_balance(self):
+        usdt, btc = self._model.get_balance()
         trade_tab = self.trade_tab()
-        trade_tab.usdt_balance_label.config(text=f"{usdt}")
-        trade_tab.btc_balance_label.config(text=f"{btc}")
+        trade_tab.usdt_label.config(
+            text=f"USDT: Total {usdt['total']} | Free {usdt['free']}")
+        trade_tab.btc_label.config(
+            text=f"BTC: Total {btc['total']} | Free {btc['free']}")
+        self.presenter.main_listbox.set_text(
+            f"getting the Balance: USDT free {usdt['free']} & BTC free {btc['free']} ")
+
+    def place_trade(self):
+        try:
+            trade_tab = self.trade_tab()
+            # Method to handle the trade button click
+            trade_type = trade_tab.type_var.get()
+            symbol = trade_tab.symbol
+            amount = int(trade_tab.amount_slider.get())
+            price = float(trade_tab.price_entry.get()
+                          ) if trade_type == 'limit' else None
+            stoploss = trade_tab.stoploss_slider.get()
+            takeprofit = trade_tab.takeprofit_slider.get()
+            side = "buy" if trade_tab.buy_var == True else "sell"
+            self._model.place_trade(
+                symbol, side, trade_type, amount, price, stoploss, takeprofit)
+            self.presenter.main_listbox.set_text(
+                f"place trade: {symbol}|{amount}|{price}")
+        except Exception as e:
+            app_logger.error(f"error with place trade:{e}")
+
+    def update_stoploss(self, new_stoploss):
+        trade_tab = self.trade_tab()
+        new_stoploss = trade_tab.stoploss_slider.get()
+        self._model.update_stoploss(new_stoploss)
+        self.presenter.main_listbox.set_text(
+            f"updating stoploss: {new_stoploss}")
+
+    def update_takeprofit(self, new_takeprofit):
+        trade_tab = self.trade_tab()
+        new_takeprofit = trade_tab.takeprofit_slider.get()
+        self._model.update_takeprofit(new_takeprofit)
+        self.presenter.main_listbox.set_text(
+            f"updating takeprofit: {new_takeprofit}")
+
+    # Bid and ask
+    def update_bid_ask(self):
+        bid, ask = self._model.get_bid_ask()
+        trade_tab = self.trade_tab()
+
+        # Insert the new bid and ask data
+        trade_tab.bid_label.config(text=f"Bid: {bid}")
+        trade_tab.ask_label.config(text=f"Ask: {ask}")
+
+    # Open trades
+    def update_open_trades(self):
+        trade_tab = self.trade_tab()
+        open_trades = self._model.fetch_open_trades(trade_tab.symbol)
+        for i in open_trades:
+            trade_tab.open_trades_listbox.insert('end', open_trades[i])
+
+    # Update ticker prices
+    def update_ticker_price(self):
+        last_price = self._model.get_ticker_price()
+        trade_tab = self.trade_tab()
+        trade_tab.ticker_price_label.config(text=f"Ticker Price: {last_price}")
+
+    def get_real_time_date(self):
+        return self._model.get_real_time_data()
+
+    def refresh_data(self):
+        self.update_bid_ask()
+        self.update_open_trades()
+        self.update_ticker_price()
+        self.update_balance()
+        self.presenter.main_listbox.set_text(f"refreshing the data")
+
+    def start_refresh_data_thread(self):
+        refresh_thread = threading.Thread(target=self.refresh_data)
+        refresh_thread.start()
+
+    def scale_in_out(self, amount):
+        self._model.scale_in_out(amount)
+        self.presenter.main_listbox.set_text(f"scaling the data: {amount}")
+
+    def get_symbol(self):
+        trade_tab = self.trade_tab()
+        return trade_tab.symbol
 
 
 class BotPresenter:

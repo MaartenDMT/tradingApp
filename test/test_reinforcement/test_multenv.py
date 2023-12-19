@@ -1,5 +1,6 @@
 import unittest
-from model.reinforcement.env import MultiAgentEnvironment, Environment
+
+from model.reinforcement.env import Environment, MultiAgentEnvironment
 
 
 class TestMultiAgentEnvironment(unittest.TestCase):
@@ -8,8 +9,8 @@ class TestMultiAgentEnvironment(unittest.TestCase):
         # Set up with a specific number of agents
         self.num_agents = 3
         # Dummy arguments for Environment
-        args = ('BTCUSDT', ["close", "open"], 10, "30m", 5, 0.5)
-        self.env = MultiAgentEnvironment(self.num_agents, *args)
+        self.args = ('BTCUSDT', ["close", "open"], 10, "30m", 5, 0.5)
+        self.env = MultiAgentEnvironment(self.num_agents, *self.args)
 
     def test_initialization(self):
         self.assertEqual(self.env.num_agents, self.num_agents)
@@ -17,7 +18,7 @@ class TestMultiAgentEnvironment(unittest.TestCase):
         self.assertEqual(len(self.env.agents), self.num_agents)
 
     def test_reset_single_agent(self):
-        single_agent_env = MultiAgentEnvironment(1, *args)
+        single_agent_env = MultiAgentEnvironment(1, *self.args)
         state = single_agent_env.reset()
         self.assertIsNotNone(state)
 
@@ -26,7 +27,7 @@ class TestMultiAgentEnvironment(unittest.TestCase):
         self.assertEqual(len(states), self.num_agents)
 
     def test_step_single_agent(self):
-        single_agent_env = MultiAgentEnvironment(1, *args)
+        single_agent_env = MultiAgentEnvironment(1, *self.args)
         action = single_agent_env.get_action_space().sample()
         state, reward, info, done = single_agent_env.step(action)
         self.assertIsNotNone(state)

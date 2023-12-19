@@ -82,74 +82,75 @@ def compute_market_condition_reward(action, df_row, bar, data):
 
 
 # SHORT ACTION
-def short_bollinger_condition(df, current_bar_index):
+def short_bollinger_condition(df, current_bar_index) -> bool:
     """Check for a short action signal using Bollinger Bands."""
-    if current_bar_index < 21:
+    if current_bar_index < 20:
         return False
     bollinger = df.ta.bbands().iloc[current_bar_index]
-    return df.iloc[current_bar_index]['close'] > bollinger['BBU_5_2.0']
+    return bool(df.iloc[current_bar_index]['close'] > bollinger['BBU_5_2.0'])
 
 
-def short_stochastic_condition(df, current_bar_index):
+def short_stochastic_condition(df, current_bar_index) -> bool:
     """Check for a bearish crossover in stochastic oscillator for a short action."""
-    if current_bar_index < 15:
+    if current_bar_index < 14:
         return False
     stochastic = df.ta.stoch().iloc[current_bar_index]
-    return stochastic['STOCHk_14_3_3'] < stochastic['STOCHd_14_3_3'] and stochastic['STOCHk_14_3_3'] > 80
+    return bool(stochastic['STOCHk_14_3_3'] < stochastic['STOCHd_14_3_3'] and stochastic['STOCHk_14_3_3'] > 80)
 
 
 # LONG ACTION
 
-def long_stochastic_condition(df, current_bar_index):
+def long_stochastic_condition(df, current_bar_index) -> bool:
     """Check for a bullish crossover in stochastic oscillator for a long action."""
-    if current_bar_index < 15:
+    if current_bar_index < 14:
         return False
     stochastic = df.ta.stoch().iloc[current_bar_index]
-    return stochastic['STOCHk_14_3_3'] > stochastic['STOCHd_14_3_3'] and stochastic['STOCHk_14_3_3'] < 20
+
+    return bool(stochastic['STOCHk_14_3_3'] > stochastic['STOCHd_14_3_3'] and stochastic['STOCHk_14_3_3'] < 20)
 
 
-def long_bollinger_condition(df, current_bar_index):
+def long_bollinger_condition(df, current_bar_index) -> bool:
     """Check for a long action signal using Bollinger Bands."""
-    if current_bar_index < 21:
+    if current_bar_index < 20:
         return False
     bollinger = df.ta.bbands().iloc[current_bar_index]
-    return df.iloc[current_bar_index]['close'] < bollinger['BBL_5_2.0']
+    return bool(df.iloc[current_bar_index]['close'] < bollinger['BBL_5_2.0'])
 
 
-def macd_condition(df, current_bar_index):
+def macd_condition(df, current_bar_index) -> bool:
     """Checks if the MACD line is above the signal line."""
-    if current_bar_index < 15:
+    if current_bar_index < 14:
         return False
     macd = df.ta.macd(
         fast=14, slow=28, signal=9).iloc[current_bar_index]
-    return macd['MACD_14_28_9'] > macd['MACDs_14_28_9']
+    return bool(macd['MACD_14_28_9'] > macd['MACDs_14_28_9'])
 
 
-def atr_condition(df, current_bar_index):
+def atr_condition(df, current_bar_index) -> bool:
     """Checks if the current ATR is greater than the mean ATR."""
-    if current_bar_index < 15:
+    if current_bar_index < 14:
         return False
     atr = df.ta.atr().iloc[current_bar_index]
-    return atr > atr.mean()
+    return bool(atr > atr.mean())
 
 
-def adx_condition(df, current_bar_index):
+def adx_condition(df, current_bar_index) -> bool:
     """Checks if the strength of the trend is strong with ADX > 25."""
-    if current_bar_index < 15:
+    if current_bar_index < 14:
         return False
     adx = df.ta.adx().iloc[current_bar_index]
-    return adx['ADX_14'] > 25
+    return bool(adx['ADX_14'] > 25)
 
 
-def parabolic_sar_condition(df, current_bar_index):
+def parabolic_sar_condition(df, current_bar_index) -> bool:
     """Checks if the close price is above the Parabolic SAR."""
-    if current_bar_index < 21:
+    if current_bar_index < 20:
         return False
     psar = df.ta.psar().iloc[current_bar_index]
     return df.iloc[current_bar_index]['close'] > psar
 
 
-def cdl_pattern(df, current_bar_index):
+def cdl_pattern(df, current_bar_index) -> bool:
     """Checks for the presence of a cdl_pattern candlestick pattern."""
     if current_bar_index < 2:
         return False
@@ -158,34 +159,34 @@ def cdl_pattern(df, current_bar_index):
     return cdl_pattern != 0
 
 
-def volume_breakout(df, current_bar_index):
+def volume_breakout(df, current_bar_index) -> bool:
     """Checks for the presence of a cdl_pattern candlestick pattern."""
-    if current_bar_index < 21:
+    if current_bar_index < 20:
         return False
     # Average volume over the last 20 bars.
     avg_volume = df[
         'volume'].iloc[current_bar_index-20:current_bar_index].mean()
     # Current volume is 150% of the average volume.
-    return df.iloc[current_bar_index]['volume'] > 1.5 * avg_volume
+    return bool(df.iloc[current_bar_index]['volume'] > 1.5 * avg_volume)
 
 
-def resistance_break(df, current_bar_index):
+def resistance_break(df, current_bar_index) -> bool:
     """Checks for the presence of a cdl_pattern candlestick pattern."""
-    if current_bar_index < 21:
+    if current_bar_index < 20:
         return False
     # Maximum high over the last 20 bars.
     resistance = df[
         'high'].iloc[current_bar_index-20:current_bar_index].max()
 
     # Current close is above the resistance.
-    return df.iloc[current_bar_index]['close'] > resistance
+    return bool(df.iloc[current_bar_index]['close'] > resistance)
 
 
-def is_increasing_trend(df, current_bar_index):
+def is_increasing_trend(df, current_bar_index) -> bool:
     """Checks if there's an increasing trend for the past 3 bars."""
     if current_bar_index < 2:
         return False
-    return (df.iloc[current_bar_index]['close'] > df.iloc[current_bar_index - 1]['close']) and (df.iloc[current_bar_index - 1]['close'] > df.iloc[current_bar_index - 2]['close'])
+    return bool((df.iloc[current_bar_index]['close'] > df.iloc[current_bar_index - 1]['close']) and (df.iloc[current_bar_index - 1]['close'] > df.iloc[current_bar_index - 2]['close']))
 
 
 # ========================================================

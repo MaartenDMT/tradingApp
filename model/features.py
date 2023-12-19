@@ -30,12 +30,12 @@ class Tradex_indicator:
 
     def __init__(self, symbol, timeframe, t=None, get_data=False, data=None):
         self.tradex_logger = tradex_logger
-        self.ccxt_exchange = ccxt.binance()  # Change this to your desired exchange
+        self.ccxt_exchange = ccxt.phemex()  # Change this to your desired exchange
         self.timeframe = timeframe
         self.symbol = symbol
-        self.data = data if not get_data else self.get_data()
+        self.data = self.convert_df(data) if not get_data else self._get_data()
         if t is not None:
-            self.changeTime(t)
+            self._changeTime(t)
         self.trend = Trend
         self.screener = Screener
         self.real_time = Real_time
@@ -52,7 +52,7 @@ class Tradex_indicator:
 
         return df
 
-    def get_data(self) -> pd.DataFrame:
+    def _get_data(self) -> pd.DataFrame:
         try:
             self.tradex_logger.info('Getting the data')
             since = self.ccxt_exchange.parse8601(
@@ -81,7 +81,7 @@ class Tradex_indicator:
 
         return df
 
-    def changeTime(self, t):
+    def _changeTime(self, t):
         try:
             self.data.index = pd.to_datetime(self.data.index, utc=True)
             self.tradex_logger.info(f'Changing the {self.timeframe} to {t}')
@@ -108,11 +108,6 @@ class Tradex_indicator:
         except pd.errors.OutOfBoundsTimedelta:
             self.tradex_logger.error(
                 'Error encountered in the timedelta bounds while changing the timeframe.')
-            return None
-
-        except pd.errors.ResampleError:
-            self.tradex_logger.error(
-                'Error encountered while resampling the data.')
             return None
 
         except Exception as e:
@@ -159,6 +154,8 @@ class Tradex_indicator:
                 f"An unexpected error occurred during the analysis: {e}")
             return None
 
+        return True
+
 
 class Trend:
     '''
@@ -168,6 +165,7 @@ class Trend:
     def __init__(self, data, tradex_logger):
         self.tradex_logger = tradex_logger
         self.data = data
+        print(self.data.columns)
         self.df_trend = pd.DataFrame()
         self.get_trend()
 
