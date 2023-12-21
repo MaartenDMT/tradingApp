@@ -10,7 +10,7 @@ import pandas as pd
 # import pandas_ta as ta
 import seaborn as sns
 from joblib import dump, load
-from sklearn.metrics import (accuracy_score, classification_report,
+from sklearn.metrics import (accuracy_score, auc, classification_report,
                              confusion_matrix, explained_variance_score,
                              make_scorer, mean_absolute_error,
                              mean_squared_error, r2_score, roc_auc_score,
@@ -69,83 +69,87 @@ class MachineLearning:
 
     def evaluate_model(self, name, model, X_test, y_test):
         y_pred = model.predict(X_test)
+
+        if name in regression:
+            accuracy = self.evaluate_regression_model(name, y_test, y_pred)
+        else:
+            accuracy = self.evaluate_classification_model(name, y_test, y_pred)
+
+        return accuracy
+
+    def evaluate_regression_model(self, name, y_test, y_pred):
+        # Calculate and log regression metrics
+        r2, mae, mse, rmse, evs = self.calculate_regression_metrics(
+            y_test, y_pred)
+
+        # Plot regression results
+        self.plot_regression_results(
+            name, y_test, y_pred, r2, mae, mse, rmse, evs)
+
+        return r2
+
+    def evaluate_classification_model(self, name, y_test, y_pred):
+        # Calculate and log classification metrics
+        accuracy, auc = self.calculate_classification_metrics(y_test, y_pred)
+
+        # Plot classification results
+        self.plot_classification_results(name, y_test, y_pred, accuracy, auc)
+
+        return accuracy
+
+    def calculate_regression_metrics(self, y_test, y_pred):
+        # Compute various regression metrics
+        r2 = r2_score(y_test, y_pred)
+        mae = mean_absolute_error(y_test, y_pred)
+        mse = mean_squared_error(y_test, y_pred)
+        rmse = np.sqrt(mse)
+        evs = explained_variance_score(y_test, y_pred)
+
+        # Log the metrics
+        self.logger.info(f"R2 Score: {r2}")
+        self.logger.info(f"Mean Absolute Error: {mae}")
+        self.logger.info(f"Mean Squared Error: {mse}")
+        self.logger.info(f"Root Mean Squared Error: {rmse}")
+        self.logger.info(f"Explained Variance Score: {evs}")
+
+        return r2, mae, mse, rmse, evs
+
+    def calculate_classification_metrics(self, y_test, y_pred):
+        # Compute various classification metrics
+        accuracy = accuracy_score(y_test, y_pred)
+        auc = roc_auc_score(y_test, y_pred) if len(
+            set(y_test)) == 2 else "Not Applicable"
+        self.logger.info(f"Accuracy: {accuracy}")
+        self.logger.info(f"AUC-ROC: {auc}")
+        self.logger.info(
+            f"Classification Report:\n{classification_report(y_test, y_pred)}")
+
+        return accuracy, auc
+
+    def plot_regression_results(self, name, y_test, y_pred, r2, mae, mse, rmse, evs):
         plot_dir = 'data/plots'
         if not os.path.exists(plot_dir):
             os.makedirs(plot_dir)
 
-        # Create a new figure and a subplot axis
         fig, ax = plt.subplots(figsize=(10, 6))
 
-        accuracy = None
-        if name in regression:
-            # Calculate additional regression metrics
-            r2 = r2_score(y_test, y_pred)
-            mae = mean_absolute_error(y_test, y_pred)
-            mse = mean_squared_error(y_test, y_pred)
-            rmse = np.sqrt(mse)
-            evs = explained_variance_score(y_test, y_pred)
+        # Scatter plot for true values vs predictions
+        ax.scatter(y_test, y_pred)
+        ax.set_xlabel('True Values')
+        ax.set_ylabel('Predictions')
+        ax.set_title(f'Regression Results for {name} - True vs Predicted')
 
-            # Print the metrics
-            self.logger.info(f"R2 Score: {r2}")
-            self.logger.info(f"Mean Absolute Error: {mae}")
-            self.logger.info(f"Mean Squared Error: {mse}")
-            self.logger.info(f"Root Mean Squared Error: {rmse}")
-            self.logger.info(f"Explained Variance Score: {evs}")
+        # Plotting the line of best fit
+        ax.plot([y_test.min(), y_test.max()], [
+                y_test.min(), y_test.max()], 'k--', lw=4)
 
-           # Visualize the results
-            ax.scatter(y_test, y_pred)
-            ax.set_xlabel('True Values')
-            ax.set_ylabel('Predictions')
-            ax.set_title('True Values vs Predictions', loc='right')
+        # Adding text for metrics
+        textstr = f'R2: {r2:.2f}\nMAE: {mae:.2f}\nMSE: {mse:.2f}\nRMSE: {rmse:.2f}\nEVS: {evs:.2f}'
+        ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=12,
+                verticalalignment='top', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
 
-            # Visualize the residuals in a new subplot
-            ax_res = ax.twinx()  # Create a twin Y axis sharing the same X axis
-            residuals = y_test - y_pred
-            ax_res.hist(residuals, alpha=0.5, color='orange')
-            ax_res.set_ylabel('Frequency')
-            ax_res.set_title('Residual Histogram', loc='left')
-
-            fig.suptitle('Regression Analysis')
-
-            # For regression models, you might want to return R2 score or another metric as "accuracy"
-            accuracy = r2
-
-        else:
-
-            # Calculate additional classification metrics
-            accuracy = accuracy_score(y_test, y_pred)
-            auc = roc_auc_score(y_test, y_pred) if len(
-                set(y_test)) == 2 else "Not Applicable"
-            self.logger.info(f"Accuracy: {accuracy}")
-            self.logger.info(f"AUC-ROC: {auc}")
-            self.logger.info(
-                f"Classification Report:\n{classification_report(y_test, y_pred)}")
-
-            # confusion matrix
-            conf_mat = confusion_matrix(y_test, y_pred)
-
-            # Visualize the results
-            sns.heatmap(conf_mat, annot=True, fmt='d', ax=ax)
-            ax.set_xlabel('Predicted')
-            ax.set_ylabel('True')
-            ax.set_title('Confusion Matrix', loc='right')
-
-            if len(set(y_test)) == 2:
-                # ROC Curve for binary classification in a new subplot
-                ax_roc = ax.twinx()  # Create a twin Y axis sharing the same X axis
-                fpr, tpr, _ = roc_curve(y_test, y_pred)
-                ax_roc.plot(fpr, tpr, color='orange')
-                ax_roc.set_ylabel('True Positive Rate')
-                ax_roc.set_title('ROC Curve', loc='left')
-
-            fig.suptitle('Classification Analysis')
-
-        if name in regression:
-            # Save the plot
-            plt.savefig(f'{plot_dir}/{name}_plot.png')
-        else:
-            # Save the plot
-            plt.savefig(f'{plot_dir}/{name}_confusion.png')
+        # Save and show the plot
+        plt.savefig(f'{plot_dir}/{name}_regression_plot.png')
 
         # Show or close the plot
         if threading.current_thread() == threading.main_thread():
@@ -153,7 +157,43 @@ class MachineLearning:
         else:
             plt.close()
 
-        return accuracy
+    def plot_classification_results(self, name, y_test, y_pred, accuracy, auc_score):
+        plot_dir = 'data/plots'
+        if not os.path.exists(plot_dir):
+            os.makedirs(plot_dir)
+
+        fig, ax = plt.subplots(figsize=(10, 6))
+
+        # Plotting the confusion matrix
+        cm = confusion_matrix(y_test, y_pred)
+        sns.heatmap(cm, annot=True, fmt='d', ax=ax)
+        ax.set_xlabel('Predicted')
+        ax.set_ylabel('True')
+        ax.set_title(f'Confusion Matrix for {name}')
+
+        # Plot ROC curve if binary classification
+        if len(set(y_test)) == 2:
+            fpr, tpr, _ = roc_curve(y_test, y_pred)
+            roc_auc = auc(fpr, tpr)
+
+            fig_roc, ax_roc = plt.subplots(figsize=(10, 6))
+            ax_roc.plot(fpr, tpr, color='blue', lw=2,
+                        label=f'ROC curve (area = {roc_auc:.2f})')
+            ax_roc.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
+            ax_roc.set_xlabel('False Positive Rate')
+            ax_roc.set_ylabel('True Positive Rate')
+            ax_roc.set_title(f'ROC Curve for {name}')
+            ax_roc.legend(loc="lower right")
+            plt.savefig(f'{plot_dir}/{name}_roc_curve.png')
+
+        # Save and show the plots
+        plt.savefig(f'{plot_dir}/{name}_confusion_matrix.png')
+
+        # Show or close the plot
+        if threading.current_thread() == threading.main_thread():
+            plt.show()
+        else:
+            plt.close()
 
     def save_model(self, model, accuracy, score=None):
         # Save the model if it has high accuracy
@@ -237,7 +277,7 @@ class MachineLearning:
         else:
             return df['close']
 
-    def train_evaluate_and_save_model(self, model: str):
+    def train_evaluate_and_save_model(self, model: str, usage_percent=20):
         # Define the path of the pickle file
         pickle_file_path = 'data/pickle/2020/3h_data.pkl'
 
@@ -256,6 +296,12 @@ class MachineLearning:
             # Save the preprocessed data as a pickle file for future use
             with open(pickle_file_path, 'wb') as file:
                 dump(df, file)
+
+                # Adjust the DataFrame to use only the specified percentage of the data
+        df = df.sample(frac=usage_percent/100.0)
+
+        self.logger.info(
+            f"Using {len(df)} out of {len(df) / (usage_percent/100.0)} rows ({usage_percent}%) of the data.")
 
         features = self.process_features(df)
         labels = self.process_labels(df, model, n_candles=5)
