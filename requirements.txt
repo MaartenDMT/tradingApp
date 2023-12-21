@@ -2,80 +2,117 @@ absl-py==2.0.0
 aiodns==3.1.1
 aiohttp==3.9.1
 aiosignal==1.3.1
+appdirs==1.4.4
+asttokens @ file:///opt/conda/conda-bld/asttokens_1646925590279/work
 astunparse==1.6.3
 attrs==23.1.0
 autopep8==2.0.4
+backcall @ file:///home/ktietz/src/ci/backcall_1611930011877/work
+beautifulsoup4==4.12.2
 cachetools==5.3.2
-ccxt==4.1.79
+ccxt==4.1.95
 certifi==2023.11.17
 cffi==1.16.0
 charset-normalizer==3.3.2
+click==8.1.7
 cloudpickle==3.0.0
-colorama==0.4.6
+colorama @ file:///C:/ci_311/colorama_1676422310965/work
+comm @ file:///C:/ci_311/comm_1678376562840/work
 contourpy==1.2.0
 cryptography==41.0.7
 cycler==0.12.1
-decorator==5.1.1
+debugpy @ file:///C:/b/abs_c0y1fjipt2/croot/debugpy_1690906864587/work
+decorator @ file:///opt/conda/conda-bld/decorator_1643638310831/work
 dm-tree==0.1.8
+executing @ file:///opt/conda/conda-bld/executing_1646925071911/work
 filelock==3.13.1
 flatbuffers==23.5.26
-fonttools==4.46.0
-frozenlist==1.4.0
-fsspec==2023.12.1
+fonttools==4.47.0
+frozendict==2.3.10
+frozenlist==1.4.1
+fsspec==2023.12.2
 gast==0.5.4
-google-auth==2.25.1
-google-auth-oauthlib==1.1.0
+google-auth==2.25.2
+google-auth-oauthlib==1.2.0
 google-pasta==0.2.0
-grpcio==1.59.3
+grpcio==1.60.0
 gym==0.26.2
 gym-notices==0.0.8
 h5py==3.10.0
+html5lib==1.1
 idna==3.6
 iniconfig==2.0.0
-isort==5.12.0
+ipykernel @ file:///C:/b/abs_07rkft_vaz/croot/ipykernel_1691121700587/work
+ipython @ file:///C:/b/abs_e5729i179y/croot/ipython_1694181400005/work
+isort==5.13.2
+jedi @ file:///C:/ci_311/jedi_1679427407646/work
 Jinja2==3.1.2
 joblib==1.3.2
+jupyter_client @ file:///C:/b/abs_a6h3c8hfdq/croot/jupyter_client_1699455939372/work
+jupyter_core @ file:///C:/b/abs_c769pbqg9b/croot/jupyter_core_1698937367513/work
 keras==2.15.0
 kiwisolver==1.4.5
 libclang==16.0.6
+lxml==4.9.4
 Markdown==3.5.1
+markdown-it-py==3.0.0
 MarkupSafe==2.1.3
 matplotlib==3.8.2
+matplotlib-inline @ file:///C:/ci_311/matplotlib-inline_1676425798036/work
+mdurl==0.1.2
 ml-dtypes==0.2.0
 mpmath==1.3.0
 multidict==6.0.4
+multitasking==0.0.11
+namex==0.0.7
+nest-asyncio @ file:///C:/ci_311/nest-asyncio_1676423519896/work
 networkx==3.2.1
+nltk==3.8.1
 numpy==1.26.2
 oauthlib==3.2.2
 opt-einsum==3.3.0
-packaging==23.2
-pandas==2.1.3
+packaging @ file:///C:/b/abs_28t5mcoltc/croot/packaging_1693575224052/work
+pandas==2.1.4
 pandas-ta==0.3.14b0
+parso @ file:///opt/conda/conda-bld/parso_1641458642106/work
+peewee==3.17.0
+pickleshare @ file:///tmp/build/80754af9/pickleshare_1606932040724/work
 Pillow==10.1.0
+platformdirs @ file:///C:/b/abs_b6z_yqw_ii/croot/platformdirs_1692205479426/work
 pluggy==1.3.0
+prompt-toolkit @ file:///C:/ci_311/prompt-toolkit_1676425940920/work
 protobuf==4.23.4
+psutil @ file:///C:/ci_311_rebuilds/psutil_1679005906571/work
 psycopg2==2.9.9
+pure-eval @ file:///opt/conda/conda-bld/pure_eval_1646925070566/work
 pyaml==23.9.7
 pyasn1==0.5.1
 pyasn1-modules==0.3.0
 pycares==4.4.0
 pycodestyle==2.11.1
 pycparser==2.21
+Pygments @ file:///C:/b/abs_fay9dpq4n_/croot/pygments_1684279990574/work
 pyparsing==3.1.1
 pytab==1.0.4
 pytest==7.4.3
-python-dateutil==2.8.2
+python-dateutil @ file:///tmp/build/80754af9/python-dateutil_1626374649649/work
 python-dotenv==1.0.0
 pytz==2023.3.post1
+pywin32==306
 PyYAML==6.0.1
+pyzmq @ file:///C:/b/abs_655zk4a3s8/croot/pyzmq_1686601465034/work
+regex==2023.10.3
 requests==2.31.0
 requests-oauthlib==1.3.1
+rich==13.7.0
 rsa==4.9
 scikit-learn==1.3.2
 scikit-optimize==0.9.0
 scipy==1.11.4
 seaborn==0.13.0
-six==1.16.0
+six @ file:///tmp/build/80754af9/six_1644875935023/work
+soupsieve==2.5
+stack-data @ file:///opt/conda/conda-bld/stack_data_1646927590127/work
 sympy==1.12
 tensorboard==2.15.1
 tensorboard-data-server==0.7.2
@@ -85,15 +122,22 @@ tensorflow-intel==2.15.0
 tensorflow-io-gcs-filesystem==0.31.0
 tensorflow-probability==0.23.0
 termcolor==2.4.0
+textblob==0.17.1
 threadpoolctl==3.2.0
-torch==2.1.1
+torch==2.1.2
+tornado @ file:///C:/b/abs_0cbrstidzg/croot/tornado_1696937003724/work
+tqdm==4.66.1
+traitlets @ file:///C:/ci_311/traitlets_1676423290727/work
 ttkbootstrap==1.10.1
-typing_extensions==4.8.0
+typing_extensions==4.9.0
 tzdata==2023.3
 urllib3==2.1.0
 vaderSentiment==3.3.2
+wcwidth @ file:///Users/ktietz/demo/mc3/conda-bld/wcwidth_1629357192024/work
+webencodings==0.5.1
 websocket-client==1.7.0
 Werkzeug==3.0.1
-wrapt==1.14.1
-xgboost==2.0.2
+wrapt==1.16.0
+xgboost==2.0.3
 yarl==1.9.4
+yfinance==0.2.33

@@ -87,7 +87,7 @@ class MainView(Frame):
         self._parent = parent
 
         self._parent.title("Main Screen")
-        self._parent.geometry("860x600")
+        self._parent.geometry("1020x720")
         style = Style()
         themes = style.theme_names()
 
@@ -114,7 +114,7 @@ class MainView(Frame):
         self.history_list = Listbox(self)
 
         # Create the main window with a tabbed interface
-        self.notebook = Notebook(self, width='800')
+        self.notebook = Notebook(self)
         self.trade_tab = TradeTab(self.notebook, self._presenter)
         self.exchange_tab = ExchangeTab(self.notebook, self._presenter)
         self.bot_tab = BotTab(self.notebook, self._presenter)
@@ -130,7 +130,7 @@ class MainView(Frame):
         self.notebook.add(self.rl_tab, text="Reinforcement Learning")
 
         # Tkinter App main page ----------------------------------------------
-        self.notebook.grid(row=1, column=0, padx=5)
+        self.notebook.grid(row=1, column=0, padx=5, sticky='nsew')
         self.history_list.grid(row=2, column=0, padx=5, pady=2, sticky='nsew')
 
     def changer(self, theme) -> None:

@@ -1,3 +1,4 @@
+import datetime
 import os
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -160,27 +161,31 @@ class MachineLearning:
         params_path = r'data/csv/params_accuracy.csv'
 
         if accuracy > 0.62:
-            joblib.dump(model.best_estimator_,
-                        f'{path}trained_{model.best_estimator_.__class__.__name__}{accuracy*100}.p')
+            # Create a version number based on current date and time
+            version = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+            model_filename = f'{path}trained_{model.best_estimator_.__class__.__name__}_{version}_{accuracy*100:.2f}.p'
+
+            joblib.dump(model.best_estimator_, model_filename)
+
+            # Log the saved model with version
+            self.logger.info(f'Model saved as {model_filename}')
 
         # Save the parameters and accuracy
         model_params_accuracy = {
             "Model": model.best_estimator_.__class__.__name__,
+            "Version": version,
             "Params": str(model.best_params_),
             "Accuracy": accuracy,
             "Money": score
         }
 
-        # Check if the CSV file already exists
+        # Append or create a new record for model versions
         if os.path.exists(params_path):
-            # If it exists, load the existing data
             df = pd.read_csv(params_path)
             df = df.append(model_params_accuracy, ignore_index=True)
         else:
-            # If it doesn't exist, create a new DataFrame
             df = pd.DataFrame([model_params_accuracy])
 
-        # Save the updated DataFrame to the CSV file
         df.to_csv(params_path, index=False)
 
     def load_model(self, filename):

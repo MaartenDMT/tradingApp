@@ -1,5 +1,7 @@
 import os
+import pprint
 import threading
+import traceback
 from tkinter import messagebox
 
 from ttkbootstrap import Frame
@@ -97,75 +99,200 @@ class TradePresenter:
         trade_tab_view = self.main_view.trade_tab
         return trade_tab_view
 
-    def update_balance(self):
-        usdt, btc = self._model.get_balance()
-        trade_tab = self.trade_tab()
-        trade_tab.usdt_label.config(
-            text=f"USDT: Total {usdt['total']} | Free {usdt['free']}")
-        trade_tab.btc_label.config(
-            text=f"BTC: Total {btc['total']} | Free {btc['free']}")
-        self.presenter.main_listbox.set_text(
-            f"getting the Balance: USDT free {usdt['free']} & BTC free {btc['free']} ")
+    def get_real_time_date(self):
+        return self._model.get_real_time_data()
+
+    # === Trade Execution and Parameters ===
 
     def place_trade(self):
         try:
             trade_tab = self.trade_tab()
-            # Method to handle the trade button click
-            trade_type = trade_tab.type_var.get()
-            symbol = trade_tab.symbol
-            amount = int(trade_tab.amount_slider.get())
-            price = float(trade_tab.price_entry.get()
-                          ) if trade_type == 'limit' else None
-            stoploss = trade_tab.stoploss_slider.get()
-            takeprofit = trade_tab.takeprofit_slider.get()
-            side = "buy" if trade_tab.buy_var == True else "sell"
+            trade_params = self.extract_trade_parameters(trade_tab)
+            amount = self.calculate_trade_amount(
+                trade_params['percentage_amount'])
+
+            # Place the trade through the model
             self._model.place_trade(
-                symbol, side, trade_type, amount, price, stoploss, takeprofit)
+                symbol=trade_params['symbol'],
+                side=trade_params['side'],
+                trade_type=trade_params['trade_type'],
+                amount=amount,
+                price=trade_params['price'],
+                stoploss=trade_params['stop_loss'],
+                takeprofit=trade_params['take_profit']
+            )
             self.presenter.main_listbox.set_text(
-                f"place trade: {symbol}|{amount}|{price}")
+                f"Placing trade: {trade_params}")
+        except Exception as e:  # Replace with specific exception types
+            app_logger.error(
+                f"Error with placing trade: {e}\n{traceback.format_exc()}")
+
+    def update_stoploss(self):
+        try:
+            trade_tab = self.trade_tab()
+            leverage = int(trade_tab.leverage.get())
+            sl_percentage = trade_tab.stoploss_slider.get()
+
+            # Fetch the current market price
+            last_price = self._model.get_ticker_price()
+
+            # Adjust the stop loss percentage based on leverage
+            adjusted_sl_percentage = sl_percentage / leverage
+
+            # Calculate the new stop loss price based on the trade's side
+            side = "buy" if bool(trade_tab.buy_var) else "sell"
+            if side == "buy":
+                new_stoploss = last_price * \
+                    (1 - adjusted_sl_percentage / 100.0)
+            else:
+                new_stoploss = last_price * \
+                    (1 + adjusted_sl_percentage / 100.0)
+
+            # Update the stop loss in the trading model
+            self._model.update_stoploss(new_stoploss)
+            self.presenter.main_listbox.set_text(
+                f"Updating stop loss to: {new_stoploss}")
+
         except Exception as e:
-            app_logger.error(f"error with place trade:{e}")
+            app_logger.error(
+                f"Error updating stop loss: {e}\n{traceback.format_exc()}")
 
-    def update_stoploss(self, new_stoploss):
-        trade_tab = self.trade_tab()
-        new_stoploss = trade_tab.stoploss_slider.get()
-        self._model.update_stoploss(new_stoploss)
-        self.presenter.main_listbox.set_text(
-            f"updating stoploss: {new_stoploss}")
+    def update_takeprofit(self):
+        try:
+            trade_tab = self.trade_tab()
+            leverage = int(trade_tab.leverage.get())
+            tp_percentage = trade_tab.takeprofit_slider.get()
 
-    def update_takeprofit(self, new_takeprofit):
+            # Fetch the current market price
+            last_price = self._model.get_ticker_price()
+
+            # Adjust the take profit percentage based on leverage
+            adjusted_tp_percentage = tp_percentage / leverage
+
+            # Calculate the new take profit price based on the trade's side
+            side = "buy" if bool(trade_tab.buy_var) else "sell"
+            if side == "buy":
+                new_takeprofit = last_price * \
+                    (1 + adjusted_tp_percentage / 100.0)
+            else:
+                new_takeprofit = last_price * \
+                    (1 - adjusted_tp_percentage / 100.0)
+
+            # Update the take profit in the trading model
+            self._model.update_takeprofit(new_takeprofit)
+            self.presenter.main_listbox.set_text(
+                f"Updating take profit to: {new_takeprofit}")
+
+        except Exception as e:
+            app_logger.error(
+                f"Error updating take profit: {e}\n{traceback.format_exc()}")
+
+    # 1. Execute Advanced Orders
+    def execute_advanced_orders(self, symbol, total_amount, duration, side, order_type):
+        if order_type == 'twap':
+            self._model.execute_advanced_orders(
+                symbol, total_amount, duration, side, 'twap')
+        elif order_type == 'dynamic_stop_loss':
+            # Assuming you have a way to get these parameters
+            entry_price, current_price, initial_stop_loss, trailing_percent = self.get_dynamic_stop_loss_params()
+            self._model.execute_advanced_orders(symbol, total_amount, duration, side, 'dynamic_stop_loss',
+                                                entry_price=entry_price, current_price=current_price,
+                                                initial_stop_loss=initial_stop_loss, trailing_percent=trailing_percent)
+            self.presenter.main_listbox.set_text(
+                f"Executing Dynamic Stop Loss order: Symbol={symbol}, Total Amount={total_amount}, Duration={duration}, Side={side}, Entry Price={entry_price}, Current Price={current_price}, Initial Stop Loss={initial_stop_loss}, Trailing Percent={trailing_percent}")
+
+    # === Data Display and Updates ===
+
+    def update_balance(self):
+        balance = self._model.get_balance()  # Get the balance from the model
         trade_tab = self.trade_tab()
-        new_takeprofit = trade_tab.takeprofit_slider.get()
-        self._model.update_takeprofit(new_takeprofit)
+        trade_tab.usdt_label.config(text=f"USDT: Total {balance}")
         self.presenter.main_listbox.set_text(
-            f"updating takeprofit: {new_takeprofit}")
+            f"Getting the Balance: USDT free {balance}")
+
+    def calculate_trade_amount(self, percentage_amount):
+        balance = self._model.get_balance()  # Fetch the current balance
+        return (percentage_amount / 100.0) * balance * self.get_leverage()
+
+    def calculate_stop_loss(self, trade_tab, price):
+        stop_loss_percentage = float(trade_tab.stoploss_slider.get())
+
+        # Validate that the stop loss percentage is between 0 and 100
+        if not (0 <= stop_loss_percentage <= 100):
+            raise ValueError("Stop loss percentage must be between 0 and 100")
+
+        # Calculate the stop loss value based on the percentage
+        # Your stop loss calculation logic here
+        stop_loss_value = price - (1 + (stop_loss_percentage / 100))
+
+        return stop_loss_value
+
+    def calculate_take_profit(self, trade_tab, price):
+        take_profit_percentage = float(trade_tab.takeprofit_slider.get())
+
+        # Validate that the take profit percentage is between 0 and 100
+        if not (0 <= take_profit_percentage <= 100):
+            raise ValueError(
+                "Take profit percentage must be between 0 and 100")
+
+        # Calculate the take profit value based on the percentage
+        # Your take profit calculation logic here
+        take_profit_value = price + (1 + (take_profit_percentage / 100))
+
+        return take_profit_value
 
     # Bid and ask
     def update_bid_ask(self):
-        bid, ask = self._model.get_bid_ask()
+        bid, ask = self._model.get_market_data('bidask')
+        pprint.pprint(bid)
         trade_tab = self.trade_tab()
-
-        # Insert the new bid and ask data
         trade_tab.bid_label.config(text=f"Bid: {bid}")
         trade_tab.ask_label.config(text=f"Ask: {ask}")
 
-    # Open trades
     def update_open_trades(self):
         trade_tab = self.trade_tab()
-        open_trades = self._model.fetch_open_trades(trade_tab.symbol)
-        for i in open_trades:
-            trade_tab.open_trades_listbox.insert('end', open_trades[i])
+        symbol = trade_tab.symbol  # You need to fetch the symbol from the trade tab
+        open_trades = self._model.fetch_data_and_transfer_funds(
+            'open_trades', symbol=symbol)
+
+        # Clear existing entries
+        trade_tab.open_trades_listbox.delete(0, 'end')
+
+        for trade in open_trades:
+            # Extract relevant information from each trade dictionary
+            trade_id = trade.get('id', 'Unknown ID')[:4]
+            symbol = trade.get('symbol', 'Unknown Symbol')
+            # 'buy' or 'sell'
+            side = trade.get('side', 'Unknown Side').capitalize()
+            status = trade.get('status', 'Unknown Status')
+            amount = trade.get('amount', 0)
+            # Use triggerPrice if available, else price
+            price = trade.get('triggerPrice', trade.get('price', 'N/A'))
+
+            # Format the display string
+            display_text = f"ID: {trade_id}, Symbol: {symbol}, Side: {side}, Status: {status}, Amount: {amount}, Price: {price}"
+            trade_tab.open_trades_listbox.insert('end', display_text)
 
     # Update ticker prices
+
     def update_ticker_price(self):
         last_price = self._model.get_ticker_price()
         trade_tab = self.trade_tab()
         trade_tab.ticker_price_label.config(text=f"Ticker Price: {last_price}")
 
-    def get_real_time_date(self):
-        return self._model.get_real_time_data()
+    def refresh_data(self, settings=None):
+        if settings is None:
+            settings = {}  # Initialize an empty settings dictionary
 
-    def refresh_data(self):
+        # Update relevant settings in the settings dictionary as needed
+        settings['symbol'] = self.get_symbol()
+        settings['leverage'] = self.get_leverage()
+        settings['accountType'] = self.get_accountype()
+
+        # Call the update_settings method of the trading class with the updated settings
+        self._model.update_settings(settings)
+
+        # The rest of your refresh_data method remains unchanged
         self.update_bid_ask()
         self.update_open_trades()
         self.update_ticker_price()
@@ -180,9 +307,117 @@ class TradePresenter:
         self._model.scale_in_out(amount)
         self.presenter.main_listbox.set_text(f"scaling the data: {amount}")
 
+    # === Symbol and Account Type and leverage===
+
     def get_symbol(self):
         trade_tab = self.trade_tab()
-        return trade_tab.symbol
+        symbol = trade_tab.symbol_select_var.get()  # Directly fetch the selected symbol
+        # Update the label in the view
+        trade_tab.symbol_label.config(text='Symbol: ' + symbol)
+        self.presenter.main_listbox.set_text(f"Setting the symbol: {symbol}")
+        return symbol
+
+    def get_leverage(self):
+        trade_tab = self.trade_tab()
+        leverage = trade_tab.leverage_var.get()  # Directly fetch the leverage value
+        # Update the label in the view
+        trade_tab.leverage_label.config(text=f'Leverage: {leverage}')
+        self.presenter.main_listbox.set_text(
+            f"Setting the leverage: {leverage}")
+        return leverage
+
+    def get_accountype(self):
+        trade_tab = self.trade_tab()
+        type = trade_tab.set_accountType()
+        return type
+
+    # === Metric Calculation ===
+
+    def calculate_financial_metrics(self, metric_type, **kwargs):
+        if metric_type == 'var':
+            return self._model.calculate_financial_metrics('var', portfolio=kwargs['portfolio'],
+                                                           confidence_level=kwargs['confidence_level'])
+        elif metric_type == 'drawdown':
+            return self._model.calculate_financial_metrics('drawdown', peak_balance=kwargs['peak_balance'],
+                                                           current_balance=kwargs['current_balance'])
+        elif metric_type == 'pnl':
+            return self._model.calculate_financial_metrics('pnl', entry_price=kwargs['entry_price'],
+                                                           exit_price=kwargs['exit_price'],
+                                                           contract_quantity=kwargs['contract_quantity'],
+                                                           is_long=kwargs['is_long'])
+        elif metric_type == 'breakeven_price':
+            return self._model.calculate_financial_metrics('breakeven_price', entry_price=kwargs['entry_price'],
+                                                           fee_percent=kwargs['fee_percent'],
+                                                           contract_quantity=kwargs['contract_quantity'],
+                                                           is_long=kwargs['is_long'])
+
+    # === Data Fetch and Transfer Funds ===
+
+    def fetch_data_and_transfer_funds(self, fetch_type, **kwargs):
+        if fetch_type == 'open_trades':
+            return self._model.fetch_data_and_transfer_funds('open_trades', symbol=kwargs['symbol'])
+        elif fetch_type == 'historical_data':
+            return self._model.fetch_data_and_transfer_funds('historical_data', symbol=kwargs['symbol'],
+                                                             timeframe=kwargs['timeframe'],
+                                                             since=kwargs['since'], limit=kwargs['limit'])
+        elif fetch_type == 'transfer_funds':
+            return self._model.fetch_data_and_transfer_funds('transfer_funds', amount=kwargs['amount'],
+                                                             currency_code=kwargs['currency_code'],
+                                                             from_account_type=kwargs['from_account_type'],
+                                                             to_account_type=kwargs['to_account_type'])
+    # 3. Fetch Data and Transfer Funds
+
+    def extract_trade_parameters(self, trade_tab):
+        parameters = {
+            'symbol': trade_tab.symbol,
+            'side': "buy" if trade_tab.buy_var.get() else "sell",
+            'trade_type': trade_tab.type_var.get(),
+            'price': None,
+            'stop_loss': None,
+            'take_profit': None
+        }
+
+        # Validate and extract price
+        if trade_tab.type_var.get() == 'limit':
+            price_str = trade_tab.price_entry.get()
+            try:
+                parameters['price'] = float(price_str)
+            except ValueError:
+                # Handle invalid price input, e.g., non-numeric input
+                self.presenter.main_listbox.set_text("Invalid price input")
+                # You can add further error handling logic here
+
+        last_price = self._model.get_ticker_price()
+        # Validate and extract stop loss
+        try:
+            parameters['stop_loss'] = self.calculate_stop_loss(
+                trade_tab, last_price)
+        except Exception as e:
+            # Handle exceptions raised by calculate_stop_loss
+            self.presenter.main_listbox.set_text(
+                f"Error in stop loss calculation: {str(e)}")
+            # You can add further error handling logic here
+
+        # Validate and extract take profit
+        try:
+            parameters['take_profit'] = self.calculate_take_profit(
+                trade_tab, last_price)
+        except Exception as e:
+            # Handle exceptions raised by calculate_take_profit
+            self.presenter.main_listbox.set_text(
+                f"Error in take profit calculation: {str(e)}")
+            # You can add further error handling logic here
+
+         # Extract percentage_amount
+        try:
+            parameters['percentage_amount'] = float(
+                trade_tab.amount_slider.get())
+        except ValueError:
+            self.presenter.main_listbox.set_text(
+                "Invalid percentage amount input")
+            # Handle the invalid input, for example, by setting a default value or alerting the user
+
+        return parameters
 
 
 class BotPresenter:
@@ -352,7 +587,6 @@ class ExchangePresenter:
         value = exchange_tab.text_exchange_var.get()
         exchange.set_sandbox_mode(value)
         exchange_tab.add_exchange_optionmenu(exchange)
-        self.presenter.trading_presenter.get_balance()
 
     def create_exchange(self) -> None:
         exchange_tab = self.exchange_tab_view()
@@ -361,9 +595,10 @@ class ExchangePresenter:
         api_secret = exchange_tab.api_secret_entry.get()
         exchange = self._model.exchangetab_model.create_exchange(
             exchange_name, api_key, api_secret)
-        exchange_tab.add_exchange_optionmenu(exchange)
-        self.presenter.main_listbox.set_text(
-            f"exchange {exchange}: has been created")
+        if exchange:
+            exchange_tab.add_exchange_optionmenu(exchange)
+            self.presenter.main_listbox.set_text(
+                f"Exchange {exchange_name} has been created")
 
     def remove_exchange(self) -> None:
         exchange_tab = self.exchange_tab_view()

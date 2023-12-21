@@ -2,6 +2,7 @@ import os
 import pickle
 import threading
 import traceback
+from time import sleep
 
 import ccxt
 import pandas as pd
@@ -15,7 +16,6 @@ from model.machinelearning.machinelearning import MachineLearning
 from model.manualtrading.trading import Trading
 from model.reinforcement.rl_models import TensorflowModel, TorchModel
 from util.utils import load_config
-from time import sleep
 
 config = load_config()
 
@@ -50,28 +50,23 @@ class Models:
                              self.tradetab_model.symbol)
         return ml
 
-    def get_exchange(self):
-        exchange = None
+    def get_exchange(self, exchange_name="phemex", api_key=None, api_secret=None, test_mode=True):
         try:
-            exchange = getattr(ccxt, "phemex")({
-                'apiKey': os.environ.get('API_KEY_PHE_TEST'),
-                'secret': os.environ.get('API_SECRET_PHE_TEST'),
-                'rateLimit': 2000,
-                'options': {
-                    'defaultType': 'future',
-                    'adjustForTimeDifference': True,
-                },
-                'enableRateLimit': True})
+            exchange_class = getattr(ccxt, exchange_name)
+            exchange = exchange_class({
+                'apiKey': api_key or os.environ.get(f'API_KEY_{exchange_name.upper()}_TEST'),
+                'secret': api_secret or os.environ.get(f'API_SECRET_{exchange_name.upper()}_TEST'),
+                'enableRateLimit': True,
+                'options': {'defaultType': 'swap'}
+            })
 
-            exchange.set_sandbox_mode(True)
-            # self.model_logger.info(exchange.fetch_free_balance())
-            if not exchange.check_required_credentials():
-                self.model_logger.info('THERE ARE NOT CREDENTIALS')
+            if test_mode:
+                exchange.set_sandbox_mode(True)
+
+            return exchange
         except Exception as e:
-            self.model_logger.error(
-                f"Error creating exchange {exchange} {e}\n{traceback.format_exc()}")
-
-        return exchange
+            self.model_logger.error(f"Error creating exchange: {e}")
+            return None
 
 
 class LoginModel:
@@ -154,119 +149,137 @@ class TradeTabModel:
         self.model_logger.info("Loading the Trade tab model")
         self._trading = self.get_trading()
 
-    def get_trading(self, symbol='BTC/USDT', trade_type='spot') -> Trading:
+    def get_trading(self, symbol='BTC/USD:USD', trade_type='swap') -> Trading:
         self.exchange = self.presenter.get_exchange()
-        # self.exchange.set_sandbox_mode(True)
         self.symbol = symbol
-        self.position_size = 10
-        self.max_drawdown = 0.001
-        self.moving_average_period = 50
-        self.decision_tree_depth = 2
         self.trade_type = trade_type
-
-        trading = Trading(self.exchange, self.symbol, self.position_size, self.max_drawdown,
-                          self.moving_average_period, self.decision_tree_depth, self.trade_type)
-
+        trading = Trading(self.exchange, self.symbol, self.trade_type)
         return trading
 
-    def get_balance(self):
-        return self._trading.get_balance()
-
+    # Trading actions
     def place_trade(self, symbol, side, trade_type, amount, price, stoploss, takeprofit):
         self._trading.place_trade(
             symbol, side, trade_type, amount, price, stoploss, takeprofit)
         sleep(3)
-        self.fetch_open_trades(symbol)
+        self._trading.fetch_open_trades(symbol)
 
-    def update_stoploss(self, stop_loss) -> None:
-        try:
-            self._trading.modify_takeprofit_stoploss(
-                self._trading.trade_id, stop_loss=stop_loss)
-            self.model_logger.info(
-                f"Trade ID: {self._trading.trade_id} Modify Stoploss {stop_loss}")
-        except Exception as e:
-            self.model_logger.error(f"In the modify_stop_loss Error: {e}")
-
-    def update_takeprofit(self, take_profit) -> None:
-        try:
-            self._trading.modify_takeprofit_stoploss(
-                self._trading.trade_id, take_profit=take_profit)
-            self.model_logger.info(
-                f"Trade ID: {self._trading.trade_id} Modify TakeProfit {take_profit}")
-        except Exception as e:
-            self.model_logger.error(f"In the modify_take_profit Error: {e}")
-
-    # Additional method to get the current bid and ask prices
-    def get_bid_ask(self):
-        return self._trading.getBidAsk()
-
-    # Additional method to fetch open trades
-    def fetch_open_trades(self, symbol):
-        return self._trading.fetch_open_trades(symbol)
-
-    # Additional method to get the current ticker price
-
-    def get_ticker_price(self):
-        return self._trading.get_ticker_price()
-
-    def get_real_time_data(self):
-        # Method to access the latest real-time data
-        return self._trading.get_real_time_data()
-
-    def start_real_time_updates(self):
-        self._trading.start_real_time_updates()
-
-    def stop_real_time_updates(self):
-        self._trading.stop_real_time_updates()
+    def update_stoploss_takeprofit(self, symbol, stop_loss=None, take_profit=None):
+        open_trades = self._trading.fetch_open_trades(symbol)
+        for trade in open_trades:
+            if trade['status'] == 'open':
+                self._trading.modify_takeprofit_stoploss(
+                    trade['id'], take_profit, stop_loss)
+                self.model_logger.info(
+                    f"Updated SL/TP for Trade ID: {trade['id']}")
 
     def scale_in_out(self, amount):
         self._trading.scale_in_out(amount)
 
-    def set_symbol(self):
-        symbol = self.presenter.trading_presenter.get_symbol()
+    # Market data
+    def get_market_data(self, data_type, depth=5):
+        return self._trading.fetch_market_data(data_type, depth)
+
+    def get_ticker_price(self):
+        return self.get_market_data('ticker')['last_price']
+
+    def set_symbol(self, symbol):
         self._trading.set_symbol(symbol)
+
+    # Real-time updates
+    def start_stop_real_time_updates(self, start=True):
+        if start:
+            self._trading.start_real_time_updates()
+        else:
+            self._trading.stop_real_time_updates()
+
+    def get_real_time_data(self):
+        return self._trading.get_real_time_data()
+
+    # Settings and configuration
+    def update_settings(self, settings):
+        self._trading.update_settings(settings)
+
+    # Analysis and calculations
+    def get_position_info(self):
+        return self._trading.get_position_info()
+
+    def execute_advanced_orders(self, symbol, total_amount, duration, side, order_type):
+        if order_type == 'twap':
+            self._trading.execute_twap_order(
+                symbol, total_amount, duration, side)
+        elif order_type == 'dynamic_stop_loss':
+            entry_price, current_price, initial_stop_loss, trailing_percent = self.get_dynamic_stop_loss_params()
+            self._trading.update_dynamic_stop_loss(
+                symbol, entry_price, current_price, initial_stop_loss, trailing_percent)
+
+    def calculate_financial_metrics(self, metric_type, **kwargs):
+        if metric_type == 'var':
+            return self._trading.calculate_var(kwargs['portfolio'], kwargs['confidence_level'])
+        elif metric_type == 'drawdown':
+            return self._trading.calculate_drawdown(kwargs['peak_balance'], kwargs['current_balance'])
+        elif metric_type == 'pnl':
+            return self._trading.calculate_pnl(kwargs['entry_price'], kwargs['exit_price'], kwargs['contract_quantity'], kwargs['is_long'])
+        elif metric_type == 'breakeven_price':
+            return self._trading.calculate_breakeven_price(kwargs['entry_price'], kwargs['fee_percent'], kwargs['contract_quantity'], kwargs['is_long'])
+
+    # Data fetching and fund transfers
+    def fetch_data_and_transfer_funds(self, fetch_type, **kwargs):
+        if fetch_type == 'open_trades':
+            return self._trading.fetch_open_trades(kwargs['symbol'])
+        elif fetch_type == 'historical_data':
+            return self._trading.fetch_historical_data(kwargs['symbol'], kwargs['timeframe'], kwargs['since'], kwargs['limit'])
+        elif fetch_type == 'transfer_funds':
+            return self._trading.transfer_funds(kwargs['amount'], kwargs['currency_code'], kwargs['from_account_type'], kwargs['to_account_type'])
+
+    # Helper methods for specific calculations
+    def calculate_liquidation_price(self, leverage, balance, position_size):
+        return self._trading.calculate_liquidation_price(leverage, balance, position_size)
+
+    def check_risk_limits(self, position_size):
+        return self._trading.check_risk_limits(position_size)
+
+    def calculate_order_cost(self, amount, price):
+        return self._trading.calculate_order_cost(amount, price)
+
+    def get_funding_rate(self):
+        return self._trading.get_funding_rate()
+
+    def get_tick_size(self):
+        return self._trading.get_tick_size()
+
+    def contract_to_underlying(self, contract_quantity):
+        return self._trading.contract_to_underlying(contract_quantity)
+
+    def get_balance(self):
+        return self._trading.get_balance()
 
 
 class ExchangeTabModel:
     def __init__(self, presenter) -> None:
         self.model_logger = logger['model']
         self._presenter = presenter
+        self.exchanges = {}
         self.model_logger.info("loading the Exchange tab model")
-        self.exchange = []
 
     def set_first_exchange(self):
-        exchange = getattr(ccxt, "phemex")({
-            'apiKey': os.environ.get('API_KEY_PHE_TEST'),
-            'secret': os.environ.get('API_SECRET_PHE_TEST'),
-            'rateLimit': 2000,
-            'options': {
-                'defaultType': 'future',
-                'adjustForTimeDifference': True,
-            },
-            'enableRateLimit': True})
-        self.exchange.append(exchange)
-        return exchange
+
+        return self._presenter.get_exchange()
 
     def create_exchange(self, exchange_name, api_key, api_secret):
-        exchange = getattr(ccxt, exchange_name)({
-            'apiKey': api_key,
-            'secret': api_secret,
-            'rateLimit': 2000,
-            'enableRateLimit': True,
-            'options': {
-                'adjustForTimeDifference': True,
-            },
-        })
-        self.exchange.append(exchange)
-        self.model_logger.info(f'creating the exchange {exchange}')
+        exchange = self._presenter.get_exchange(
+            exchange_name, api_key, api_secret)
+        if exchange:
+            self.exchanges[exchange_name] = exchange
+            self.model_logger.info(f'Created exchange: {exchange_name}')
         return exchange
 
-    def get_exchange(self, index):
-        return self.exchange[index]
+    def get_exchange(self, exchange_name):
+        return self.exchanges.get(exchange_name)
 
-    def remove_exchange(self, index) -> None:
-        self.model_logger.info(f'Removing exchange {self.exchange[index]}')
-        del self.exchange[index]
+    def remove_exchange(self, exchange_name) -> None:
+        if exchange_name in self.exchanges:
+            self.model_logger.info(f'Removing exchange: {exchange_name}')
+            del self.exchanges[exchange_name]
 
 
 class BotTabModel:
