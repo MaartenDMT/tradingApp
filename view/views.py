@@ -23,6 +23,9 @@ class WindowView(Window):
         self.loginview = LoginView
         self.main_view = MainView
 
+        # Bind the on_close method to the window close event
+        self.protocol("WM_DELETE_WINDOW", self.on_close)
+
     def show_frame(self, cont, presenter) -> None:
         # Destroy the current frame
         for widget in self.winfo_children():
@@ -34,6 +37,13 @@ class WindowView(Window):
         frame.create_ui(presenter)
         frame.grid(row=1, column=0)
         frame.tkraise()
+
+    def on_close(self):
+        # Perform any necessary cleanup here
+        # For example, if you have a thread pool or other resources to clean up
+        # self.presenter.shutdown_thread_pool()  # Example cleanup call
+
+        self.destroy()  # This will close the application window
 
 
 class LoginView(Frame):

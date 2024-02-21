@@ -6,7 +6,7 @@ from tensorflow.keras.layers import (LSTM, Add, Concatenate, Conv1D, Dense,
                                      Flatten, GlobalAveragePooling1D,
                                      MaxPool1D)
 
-from util.agent_utils import transformer_block
+from model.reinforcement.agent_utils import transformer_block
 
 
 class CentralizedCriticNetwork(keras.Model):

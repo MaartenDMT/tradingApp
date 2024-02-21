@@ -6,8 +6,8 @@ import websocket
 
 import util.loggers as loggers
 from model.features import Tradex_indicator
+from model.machinelearning.ml_util import classifier, regression
 from util.candlestick_parser import *
-from util.ml_util import classifier, regression
 
 logger = loggers.setup_loggers()
 autobot_logger = logger['autobot']

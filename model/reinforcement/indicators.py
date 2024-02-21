@@ -1,6 +1,6 @@
 import numpy as np
 
-from util.rl_util import sigmoid
+from model.reinforcement.rl_util import sigmoid
 
 
 def compute_market_condition_reward(action, df_row, bar, data):

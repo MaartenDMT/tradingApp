@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 
 import util.loggers as loggers
-from util.rl_util import next_available_filename
+from model.reinforcement.rl_util import next_available_filename
 
 logger = loggers.setup_loggers()
 logger = logger['rl']

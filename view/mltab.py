@@ -16,9 +16,10 @@ class MLTab(Frame):
         self.type_var = StringVar(self)
         self.type_var.set("Linear Regression")
         self.ml_select_menu = OptionMenu(
-            self, self.type_var, "Linear Regression", "SVR", "Ridge Regression", "Lasso Regression",
-            "Elastic Net Regression", "Decision Tree Regressor", "Bayesian Ridge Regression", "SGD Regressor",
-            "Logistic Regression", "MLPClassifier", "Decision Tree Classifier", "Random Forest Classifier", "SVC", "Isolation Forest",
+            self, self.type_var, "Linear Regression", "Linear Regression", "Ridge Regression", "Lasso Regression",
+            "Elastic Net Regression", "Bayesian Ridge Regression", 'SVR', 'LinearSVR', 'NuSVR',
+            "SGD Regressor", 'Huber Regressor', 'Lars', 'RANSAC Regressor', 'Theil-Sen Regressor',
+            "Logistic Regression", "MLPClassifier", "BernoulliRBM", "Decision Tree Classifier", "Random Forest Classifier", "SVC", "Isolation Forest",
             "Gradient Boosting Classifier", "Extra Tree Classifier", "XGBoost Classifier",
             "Gaussian Naive Bayes", "Radius Neighbors Classifier", "K-Nearest Neighbors", "AdaBoost Classifier",
             "Gradient Boosting Regressor", "Gaussian Process Classifier", "Quadratic Discriminant Analysis", "SGD Classifier",

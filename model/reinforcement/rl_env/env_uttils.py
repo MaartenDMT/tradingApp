@@ -3,7 +3,7 @@ import random
 import numpy as np
 
 import util.loggers as loggers
-from util.rl_util import sigmoid
+from model.reinforcement.rl_util import sigmoid
 
 logger = loggers.setup_loggers()
 rl_trading = logger['rl_trading']

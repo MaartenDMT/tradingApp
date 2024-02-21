@@ -1,15 +1,19 @@
 import datetime
 import os
 import threading
+import traceback
+import warnings
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import joblib
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-# import pandas_ta as ta
 import seaborn as sns
+import shap
 from joblib import dump, load
+from sklearn.exceptions import ConvergenceWarning
 from sklearn.metrics import (accuracy_score, auc, classification_report,
                              confusion_matrix, explained_variance_score,
                              make_scorer, mean_absolute_error,
@@ -17,17 +21,29 @@ from sklearn.metrics import (accuracy_score, auc, classification_report,
                              roc_curve)
 from sklearn.model_selection import (GridSearchCV, RandomizedSearchCV,
                                      train_test_split)
+from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from skopt import BayesSearchCV
 
 import util.loggers as loggers
-from util.ml_models import get_model
-from util.ml_util import (classifier, column_1d, future_score_clas,
-                          future_score_reg, regression, spot_score_clas,
-                          spot_score_reg)
+from model.machinelearning.ml_models import get_model
+from model.machinelearning.ml_util import (classifier, column_1d,
+                                           future_score_clas, future_score_reg,
+                                           regression, spot_score_clas,
+                                           spot_score_reg)
 from util.utils import array_min2d, tradex_features
 
+# Disable ConvergenceWarning
+warnings.filterwarnings("ignore", category=ConvergenceWarning)
+# Use the 'Agg' backend
+matplotlib.use('Agg')
+# import pandas_ta as ta
+
 logger = loggers.setup_loggers()
+
+PLOTS_PATH = 'data/ml/plots'
+MODEL_PERFO_PATH = 'data/ml/csv/model_performance.csv'
+SHIFT_CANDLES = 3
 
 
 class MachineLearning:
@@ -35,6 +51,7 @@ class MachineLearning:
         self.exchange = exchange
         self.symbol = symbol
         self.logger = logger['model']
+        self.shap_interpreter = SHAPClass()
 
     def predict(self, model, df=None, t='30m', symbol='BTC/USDT') -> int:
         # TODO: predict(self, model, features)
@@ -65,7 +82,7 @@ class MachineLearning:
             return prediction
         except Exception as e:
             self.logger.error(f"Error during prediction: {str(e)}")
-            return 0  # return a default value or handle according to your use case
+            return 1  # return a default value or handle according to your use case
 
     def evaluate_model(self, name, model, X_test, y_test):
         y_pred = model.predict(X_test)
@@ -74,6 +91,10 @@ class MachineLearning:
             accuracy = self.evaluate_regression_model(name, y_test, y_pred)
         else:
             accuracy = self.evaluate_classification_model(name, y_test, y_pred)
+
+        # Use the interpret_model method to get SHAP values and plots
+        _ = self.interpret_model(
+            model, X_test, save_values=True, plot_values=True, feature_names=self.column_names)
 
         return accuracy
 
@@ -127,7 +148,7 @@ class MachineLearning:
         return accuracy, auc
 
     def plot_regression_results(self, name, y_test, y_pred, r2, mae, mse, rmse, evs):
-        plot_dir = 'data/plots'
+        plot_dir = PLOTS_PATH
         if not os.path.exists(plot_dir):
             os.makedirs(plot_dir)
 
@@ -158,7 +179,7 @@ class MachineLearning:
             plt.close()
 
     def plot_classification_results(self, name, y_test, y_pred, accuracy, auc_score):
-        plot_dir = 'data/plots'
+        plot_dir = PLOTS_PATH
         if not os.path.exists(plot_dir):
             os.makedirs(plot_dir)
 
@@ -196,48 +217,52 @@ class MachineLearning:
             plt.close()
 
     def save_model(self, model, accuracy, score=None):
-        # Save the model if it has high accuracy
         path = r'data/ml/2020/'
-        params_path = r'data/csv/params_accuracy.csv'
+        params_path = r'data/ml/csv/params_accuracy.csv'
 
-        if accuracy > 0.62:
-            # Create a version number based on current date and time
+        # Check if the best estimator is a Pipeline and extract the actual model
+        if isinstance(model.best_estimator_, Pipeline):
+            actual_model = model.best_estimator_.named_steps['regression']
+        else:
+            actual_model = model.best_estimator_
+
+        if accuracy > 0.60:
             version = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-            model_filename = f'{path}trained_{model.best_estimator_.__class__.__name__}_{version}_{accuracy*100:.2f}.p'
+            model_name = actual_model.__class__.__name__
+            model_filename = f'{path}trained_{model_name}_{version}_{accuracy*100:.2f}.p'
 
-            joblib.dump(model.best_estimator_, model_filename)
-
-            # Log the saved model with version
+            joblib.dump(actual_model, model_filename)
             self.logger.info(f'Model saved as {model_filename}')
 
-        # Save the parameters and accuracy
-        model_params_accuracy = {
-            "Model": model.best_estimator_.__class__.__name__,
-            "Version": version,
-            "Params": str(model.best_params_),
-            "Accuracy": accuracy,
-            "Money": score
-        }
+            model_params_accuracy = {
+                "Model": model_name,
+                "Version": version,
+                "Params": str(model.best_params_),
+                "Accuracy": accuracy,
+                "Money": score
+            }
 
-        # Append or create a new record for model versions
-        if os.path.exists(params_path):
-            df = pd.read_csv(params_path)
-            df = df.append(model_params_accuracy, ignore_index=True)
-        else:
-            df = pd.DataFrame([model_params_accuracy])
+            if os.path.exists(params_path):
+                df = pd.read_csv(params_path)
+                new_df = pd.DataFrame([model_params_accuracy])
+                df = pd.concat([df, new_df], ignore_index=True)
+            else:
+                df = pd.DataFrame([model_params_accuracy])
 
-        df.to_csv(params_path, index=False)
+            df.to_csv(params_path, index=False)
+
+            self.log_model_performance(actual_model, accuracy, score)
 
     def load_model(self, filename):
-        path = r'data/ml/'
-        file = f'{path}{filename}'
+        path = r'data/ml/2020'
+        file = f'{path}/{filename}'
+        model = None  # Initialize model with a default value
         try:
             # Open the file and load the model
             model = joblib.load(file)
+            self.logger.info(f'the model is : {model}')
         except FileNotFoundError:
-            # name = 'Decision Tree Classifier'
-            # model = self.train_evaluate_and_save_model(name)
-            self.logger.info(f'there is no file called: {file}')
+            self.logger.error(f'there is no file called: {file}')
 
         return model
 
@@ -253,7 +278,7 @@ class MachineLearning:
         # Return the processed features as a NumPy array
         return processed_features.to_numpy()
 
-    def process_labels(self, df, model, n_candles=2, threshold=0.08):
+    def process_labels(self, df, model, n_candles=3, threshold=0.08):
         if model in classifier:
             # Shift closing prices by -2 to compare with the price two candles ahead
             df['future_close'] = df['close'].shift(-n_candles)
@@ -262,29 +287,41 @@ class MachineLearning:
             df['price_change_percentage'] = (
                 df['future_close'] - df['close']) / df['close'] * 100
 
-            # Define labels: 1 for long, 0 for do nothing, -1 for short, based on the threshold
-            df['label'] = np.where(df['price_change_percentage'] > threshold, 1,
-                                   np.where(df['price_change_percentage'] < -threshold, -1, 0))
+            # Define labels: 2 for long, 1 for do nothing, 0 for short, based on the threshold
+            df['label'] = np.where(df['price_change_percentage'] >= threshold, 2,
+                                   np.where(df['price_change_percentage'] <= -threshold, 0, 1))
 
             # Fill NaN values in 'label' column
-            df['label'].fillna(0, inplace=True)
+            df['label'].fillna(1, inplace=True)
 
             # Save the 'label' column to a CSV file
-            df['label'].to_csv('data/csv/labels.csv', index=False)
+            df[['label', 'price_change_percentage', 'future_close', 'close']].to_csv(
+                'data/ml/csv/labels.csv', index=False)
 
             self.logger.info(df['label'])
             return df['label']
         else:
             return df['close']
 
-    def train_evaluate_and_save_model(self, model: str, usage_percent=20):
+    def train_evaluate_and_save_model(self, model: str, usage_percent=0.7):
         # Define the path of the pickle file
-        pickle_file_path = 'data/pickle/2020/3h_data.pkl'
+        pickle_file_path = 'data/2020/30m_data.pkl'
+        csv_file_path = 'data/csv/BTC_1h.csv'
 
-        # Check if the pickle file exists
-        if os.path.exists(pickle_file_path):
-            # If it exists, load the data from the pickle file
-            df = load(pickle_file_path)
+        # Initialize the DataFrame
+        df = None
+
+        # Check if the CSV file exists
+        if os.path.exists(csv_file_path):
+            # If it exists, load the data from the CSV file
+            df = pd.read_csv(csv_file_path)
+            df = df[['open', 'high', 'low', 'close', 'volume']].astype(float)
+            self.logger.info("CSV is loaded")
+        # elif os.path.exists(pickle_file_path):
+        #     # If the CSV file doesn't exist, but the pickle file does, load the pickle file
+        #     df = pd.read_pickle(pickle_file_path)
+        #     df = df[['open', 'high', 'low', 'close', 'volume']].astype(float)
+        #     self.logger.info("PICKLE is loaded")
         else:
             # If it does not exist, fetch and preprocess the data
             data = self.exchange.fetch_ohlcv(
@@ -297,18 +334,19 @@ class MachineLearning:
             with open(pickle_file_path, 'wb') as file:
                 dump(df, file)
 
-                # Adjust the DataFrame to use only the specified percentage of the data
-        df = df.sample(frac=usage_percent/100.0)
+        # Adjust the DataFrame to use only the specified percentage of the data
+        split_index = int(len(df) * usage_percent)
+        df = df.iloc[:split_index]
 
         self.logger.info(
-            f"Using {len(df)} out of {len(df) / (usage_percent/100.0)} rows ({usage_percent}%) of the data.")
+            f"Using {len(df)} out of {len(df) / (usage_percent)} rows ({usage_percent}%) of the data.")
 
         features = self.process_features(df)
-        labels = self.process_labels(df, model, n_candles=5)
+        labels = self.process_labels(df, model, n_candles=SHIFT_CANDLES)
 
         # Drop the last two rows as they won't have valid labels
-        features = features[:-2]
-        labels = labels[:-2]
+        features = features[:-SHIFT_CANDLES]
+        labels = labels[:-SHIFT_CANDLES]
 
         # Scale features and labels
         scaler = StandardScaler()
@@ -374,6 +412,53 @@ class MachineLearning:
     def load_pretrained_scaler(self):
         return joblib.load('data/scaler/scaler.pkl')
 
+    def log_model_performance(self, model, accuracy, score):
+        model_performance_file = MODEL_PERFO_PATH
+        model_info = {
+            "Model": model.__class__.__name__,
+            "Version": datetime.datetime.now().strftime("%Y%m%d%H%M%S"),
+            "Accuracy": accuracy,
+            "Score": score,
+            "Timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+
+        # Convert the dictionary to a DataFrame
+        model_info_df = pd.DataFrame([model_info])
+
+        # Check if file exists to append or write new
+        if os.path.isfile(model_performance_file):
+            model_info_df.to_csv(model_performance_file,
+                                 mode='a', header=False, index=False)
+        else:
+            model_info_df.to_csv(model_performance_file,
+                                 mode='w', header=True, index=False)
+
+        self.compare_model_performance()
+
+    def compare_model_performance(self):
+        model_performance_file = MODEL_PERFO_PATH
+        if not os.path.isfile(model_performance_file):
+            self.logger.info("No model performance data found.")
+            return
+
+        df = pd.read_csv(model_performance_file)
+        # Implement your logic to compare models here
+        # For example, you can sort by accuracy, display top N models, etc.
+        sorted_df = df.sort_values(by=['Accuracy'], ascending=False)
+        self.logger.info(sorted_df.head())  # Display top models
+
+    def interpret_model(self, model, X_test, save_values=False, plot_values=False, feature_names=None):
+        """
+        Interpret the model predictions using SHAP values.
+
+        :param model: The trained machine learning model.
+        :param X_test: Test dataset (features) used for the model.
+        """
+        shap_values = self.shap_interpreter.explain_prediction(
+            model, X_test, save_values, plot_values, feature_names)
+        # Additional code to handle or display SHAP values can be added here
+        return shap_values
+
 
 class MLModelTrainer:
     def __init__(self, algorithm, logger) -> None:
@@ -387,6 +472,8 @@ class MLModelTrainer:
         self.algorithm = algorithm
         self.logger = logger
         self.stop_loading = False
+        self.executor = ThreadPoolExecutor()
+        self.futures = []
 
     def train(self, X, y, feature_names):
         """
@@ -395,16 +482,22 @@ class MLModelTrainer:
         :param X: Features for training.
         :param y: Target variable for training.
         """
-
+        best_estimator = None  # Initialize to None
         model, parameters = get_model(self.algorithm)
-        if model in classifier:
-            # Create a scorer from the custom scoring function using lambda to handle n_candles
-            monetary_scorer = make_scorer(lambda y_true, y_pred: future_score_clas(
-                y_true, y_pred, n_candles=5), greater_is_better=True)
-        else:
-            # Create a scorer from the custom scoring function using lambda to handle n_candles
-            monetary_scorer = make_scorer(lambda y_true, y_pred: future_score_reg(
-                y_true, y_pred, n_candles=5), greater_is_better=True)
+        try:
+            if self.algorithm in classifier:
+                # Create a scorer from the custom scoring function using lambda to handle n_candles
+                monetary_scorer = make_scorer(lambda y_true, y_pred: future_score_clas(
+                    y_true, y_pred, n_candles=SHIFT_CANDLES), greater_is_better=True)
+            elif self.algorithm in regression:
+                # Create a scorer from the custom scoring function using lambda to handle n_candles
+                monetary_scorer = make_scorer(lambda y_true, y_pred: future_score_reg(
+                    y_true, y_pred, n_candles=SHIFT_CANDLES), greater_is_better=True)
+            else:
+                raise ValueError("No Model Found.")
+        except Exception as e:
+            self.logger.error(
+                f"error with the make scorer method: {e}\n{traceback.format_exc()}")
 
         try:
             # Assuming parallelize_search is a method defined elsewhere in your class
@@ -413,7 +506,14 @@ class MLModelTrainer:
             self.logger.info("Model training successful.")
 
         except Exception as e:
-            self.logger.error(f"Model training failed: {e}")
+            self.logger.error(
+                f"Model training failed: {e}\n{traceback.format_exc()}")
+            # Handle the case when best_estimator is not assigned
+            if best_estimator is None:
+                # Handle appropriately, maybe return None or raise an exception
+                raise ValueError(
+                    "Model training failed and no best_estimator found.")
+            return None, None  # Return None or handle the exception as needed
 
         best_params = best_estimator.best_params_
         best_f1_score = best_estimator.best_score_
@@ -430,24 +530,24 @@ class MLModelTrainer:
         return best_estimator, best_f1_score
 
     def parallelize_search(self, estimator, param_grid, X, y, scorer, feature_names):
-        grid_search_estimator = GridSearchCV(
-            estimator, param_grid, cv=5, scoring=scorer)
+        # grid_search_estimator = GridSearchCV(
+        #     estimator, param_grid, cv=5, scoring=scorer, verbose=2, n_jobs=8)
         random_search_estimator = RandomizedSearchCV(
-            estimator, param_grid, cv=5, scoring=scorer)
+            estimator, param_grid, cv=5, scoring=scorer, verbose=2, n_jobs=6)
         bayes_search_estimator = BayesSearchCV(
-            estimator, param_grid, cv=5, scoring=scorer)
+            estimator, param_grid, cv=5, scoring=scorer, verbose=2, n_jobs=6, n_points=4)
 
         results = []
         with ThreadPoolExecutor() as executor:
             futures = []
             try:
-                grid_search = executor.submit(grid_search_estimator.fit, X, y)
+                # grid_search = executor.submit(grid_search_estimator.fit, X, y)
                 random_search = executor.submit(
                     random_search_estimator.fit, X, y)
                 bayes_search = executor.submit(
                     bayes_search_estimator.fit, X, y)
 
-                futures = [grid_search, random_search, bayes_search]
+                futures = [random_search, bayes_search]
                 for future in as_completed(futures):
 
                     # This will re-raise any exception that occurred during execution.
@@ -457,10 +557,9 @@ class MLModelTrainer:
             except Exception as e:
                 self.logger.error(
                     f"Exception occurred during model search: {e}")
+                self.shutdown_thread_pool()
             finally:
-                for future in futures:
-                    if not future.done():
-                        future.cancel()
+                self.shutdown_thread_pool()
 
         if not results:
             raise ValueError("All searches failed!")
@@ -483,19 +582,130 @@ class MLModelTrainer:
                 self.logger.error(
                     f"Error calculating feature importances: {e}")
 
-        output_csv = 'data/csv/feature_importances.csv'
-        # Save feature importances to a CSV file
+        output_csv = 'data/ml/csv/feature_importances.csv'
+
+        # Create new DataFrame for feature importances
         if feature_importances is not None and output_csv is not None:
             try:
-                feature_importance_df = pd.DataFrame({
-                    'model': best_model,
-                    'Feature': feature_names,
-                    'Importance': feature_importances
-                })
-                feature_importance_df.to_csv(output_csv, index=False)
-                self.logger.info(f"Feature importances saved to {output_csv}")
+                # Create a dictionary for the new DataFrame
+                data_dict = {
+                    'model': [str(best_model)],
+                    'best_score': [best_estimator.best_score_]
+                }
+                for i, feature_name in enumerate(feature_names):
+                    data_dict[feature_name] = [feature_importances[i]]
+
+                # Create DataFrame with new data
+                new_feature_importance_df = pd.DataFrame(data_dict)
+
+                # Check if CSV file exists
+                if os.path.exists(output_csv):
+                    # Read existing data
+                    existing_df = pd.read_csv(output_csv)
+                    # Append new data
+                    updated_df = pd.concat(
+                        [existing_df, new_feature_importance_df], ignore_index=True)
+                else:
+                    # Use new data as the DataFrame
+                    updated_df = new_feature_importance_df
+
+                # Save the updated DataFrame
+                updated_df.to_csv(output_csv, index=False)
+                self.logger.info(
+                    f"Feature importances and best score updated in {output_csv}")
             except Exception as e:
                 self.logger.error(
-                    f"Error saving feature importances to CSV: {e}")
+                    f"Error updating feature importances and best score in CSV: {e}")
 
         return best_estimator
+
+    def shutdown_thread_pool(self):
+        # Cancel all futures that are not yet running
+        for future in self.futures:
+            future.cancel()
+
+        # Shutdown the executor
+        self.executor.shutdown(wait=True)
+        self.logger.info("Thread pool shut down successfully.")
+
+
+class SHAPClass:
+    def __init__(self) -> None:
+        self.logger = logger['model']
+
+    def explain_prediction(self, model, feature_array, save_values=False, plot_values=False, feature_names=None):
+        """
+        Generate SHAP values for a given model and feature array, 
+        with options to save and plot the values.
+
+        :param model: The trained machine learning model.
+        :param feature_array: A numpy array or pandas DataFrame of feature values.
+        :param save_values: Boolean flag to save SHAP values.
+        :param plot_values: Boolean flag to plot SHAP values.
+        :return: SHAP values.
+        """
+
+        # Check if the model is a GridSearchCV instance
+        if isinstance(model, (GridSearchCV, BayesSearchCV, RandomizedSearchCV)):
+            model = model.best_estimator_
+
+        if isinstance(model, Pipeline):
+            model = model.named_steps['regression']
+        # Debugging: Print the type of the model and test the predict method
+        self.logger.info(f"Model type: {type(model)}")
+        try:
+            sample_prediction = model.predict(feature_array[:1])
+            self.logger.info(feature_array[:1])
+            self.logger.info(f"Sample Prediction: {sample_prediction}")
+        except Exception as e:
+            self.logger.info(f"Error making sample prediction: {e}")
+            return None
+
+        # Initialize the SHAP explainer with the model
+        try:
+            explainer = shap.Explainer(model, feature_names=feature_names)
+        except Exception as e:
+            self.logger.info(
+                f"Error shap explainer: {e}\n{traceback.format_exc()}")
+            return None
+        # Calculate SHAP values
+        shap_values = explainer.shap_values(feature_array)
+
+        # Optionally save SHAP values
+        if save_values:
+            self.save_shap_values(
+                shap_values, 'data/ml/json/shap/shap_values.json')
+
+        # Optionally plot SHAP values
+        if plot_values:
+            self.plot_shap_values(shap_values, feature_array, feature_names)
+
+        return shap_values
+
+    def plot_shap_values(self, shap_values, features, feature_names):
+        """
+        Plot SHAP values for a given set of features.
+
+        :param shap_values: The SHAP values.
+        :param features: The features corresponding to the SHAP values.
+        """
+        shap.summary_plot(shap_values, features, show=False,
+                          feature_names=feature_names)
+
+        # Save the plot
+        plt.savefig('data/ml/plots/shap/shap_summary_plot.png')
+        self.logger.info("SHAP summary plot saved as 'shap_summary_plot.png'")
+
+    def save_shap_values(self, shap_values, filename):
+        """
+        Save SHAP values to a file.
+
+        :param shap_values: The SHAP values to save.
+        :param filename: The filename to save the SHAP values to.
+        """
+        try:
+            with open(filename, 'wb') as file:  # Open file in binary mode
+                joblib.dump(shap_values, file)
+            self.logger.info(f"SHAP values saved to {filename}")
+        except Exception as e:
+            self.logger.error(f"Error saving SHAP values: {e}")

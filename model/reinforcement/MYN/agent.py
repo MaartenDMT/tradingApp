@@ -11,8 +11,9 @@ from keras.regularizers import l2
 from tensorflow.keras.optimizers import Adam
 
 import util.loggers as loggers
+from model.reinforcement.agent_utils import (is_new_record, save_to_csv,
+                                             transformer_block)
 from model.reinforcement.rl_visual import plot_and_save_metrics
-from util.agent_utils import is_new_record, save_to_csv, transformer_block
 
 logger = loggers.setup_loggers()
 agent_logger = logger['agent']

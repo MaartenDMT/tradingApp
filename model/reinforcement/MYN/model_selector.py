@@ -6,7 +6,7 @@ from tensorflow.keras.layers import (LSTM, Conv1D, Dense, Flatten,
 from tensorflow.keras.optimizers import Adam
 
 import util.loggers as loggers
-from util.agent_utils import transformer_block
+from model.reinforcement.agent_utils import transformer_block
 
 logger = loggers.setup_loggers()
 rl_logger = logger['rl']

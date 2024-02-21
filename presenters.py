@@ -24,8 +24,8 @@ class Presenter:
     def run(self) -> None:
         self._view.mainloop()
 
-    def get_exchange(self):
-        exchange = self._model.get_exchange()
+    def get_exchange(self, test_mode=True):
+        exchange = self._model.get_exchange(test_mode=test_mode)
         return exchange
 
     # Login view -------------------------------------------------------------------
@@ -517,8 +517,6 @@ class BotPresenter:
             secret = os.environ.get('API_SECRET_PHE_TEST')
             l = True
 
-        if l:
-            exchange.set_sandbox_mode(True)
         self.presenter.main_listbox.set_text(
             f"exchange {exchange}:has been created")
 
@@ -582,10 +580,11 @@ class ExchangePresenter:
         return exchange_tab_view
 
     def save_first_exchange(self) -> None:
-        exchange = self._model.exchangetab_model.set_first_exchange()
         exchange_tab = self.exchange_tab_view()
         value = exchange_tab.text_exchange_var.get()
-        exchange.set_sandbox_mode(value)
+        exchange = self._model.exchangetab_model.set_first_exchange(
+            test_mode=value)
+
         exchange_tab.add_exchange_optionmenu(exchange)
 
     def create_exchange(self) -> None:

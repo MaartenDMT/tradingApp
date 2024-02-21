@@ -261,9 +261,8 @@ class ExchangeTabModel:
         self.exchanges = {}
         self.model_logger.info("loading the Exchange tab model")
 
-    def set_first_exchange(self):
-
-        return self._presenter.get_exchange()
+    def set_first_exchange(self, test_mode=True):
+        return self._presenter.get_exchange(test_mode=test_mode)
 
     def create_exchange(self, exchange_name, api_key, api_secret):
         exchange = self._presenter.get_exchange(
@@ -292,7 +291,7 @@ class BotTabModel:
         self.stop_event_trade = threading.Event()
 
     def get_data_ml_files(self) -> list:
-        path = r'data/ml/'
+        path = r'data/ml/2020'
         # Get a list of files in the directory
         files = os.listdir(path)
 
@@ -356,12 +355,15 @@ class BotTabModel:
 
     def get_autobot(self, exchange, symbol, amount, stop_loss, take_profit, file, time):
 
-        ml = MachineLearning(exchange, symbol, self.model_logger)
+        ml = MachineLearning(exchange, symbol)
         model = ml.load_model(file)
 
-        with open(f'data/pickle/{time}.p', 'rb') as f:
-            df = pickle.load(f)
+        # with open(f'data/pickle/{time}.p', 'rb') as f:
+        #     df = pickle.load(f)
+
+        df = pd.read_pickle(f'data/pickle/{time}.p')
         df = df.dropna()
+
         trade_x = Tradex_indicator(
             symbol=symbol, timeframe=time, t=None, get_data=False, data=df.copy())
         # # Make predictions using the scaled test data

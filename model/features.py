@@ -405,9 +405,12 @@ class Screener:
     def moneyflow(self):
         self.tradex_logger.info('- getting the moneyflow')
 
-        # Moneyflow
-        mfi = ta.mfi(self.data['high'], self.data['low'],
-                     self.data['close'], self.data['volume'])
+        mfi = ta.mfi(
+            self.data['high'].astype('float64'),
+            self.data['low'].astype('float64'),
+            self.data['close'].astype('float64'),
+            self.data['volume'].astype('float64')
+        )
 
         hlc3 = ta.hlc3(self.data['high'], self.data['low'], self.data['close'])
 
