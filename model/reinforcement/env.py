@@ -183,7 +183,7 @@ class Environment:
         # Initialize DynamicFeatureSelector
         self.feature_selector = DynamicFeatureSelector(self.original_data)
 
-        self.original_data['last_price'] = self.original_data['close'].shift(1)
+        self.original_data['last_price'] = self.original_data['close'].shift(-1)
         self.original_data['portfolio_balance'] = self.portfolio_balance
 
         if self.env_data.isnull().values.any():

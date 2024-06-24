@@ -1,4 +1,6 @@
+import matplotlib.pyplot as plt
 import numpy as np
+from stable_baselines3 import A2C
 
 # Tensorflow models
 import model.reinforcement.TF.AC.ac_tf as AC_tf
@@ -12,11 +14,12 @@ import model.reinforcement.TORCH.A3C.a3c_torch as A3C_torch
 import model.reinforcement.TORCH.DDG.ddg_torch as DDG_torch
 import model.reinforcement.TORCH.PPO.ppo_torch as PPO_torch
 from model.reinforcement.env import MultiAgentEnvironment
+from model.reinforcement.rl_env.trading_env import TradingEnvironment
+from model.reinforcement.rl_util import generate_random_candlestick_data
 from model.reinforcement.rl_visual import plot_and_save_metrics, plotting
 from model.reinforcement.visual_plot import plot_learning_curve, plotLearning
 
 # import model.reinforcement.TORCH.ICM.parrallel_env as ICM_torch
-
 
 
 class TensorflowModel():
@@ -290,3 +293,70 @@ class TorchModel:
     #     input_shape = env.observation.shape
     #     env = ICM_torch.ParallelEnv(env_id=env_id, n_threads=n_threads, n_actions=n_actions,
     #                                 input_shape=input_shape, icm=True, rl_logger=self.rl_logger)
+
+
+class StablebaselineModel:
+    def __init__(self, params, rl_logger, num_agents=1):
+        data, time = generate_random_candlestick_data(
+            1000, initial_price=100, min_volatility=0.005, max_volatility=0.1, max_shadow_amplitude=0.7, max_volume_multiplier=10.0)
+        self.env = TradingEnvironment(data, initial_balance=1000)
+        self.model = A2C("MlpPolicy", self.env, verbose=1)
+        self.model.learn(total_timesteps=10000, log_interval=4)
+        obs = self.env.reset()
+        done = False
+        infos = []
+
+        while not done:
+            action = self.env.action_space.sample()  # random agent action
+            obs, reward, terminated, done, info = self.env.step(action)
+            infos.append(info)
+            print(
+                f"action: {action}, Balance: {info['balance']}, shares: {info['current_position']}, Price:{info['current_price']}, Total Worth: {info['current_total_worth']}")
+
+        self.rl_logger = rl_logger
+        self.params = params
+
+        time_steps = range(len(infos))
+        returns = [info['balance'] for info in infos]
+        share_prices = [info['current_price'] for info in infos]
+        total_worth = [info['current_total_worth'] for info in infos]
+
+        # create a figure with two y-axes
+        fig, ax1 = plt.subplots(figsize=(10, 6))
+
+        # plot the first data series(returns) on the left axis
+        ax1.plot(time_steps, returns, label='Cumulative Returns', color='blue')
+        ax1.set_xlabel('Time steps')
+        ax1.set_ylabel("Cumulative Return", color='blue')
+        ax1.tick_params(axis='y', labelcolor='blue')
+
+        # create a second y-axis on the right for share prices and total worth
+        ax2 = ax1.twinx()
+
+        ax2.plot(time_steps, share_prices, label='Share Prices', color='green')
+        ax2.plot(time_steps, total_worth, label='Total Worth', color='red')
+        ax2.set_ylabel('Price/Worth', color='green')
+        ax2.tick_params(axis='y', labelcolor='green')
+
+        # Collect all the handles and labels from both axes
+        handles1, labels1 = ax1.get_legend_handles_labels()
+        handles2, labels2 = ax2.get_legend_handles_labels()
+
+        # Combine the handles and labels and create a single legend
+        handles = handles1 + handles2
+        labels = labels1 + labels2
+
+        # Add the legend to the plot
+        fig.legend(handles, labels, loc='upper left',
+                   bbox_to_anchor=(0.1, 0.9))
+
+        plt.title('financial date over time')
+        plt.grid(True)
+
+        plt.show()
+
+        # rl_logger.info(
+        #     f"Performance with data {env.env_data}")
+        rl_logger.info(
+            f"observation space: {self.env.observation_space.shape}")
+        rl_logger.info(params)

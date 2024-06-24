@@ -47,8 +47,7 @@ class Tradex_indicator:
         columns_to_convert = ['open', 'high', 'low', 'close', 'volume']
 
         # Apply the conversion to the specified columns
-        df[columns_to_convert] = df[columns_to_convert].astype(np.int64)
-        df[columns_to_convert] = df[columns_to_convert].round(6)
+        df[columns_to_convert] = df[columns_to_convert].astype(float)
 
         return df
 
@@ -165,7 +164,6 @@ class Trend:
     def __init__(self, data, tradex_logger):
         self.tradex_logger = tradex_logger
         self.data = data
-        print(self.data.columns)
         self.df_trend = pd.DataFrame()
         self.get_trend()
 
@@ -252,14 +250,14 @@ class Trend:
 
         wma = ta.wma(vwma, 21)
 
-        vwap = self.calculate_vwap(wma, self.data['volume'])
+        vwap = self.calculate_vwap(self.data['volume'], wma)
 
         # Calculate the VWAP using the "price" and "volume" columns
         # vwap = (df["price"] * df["volume"]).sum() / df["volume"].sum()
 
         return vwap, wma
 
-    def get_tv_vwap(self, source, volume):
+    def get_tv_vwap(self, volume, source):
         typical_price = np.divide(source, 1)
         typical_price_volume = np.multiply(typical_price, volume)
 
@@ -271,7 +269,7 @@ class Trend:
         vwap = np.concatenate([np.full((48,), np.nan), vwap])
         return vwap
 
-    def calculate_vwap(self, source, volume):
+    def calculate_vwap(self, volume, source):
         if source is None:
             return None
         typical_prices = np.divide(source, 1)
@@ -280,6 +278,19 @@ class Trend:
         cumulative_volumes = np.cumsum(volume)
         vwap = cumulative_typical_prices / cumulative_volumes
         return vwap
+
+    def vwap(self,  volume, price):
+        """
+        Calculate the Volume Weighted Average Price (VWAP).
+
+        Args:
+        volume (np.array): Array of volume values.
+        price (np.array): Array of price values corresponding to each volume.
+
+        Returns:
+        np.array: Array of VWAP values.
+        """
+        return np.cumsum(volume * price) / np.cumsum(volume)
 
     def stoploss(self):
         stop_loss_percent = 0.35
@@ -360,7 +371,7 @@ class Screener:
         self.tradex_logger.info('- make the waves')
 
         df_temp = pd.DataFrame()
-        df_temp = df
+        df_temp = df.copy()
 
         n1 = 70
         n2 = 55
@@ -370,46 +381,55 @@ class Screener:
         d = ta.ema(abs(ap - esa), n1)
         ci = (ap - esa) / (0.030 * d)
         tci = ta.wma(ci, n2)  # , talib=True
-        wt1 = tci
-        df_temp['wt2'] = ta.ema(wt1, 4)
-        df_temp['s_vwap'] = self.calculate_vwap(df_temp)
-        df_temp['s_wma'] = wt1
+        wt2 = ta.ema(tci, 4)
+        df_temp['s_vwap'] = self.calculate_vwap(df.volume, wt2)
+        df_temp['s_wma'] = tci
 
         return df_temp['s_wma'], df_temp['s_vwap']
 
-    def get_tv_vwap(self, data):
-        data['typicalPrice'] = np.divide(data.wt2, 1)
-        data['typicalPriceVolume'] = np.multiply(
-            data['typicalPrice'], data['volume'])
-        cumulative_typical_price_volume = np.cumsum(data['typicalPriceVolume'])
-        cumulative_volume = np.cumsum(data['volume'])
-        vwap = np.divide(
-            cumulative_typical_price_volume[47:], cumulative_volume[47:])
-        vwap = vwap[:-1]
-        data['vwap'] = np.concatenate([np.full((48,), np.nan), vwap])
-        return data['vwap']
-
-    def calculate_vwap(self, data):
-        typical_prices = np.divide(data.wt2, 3)
-        typical_prices_volume = typical_prices * data['volume']
+    def calculate_vwap(self, volume, source):
+        if source is None:
+            return None
+        typical_prices = np.divide(source, 1)
+        typical_prices_volume = typical_prices * volume
         cumulative_typical_prices = np.cumsum(typical_prices_volume)
-        cumulative_volumes = np.cumsum(data['volume'])
+        cumulative_volumes = np.cumsum(volume)
         vwap = cumulative_typical_prices / cumulative_volumes
         return vwap
 
-    def get_vwap2(self, df):
-        v = df['volume'].values
-        tp = df.wt2
-        return df.assign(vwap=(tp * v).cumsum() / v.cumsum())
+    def calculate_tci_wt2_y(ap, n1, n2):
+        esa = ta.VWMA(ap, n1)
+        d = ta.EMA(np.abs(ap - esa), n1)
+        ci = (ap - esa) / (0.030 * d)
+        tci = ta.WMA(ci, n2)
+
+        v = ta.EMA(tci, 4)
+        wt2 = ta.VWAP(v)
+        y = (tci - v) * 3
+
+        return tci, wt2, y
+
+    def vwap_(self,  volume, price):
+        """
+        Calculate the Volume Weighted Average Price (VWAP).
+
+        Args:
+        volume (np.array): Array of volume values.
+        price (np.array): Array of price values corresponding to each volume.
+
+        Returns:
+        np.array: Array of VWAP values.
+        """
+        return np.cumsum(volume * price) / np.cumsum(volume)
 
     def moneyflow(self):
         self.tradex_logger.info('- getting the moneyflow')
 
         mfi = ta.mfi(
-            self.data['high'].astype('float64'),
-            self.data['low'].astype('float64'),
-            self.data['close'].astype('float64'),
-            self.data['volume'].astype('float64')
+            self.data['high'],
+            self.data['low'],
+            self.data['close'],
+            self.data['volume']
         )
 
         hlc3 = ta.hlc3(self.data['high'], self.data['low'], self.data['close'])

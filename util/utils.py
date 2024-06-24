@@ -109,6 +109,7 @@ def features(df):
 
 
 def convert_df(df):
+    print(df)
     # List of columns to be converted to float
     columns_to_convert = ['open', 'high', 'low', 'close', 'volume']
 

@@ -14,7 +14,7 @@ from model.features import Tradex_indicator
 from model.machinelearning.autobot import AutoBot
 from model.machinelearning.machinelearning import MachineLearning
 from model.manualtrading.trading import Trading
-from model.reinforcement.rl_models import TensorflowModel, TorchModel
+from model.reinforcement.rl_models import TensorflowModel, TorchModel, StablebaselineModel
 from util.utils import load_config
 
 config = load_config()
@@ -462,7 +462,7 @@ class ReinforcementTabModel:
     # Define a function for training and evaluating the DQL agent
 
     def train_and_evaluate(self, params, logger):
-        TensorflowModel(params, logger).sac()
+        StablebaselineModel(params, logger)
 
     def start(self):
         try:

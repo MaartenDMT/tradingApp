@@ -6,9 +6,11 @@ from sklearn.ensemble import (AdaBoostClassifier, GradientBoostingClassifier,
 from sklearn.exceptions import NotFittedError
 from sklearn.feature_selection import SelectFromModel
 from sklearn.gaussian_process import GaussianProcessClassifier
-from sklearn.linear_model import (BayesianRidge, ElasticNet, HuberRegressor, Lars, Lasso, LassoCV,
-                                  LinearRegression, LogisticRegression, RANSACRegressor, Ridge,
-                                  SGDClassifier, SGDRegressor, TheilSenRegressor)
+from sklearn.linear_model import (BayesianRidge, ElasticNet, HuberRegressor,
+                                  Lars, Lasso, LassoCV, LinearRegression,
+                                  LogisticRegression, RANSACRegressor, Ridge,
+                                  SGDClassifier, SGDRegressor,
+                                  TheilSenRegressor)
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier, RadiusNeighborsClassifier
 from sklearn.neural_network import BernoulliRBM, MLPClassifier

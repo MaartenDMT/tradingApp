@@ -1,6 +1,9 @@
 import glob
 import logging
+import random
+from datetime import datetime
 
+import mplfinance as mpf
 import numpy as np
 import pandas as pd
 
@@ -108,3 +111,76 @@ def best_csv(b_reward, acc) -> bool:
 
 def sigmoid(x):
     return 1 / (1 + np.exp(-x))
+
+
+
+def generate_random_candlestick_data(
+    num_candles, initial_price=100, min_volatility=0.01, max_volatility=0.05, 
+    max_shadow_amplitude=0.5, max_volume_multiplier=5.0, start_date=None):
+    
+    """
+    Generate random candlestick data with varying volatility, shadow amplitude, and volume using numpy
+
+    Args:
+        num_candles (int): Number of candlesticks to generate.
+        initial_price (int, optional): Initial price. Defaults to 100.
+        min_volatility (float, optional): Minimum volatility. Defaults to 0.01.
+        max_volatility (float, optional): Maximum volatility. Defaults to 0.05.
+        max_shadow_amplitude (float, optional): Maximum shadow amplitude. Defaults to 0.5.
+        max_volume_multiplier (float, optional): Maximum volume multiplier. Defaults to 5.0.
+        start_date (datetime, optional): Start date. Defaults to None.
+    
+    Returns:
+        tuple: Numpy array containing candlestick data and the start date.
+    """
+    
+    open_prices = np.zeros(num_candles)
+    high_prices = np.zeros(num_candles)
+    low_prices = np.zeros(num_candles)
+    close_prices = np.zeros(num_candles)    
+    volume = np.zeros(num_candles)
+
+    if start_date is None:
+        start_date = datetime.now()
+        
+    volatilities = np.random.uniform(min_volatility, max_volatility, num_candles)
+    
+    for i in range(num_candles):
+        open_prices[i] = initial_price
+        price_movement = np.random.normal(0, volatilities[i] * initial_price)
+        close_prices[i] = open_prices[i] + price_movement
+        
+        # Calculate shadow amplitude as a percentage of the candle body
+        shadow_amplitude = np.random.uniform(0, max_shadow_amplitude) * abs(price_movement)
+        high_prices[i] = max(open_prices[i], close_prices[i]) + shadow_amplitude
+        low_prices[i] = min(open_prices[i], close_prices[i]) - shadow_amplitude
+        
+        # Generate a base volume and apply a multiplier to create variations
+        base_volume = random.randint(100, 1000)
+        volume[i] = base_volume * np.random.uniform(1.0, max_volume_multiplier)
+        
+        # Set the initial price for the next candle to the close price of the current candle
+        initial_price = close_prices[i]
+        
+    candlestick_data = np.column_stack((open_prices, high_prices, low_prices, close_prices, volume))
+    return candlestick_data, start_date
+        
+        
+def plot_candlestick_chart(candlestick_data, start_date, title='Candlestick Chart'):
+    """
+    Plots the candlestick chart using matplotlib
+
+    Args:
+        candlestick_data (numpy array): Numpy array containing candlestick data
+        start_date (datetime): Start date for the candlestick
+        title (str, optional): Title of the chart. Defaults to 'Candlestick Chart'.
+    """
+    
+    # dates = [start_date + timedelta(days=i) for i in range(len(candlestick_data))]
+    candlestick_data = pd.DataFrame(candlestick_data, columns=['open', 'high', 'low', 'close', 'volume'], index=pd.date_range(start_date, periods=len(candlestick_data), freq="30min"))
+    mpf.plot(candlestick_data, type='candle', mav=(3, 6, 9), volume=True, show_nontrading=True, style='yahoo', title=title)
+    
+
+# print("Loading...")
+# candlestick_data, start_date = generate_random_candlestick_data(num_candles=100)
+# plot_candlestick_chart(candlestick_data, start_date, title="Candlestick Chart")
