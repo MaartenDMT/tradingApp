@@ -64,7 +64,7 @@ class ListboxHandler(logging.Handler):
 def tradex_features(symbol, df):
 
     tradex = Tradex_indicator(
-        symbol=symbol, timeframe='1h', t=None, get_data=False, data=df.copy())
+        symbol=symbol, t=None, get_data=False, data=df.copy())
 
     done = tradex.run()
 
@@ -77,9 +77,8 @@ def tradex_features(symbol, df):
         scanner = tradex.scanner.get_scanner()
 
         processed_features = pd.concat(
-            [df, trend, screener, real_time, scanner], axis=1)
+            [df, trend, real_time, scanner], axis=1)
     else:
-        sleep(2)
         # Assuming tradex.trend, tradex.screener, etc., are instances of their respective classes
         # Call get_trend on the instance of Trend class
         trend = tradex.trend.get_trend()

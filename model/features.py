@@ -28,12 +28,12 @@ class Tradex_indicator:
         scanner (type): Description of attribute `scanner`.
     '''
 
-    def __init__(self, symbol, timeframe, t=None, get_data=False, data=None):
+    def __init__(self, symbol, timeframe="30m", t=None, get_data=False, data=None):
         self.tradex_logger = tradex_logger
         self.ccxt_exchange = ccxt.phemex()  # Change this to your desired exchange
         self.timeframe = timeframe
         self.symbol = symbol
-        self.data = self.convert_df(data) if not get_data else self._get_data()
+        self.data = data if not get_data else self._get_data()
         if t is not None:
             self._changeTime(t)
         self.trend = Trend
@@ -48,7 +48,6 @@ class Tradex_indicator:
 
         # Apply the conversion to the specified columns
         df[columns_to_convert] = df[columns_to_convert].astype(float)
-
         return df
 
     def _get_data(self) -> pd.DataFrame:
@@ -269,7 +268,8 @@ class Trend:
         vwap = np.concatenate([np.full((48,), np.nan), vwap])
         return vwap
 
-    def calculate_vwap(self, volume, source):
+    @staticmethod
+    def calculate_vwap(volume, source):
         if source is None:
             return None
         typical_prices = np.divide(source, 1)

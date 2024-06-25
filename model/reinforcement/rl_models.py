@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from stable_baselines3 import A2C
+from stable_baselines3 import A2C, DQN, PPO, TD3
 
 # Tensorflow models
 import model.reinforcement.TF.AC.ac_tf as AC_tf
@@ -22,7 +22,7 @@ from model.reinforcement.visual_plot import plot_learning_curve, plotLearning
 # import model.reinforcement.TORCH.ICM.parrallel_env as ICM_torch
 
 
-class TensorflowModel():
+class TensorflowModel:
     def __init__(self, params, rl_logger, num_agents=1) -> None:
         self.num_agents = num_agents
         self.env = MultiAgentEnvironment(num_agents=num_agents, symbol='BTCUSDT', features=params['features'],
@@ -298,23 +298,28 @@ class TorchModel:
 class StablebaselineModel:
     def __init__(self, params, rl_logger, num_agents=1):
         data, time = generate_random_candlestick_data(
-            1000, initial_price=100, min_volatility=0.005, max_volatility=0.1, max_shadow_amplitude=0.7, max_volume_multiplier=10.0)
-        self.env = TradingEnvironment(data, initial_balance=1000)
+            6000, initial_price=100, min_volatility=0.005, max_volatility=0.1, max_shadow_amplitude=0.7, max_volume_multiplier=10.0, seed=42, bias_factor=0.002)
+        self.env = TradingEnvironment(None, initial_balance=1000)
         self.model = A2C("MlpPolicy", self.env, verbose=1)
-        self.model.learn(total_timesteps=10000, log_interval=4)
-        obs = self.env.reset()
+        self.model.learn(total_timesteps=20_000, log_interval=100)
+        self.rl_logger = rl_logger
+        self.params = params
+        env_rec = self.model.get_env()
+        obs = env_rec.reset()
         done = False
         infos = []
 
         while not done:
-            action = self.env.action_space.sample()  # random agent action
+            # action = env_rec.action_space.sample()  # random agent action
+            action, _state = self.model.predict(obs)
+            self.rl_logger.info(
+                f"sampled Action: {action[0]} and type of {type(action)}")
             obs, reward, terminated, done, info = self.env.step(action)
             infos.append(info)
-            print(
-                f"action: {action}, Balance: {info['balance']}, shares: {info['current_position']}, Price:{info['current_price']}, Total Worth: {info['current_total_worth']}")
+            env_rec.render("human")
+            self.rl_logger.info(
+                f"action: {action}, Balance: {info['balance']}, shares: {info['current_position']}, Price:{info['current_price']}, Total Worth: {info['current_total_worth']}, reward: {reward}")
 
-        self.rl_logger = rl_logger
-        self.params = params
 
         time_steps = range(len(infos))
         returns = [info['balance'] for info in infos]
@@ -357,6 +362,6 @@ class StablebaselineModel:
 
         # rl_logger.info(
         #     f"Performance with data {env.env_data}")
-        rl_logger.info(
-            f"observation space: {self.env.observation_space.shape}")
+        self.rl_logger.info(
+            f"observation space: {env_rec.observation_space.shape}")
         rl_logger.info(params)
