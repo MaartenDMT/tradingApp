@@ -3,3 +3,40 @@ __pycache__
 data
 venv
 .vscode
+
+# Virtual envs
+trading_venv/
+.venv/
+venv/
+
+# Python artifacts
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+build/
+dist/
+
+# Caches
+.pytest_cache/
+.mypy_cache/
+__pypackages__/
+
+# Logs
+logs/
+*.log
+
+# OS / editors
+.DS_Store
+.idea/
+.ropeproject/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Env files
+.env.local
+.env.*
+
+# Coverage
+.coverage

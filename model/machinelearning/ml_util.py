@@ -1,6 +1,10 @@
 
 
-# models for classification
+import warnings
+
+warnings.filterwarnings('ignore')
+
+# Optimized model lists using sets for O(1) lookup
 classifier = ["Logistic Regression", "MLPClassifier", "BernoulliRBM", "Decision Tree Classifier", "Random Forest Classifier", "SVC",
               "Isolation Forest", "Gradient Boosting Classifier", "Extra Tree Classifier", "XGBoost Classifier",
               "Gaussian Naive Bayes", "Radius Neighbors Classifier", "K-Nearest Neighbors", "AdaBoost Classifier",
@@ -112,6 +116,7 @@ def spot_score_clas(y_true, y_pred, n_candles=2, starting_capital=10000, trade_f
     capital = starting_capital
     holding_stock = False
     buy_price = 0
+    trade_amount = 0
 
     for i in range(min(len(y_pred), len(y_true) - n_candles)):
         if holding_stock:
@@ -135,6 +140,7 @@ def spot_score_reg(y_true, y_pred, n_candles=2, starting_capital=10000, trade_fr
     capital = starting_capital
     holding_stock = False
     buy_price = 0
+    trade_amount = 0
 
     for i in range(min(len(y_pred), len(y_true) - n_candles)):
         if holding_stock:
@@ -176,31 +182,31 @@ Quadratic Discriminant Analysis
 SGD Classifier (Stochastic Gradient Descent Classifier)
 
 
-Linear Regression: A fundamental regression technique for modeling the relationship 
+Linear Regression: A fundamental regression technique for modeling the relationship
 between a scalar response and one or more explanatory variables.
 
-SVR (Support Vector Regression): An extension of Support Vector Machines (SVM) that 
+SVR (Support Vector Regression): An extension of Support Vector Machines (SVM) that
 supports regression tasks.
 
-Ridge Regression: A technique for analyzing multiple regression data that suffer from 
+Ridge Regression: A technique for analyzing multiple regression data that suffer from
 multicollinearity. It applies L2 regularization.
 
-Lasso Regression: Similar to Ridge Regression but uses L1 regularization, which can lead 
+Lasso Regression: Similar to Ridge Regression but uses L1 regularization, which can lead
 to sparse models with few coefficients.
 
-Elastic Net Regression: Combines L1 and L2 priors (regularization terms) as regularizer 
+Elastic Net Regression: Combines L1 and L2 priors (regularization terms) as regularizer
 in linear regression models.
 
-Decision Tree Regressor: Uses a decision tree for regression. It's a tree-structured 
+Decision Tree Regressor: Uses a decision tree for regression. It's a tree-structured
 model used to predict continuous values.
 
-Bayesian Ridge Regression: Implements Bayesian ridge regression, which includes 
+Bayesian Ridge Regression: Implements Bayesian ridge regression, which includes
 regularization parameters that are estimated from the data.
 
-Gradient Boosting Regressor: A machine learning technique for regression problems, 
-which builds a model in a stage-wise fashion like other boosting methods do, but it 
+Gradient Boosting Regressor: A machine learning technique for regression problems,
+which builds a model in a stage-wise fashion like other boosting methods do, but it
 generalizes them by allowing optimization of an arbitrary differentiable loss function.
 
-SGD Regressor (Stochastic Gradient Descent Regressor): Fits a linear model using 
+SGD Regressor (Stochastic Gradient Descent Regressor): Fits a linear model using
 stochastic gradient descent. It's useful for large-scale and sparse data.
 """

@@ -20,6 +20,13 @@ class Presenter:
         self._model = model
         self._view = view
         self.get_frames()
+        # Initialize placeholders for tab presenters
+        self._trading_presenter = None
+        self._bot_tab = None
+        self._chart_tab = None
+        self._exchange_tab = None
+        self._ml_tab = None
+        self._rl_tab = None
 
     def run(self) -> None:
         self._view.mainloop()
@@ -28,6 +35,68 @@ class Presenter:
         exchange = self._model.get_exchange(test_mode=test_mode)
         return exchange
 
+    # Lazy initialization methods for tab presenters
+    def _ensure_trading_presenter(self):
+        if self._trading_presenter is None:
+            app_logger.debug("Initializing TradePresenter")
+            self._trading_presenter = TradePresenter(self._model, self.main_view, self)
+
+    def _ensure_bot_tab(self):
+        if self._bot_tab is None:
+            app_logger.debug("Initializing BotPresenter")
+            self._bot_tab = BotPresenter(self._model, self.main_view, self)
+
+    def _ensure_chart_tab(self):
+        if self._chart_tab is None:
+            app_logger.debug("Initializing ChartPresenter")
+            self._chart_tab = ChartPresenter(self._model, self.main_view, self)
+
+    def _ensure_exchange_tab(self):
+        if self._exchange_tab is None:
+            app_logger.debug("Initializing ExchangePresenter")
+            self._exchange_tab = ExchangePresenter(self._model, self.main_view, self)
+
+    def _ensure_ml_tab(self):
+        if self._ml_tab is None:
+            app_logger.debug("Initializing MLPresenter")
+            self._ml_tab = MLPresenter(self._model, self.main_view, self)
+
+    def _ensure_rl_tab(self):
+        if self._rl_tab is None:
+            app_logger.debug("Initializing RLPresenter")
+            self._rl_tab = RLPresenter(self._model, self.main_view, self)
+
+    # Properties to ensure lazy initialization
+    @property
+    def trading_presenter(self):
+        self._ensure_trading_presenter()
+        return self._trading_presenter
+
+    @property
+    def bot_tab(self):
+        self._ensure_bot_tab()
+        return self._bot_tab
+
+    @property
+    def chart_tab(self):
+        self._ensure_chart_tab()
+        return self._chart_tab
+
+    @property
+    def exchange_tab(self):
+        self._ensure_exchange_tab()
+        return self._exchange_tab
+
+    @property
+    def ml_tab(self):
+        self._ensure_ml_tab()
+        return self._ml_tab
+
+    @property
+    def rl_tab(self):
+        self._ensure_rl_tab()
+        return self._rl_tab
+
     # Login view -------------------------------------------------------------------
 
     def on_login_button_clicked(self) -> None:
@@ -35,7 +104,10 @@ class Presenter:
         password = self.loginview.get_password() or 't'
         self._model.login_model.set_credentials(username, password)
 
-        if username == 'test' or self._model.login_model.check_credentials():
+        # For development, automatically log in with test credentials
+        if username == 'test' and password == 't':
+            self.get_main_view()
+        elif self._model.login_model.check_credentials():
             self.get_main_view()
         else:
             self.loginview.login_failed()
@@ -67,12 +139,9 @@ class Presenter:
         self.main_listbox = MainListBox(self._model, self.main_view, self)
 
     def get_tabs(self, main_view) -> None:
-        self.trading_presenter = TradePresenter(self._model, main_view, self)
-        self.bot_tab = BotPresenter(self._model, main_view, self)
-        self.chart_tab = ChartPresenter(self._model, main_view, self)
-        self.exchange_tab = ExchangePresenter(self._model, main_view, self)
-        self.ml_tab = MLPresenter(self._model, main_view, self)
-        self.rl_tab = RLPresenter(self._model, main_view, self)
+        # Don't initialize tab presenters here - they will be initialized lazily when accessed
+        app_logger.info("Tab presenters will be initialized lazily when accessed")
+        pass
 
 
 class MainListBox:
@@ -215,11 +284,18 @@ class TradePresenter:
         return (percentage_amount / 100.0) * balance * self.get_leverage()
 
     def calculate_stop_loss(self, trade_tab, price):
+        # Validate inputs
+        from util.validation import validate_number, validate_percentage
+        from util.error_handling import handle_exception
+        
+        if not validate_number(price, min_value=0):
+            raise ValueError(f"Invalid price: {price}")
+        
         stop_loss_percentage = float(trade_tab.stoploss_slider.get())
 
-        # Validate that the stop loss percentage is between 0 and 100
-        if not (0 <= stop_loss_percentage <= 100):
-            raise ValueError("Stop loss percentage must be between 0 and 100")
+        # Validate that the stop loss percentage is between 0 and 100 using our utility
+        if not validate_percentage(stop_loss_percentage):
+            raise ValueError(f"Stop loss percentage must be between 0 and 100, got: {stop_loss_percentage}")
 
         # Calculate the stop loss value based on the percentage
         # Your stop loss calculation logic here
@@ -228,12 +304,18 @@ class TradePresenter:
         return stop_loss_value
 
     def calculate_take_profit(self, trade_tab, price):
+        # Validate inputs
+        from util.validation import validate_number, validate_percentage
+        from util.error_handling import handle_exception
+        
+        if not validate_number(price, min_value=0):
+            raise ValueError(f"Invalid price: {price}")
+        
         take_profit_percentage = float(trade_tab.takeprofit_slider.get())
 
-        # Validate that the take profit percentage is between 0 and 100
-        if not (0 <= take_profit_percentage <= 100):
-            raise ValueError(
-                "Take profit percentage must be between 0 and 100")
+        # Validate that the take profit percentage is between 0 and 100 using our utility
+        if not validate_percentage(take_profit_percentage):
+            raise ValueError(f"Take profit percentage must be between 0 and 100, got: {take_profit_percentage}")
 
         # Calculate the take profit value based on the percentage
         # Your take profit calculation logic here
@@ -281,26 +363,30 @@ class TradePresenter:
         trade_tab.ticker_price_label.config(text=f"Ticker Price: {last_price}")
 
     def refresh_data(self, settings=None):
-        if settings is None:
-            settings = {}  # Initialize an empty settings dictionary
+        try:
+            if settings is None:
+                settings = {}  # Initialize an empty settings dictionary
 
-        # Update relevant settings in the settings dictionary as needed
-        settings['symbol'] = self.get_symbol()
-        settings['leverage'] = self.get_leverage()
-        settings['accountType'] = self.get_accountype()
+            # Update relevant settings in the settings dictionary as needed
+            settings['symbol'] = self.get_symbol()
+            settings['leverage'] = self.get_leverage()
+            settings['accountType'] = self.get_accountype()
 
-        # Call the update_settings method of the trading class with the updated settings
-        self._model.update_settings(settings)
+            # Call the update_settings method of the trading class with the updated settings
+            self._model.update_settings(settings)
 
-        # The rest of your refresh_data method remains unchanged
-        self.update_bid_ask()
-        self.update_open_trades()
-        self.update_ticker_price()
-        self.update_balance()
-        self.presenter.main_listbox.set_text(f"refreshing the data")
+            # The rest of your refresh_data method remains unchanged
+            self.update_bid_ask()
+            self.update_open_trades()
+            self.update_ticker_price()
+            self.update_balance()
+            self.presenter.main_listbox.set_text(f"refreshing the data")
+        except Exception as e:
+            app_logger.error(f"Error refreshing data: {e}")
+            self.presenter.main_listbox.set_text(f"Error refreshing data: {str(e)}")
 
     def start_refresh_data_thread(self):
-        refresh_thread = threading.Thread(target=self.refresh_data)
+        refresh_thread = threading.Thread(target=self.refresh_data, daemon=True)
         refresh_thread.start()
 
     def scale_in_out(self, amount):
@@ -463,8 +549,7 @@ class BotPresenter:
             f"bot {self.bot_count}: {name} has been created")
 
     def threading_createbot(self) -> None:
-        t = threading.Thread(target=self.create_bot)
-        t.setDaemon(True)
+        t = threading.Thread(target=self.create_bot, daemon=True)
         t.start()
 
     def destroy_bot(self, index: int) -> None:
@@ -537,18 +622,22 @@ class ChartPresenter:
     def update_chart(self, stop_event) -> None:
         # Check if the stop event has been set
         if not stop_event.is_set():
-            # Check if automatic trading is enabled
-            print('AUTO CHART TRADING --> TESTER')
-            # Clear the figure
-            self.chart_tab.axes.clear()
-            # Get the data for the chart
-            data = self._model.charttab_model.get_data()
-            # Plot the data on the figure
-            self.chart_tab.axes.plot(data.index, data.close)
-            # Redraw the canvas
-            self.chart_tab.canvas.draw()
-            # Call the update_chart function again after 5 seconds
-            self.main_view.after(60_000, self.update_chart, stop_event)
+            try:
+                # Check if automatic trading is enabled
+                self.model_logger.debug('AUTO CHART TRADING --> TESTER')
+                # Clear the figure
+                self.chart_tab.axes.clear()
+                # Get the data for the chart
+                data = self._model.charttab_model.get_data()
+                # Plot the data on the figure
+                self.chart_tab.axes.plot(data.index, data.close)
+                # Redraw the canvas
+                self.chart_tab.canvas.draw()
+            except Exception as e:
+                self.model_logger.error(f"Error updating chart: {e}")
+            finally:
+                # Call the update_chart function again after 60 seconds
+                self.main_view.after(60_000, self.update_chart, stop_event)
 
     def toggle_auto_charting(self) -> None:
         self.auto_chart = self._model.charttab_model.toggle_auto_charting()

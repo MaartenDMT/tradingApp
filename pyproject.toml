@@ -1,0 +1,113 @@
+[project]
+name = "trading-app"
+version = "1.0.0"
+description = "A comprehensive trading application with multiple strategies"
+authors = [{ name = "Trading App Developer" }]
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.12,<3.13"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "ccxt>=4.1.95",
+    "pandas>=2.1.4",
+    "numpy>=1.24.3",
+    "scikit-learn>=1.3.2",
+    # TensorFlow and PyTorch stack
+    "tensorflow==2.18.1",
+    "tensorflow-probability==0.25.0",
+    "tf-keras==2.18.0",
+    "termcolor==3.1.0",
+    # PyTorch with CUDA 12.4 support
+    # NOTE: PyTorch CUDA versions are installed separately using:
+    # uv pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+    # Installed versions: torch==2.6.0+cu124, torchvision==0.21.0+cu124, torchaudio==2.6.0+cu124
+    "torchaudio==2.6.0",               # CPU version, CUDA version installed separately
+    "torchvision==0.21.0",             # CPU version, CUDA version installed separately
+    "ttkbootstrap>=1.10.1",
+    "matplotlib>=3.8.2",
+    "mplfinance>=0.12.10b0",           # Add missing mplfinance package
+    "psycopg2>=2.9.9",
+    "python-dotenv>=1.0.0",
+    "cryptography>=41.0.7",
+    "pandas-ta>=0.4.67b0",
+    "yfinance>=0.2.33",
+    "textblob>=0.17.1",
+    "vaderSentiment>=3.3.2",
+    "optuna>=3.5.0",
+    "scikit-optimize>=0.9.0",
+    "seaborn>=0.13.0",
+    "shap>=0.42.0",
+    "xgboost>=2.0.3",
+    "stable-baselines3>=2.0.0,<2.4.0", # Pin to compatible version
+    "tensorboard>=2.15.0,<2.19.0",     # Pin to match TensorFlow
+    "protobuf>=4.21.0,<5.0.0",         # Downgrade protobuf for compatibility
+    "aiohttp>=3.9.1",
+    "aiodns>=3.1.1",
+    "websocket-client>=1.8.0",
+    # Force a Python 3.12 compatible torch so uv does not pick 2.0.1 (no cp312 wheels).
+    # This will install the CPU wheel first; we then overwrite with the CUDA build.
+    "torch==2.6.0", # CPU version, CUDA version installed separately
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.3",
+    "flake8>=6.0.0",
+    "black>=23.0.0",
+    "pylint>=2.17.0",
+    "autopep8>=2.0.4",
+]
+test = ["pytest>=7.4.3", "pytest-cov>=4.1.0"]
+
+[project.scripts]
+trading-app = "main:main"
+
+[tool.setuptools]
+packages = [
+    "model",
+    "view",
+    "util",
+    "model.machinelearning",
+    "model.manualtrading",
+    "model.reinforcement",
+]
+
+[tool.black]
+line-length = 88
+target-version = ['py38', 'py39', 'py310', 'py311', 'py312']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+addopts = "-v"
+
+# NOTE: uv 0.8.x does not yet support a table of named indexes in pyproject.
+# To install CUDA 12.4 wheels use manual command after sync:
+#   uv pip install --no-build torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+
+[tool.uv]
+package = true
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"

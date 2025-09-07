@@ -2,8 +2,8 @@ import optuna
 import pandas as pd
 
 import util.loggers as loggers
-from model.reinforcement.agent import DQLAgent
-from model.reinforcement.env import Environment
+from model.reinforcement import TradingEnvironment
+from model.reinforcement.agents.agent_manager import DQLAgent
 from util.utils import load_config
 
 # Logger and Configuration Setup
@@ -12,7 +12,7 @@ rl_logger = logger['rl']
 config = load_config()
 
 # Environment Setup
-env = Environment(symbol='BTCUSDT', features=['open', 'high', 'low', 'close', 'volume'],
+env = TradingEnvironment(symbol='BTCUSDT', features=['open', 'high', 'low', 'close', 'volume'],
                   limit=300, time="30m", actions=3, min_acc=float(config['Params']['min_acc']))
 
 # Objective Function for Optuna

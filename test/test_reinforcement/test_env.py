@@ -3,16 +3,15 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from model.reinforcement.env import Environment
-from model.reinforcement.rl_env.env_uttils import (ObservationSpace,
-                                                   TradingEnvironment)
+from model.reinforcement import TradingEnvironment
+from model.reinforcement.environments.environment_utils import ObservationSpace
 
 
 class TestEnvironment(unittest.TestCase):
 
     def setUp(self):
         # Initialize the Environment object with test parameters
-        self.test_env = Environment(
+        self.test_env = TradingEnvironment(
             symbol="BTCUSDT",
             features=["close", "open"],
             limit=10,

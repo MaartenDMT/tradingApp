@@ -1,15 +1,15 @@
 
 import unittest
 
-from model.reinforcement.rl_env.env_uttils import TradingEnvironment
+from model.reinforcement.environments.trading_engine import TradingEngine
 
 
-class TestTradingEnvironment(unittest.TestCase):
+class TestTradingEngine(unittest.TestCase):
 
     def setUp(self):
-        # This sets up a TradingEnvironment instance before each test
-        self.env = TradingEnvironment(initial_balance=10000, leverage=10, transaction_costs=0.01,
-                                      trade_limit=100, drawdown_threshold=0.2, symbol="XYZ", trading_mode='futures')
+        # This sets up a TradingEngine instance before each test
+        self.env = TradingEngine(initial_balance=10000, leverage=10, transaction_costs=0.01,
+                                trading_mode='futures')
 
     def test_initial_conditions(self):
         """Test if the environment initializes correctly."""
@@ -21,12 +21,12 @@ class TestTradingEnvironment(unittest.TestCase):
     def test_invalid_action(self):
         """Test handling of invalid actions."""
         with self.assertRaises(ValueError):
-            self.env.future_trading(5, 100)  # Invalid action
+            self.env.execute_trade(5, 100)  # Invalid action
 
     def test_invalid_price(self):
         """Test handling of invalid price values."""
         with self.assertRaises(ValueError):
-            self.env.future_trading(1, -50)  # Negative price is invalid
+            self.env.execute_trade(1, -50)  # Negative price is invalid
 
     def test_buy_action(self):
         """Test the buy action in futures trading."""

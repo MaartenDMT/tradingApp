@@ -58,12 +58,12 @@ class LoginView(Frame):
         self._presenter = presenter
 
         Label(self, text="Username").grid(row=0, column=0, padx=5, pady=5)
-        self.username_entry = Entry(self, textvariable=self._username_var).grid(
-            row=0, column=1, padx=5, pady=5)
+        self.username_entry = Entry(self, textvariable=self._username_var)
+        self.username_entry.grid(row=0, column=1, padx=5, pady=5)
 
         Label(self, text="Password").grid(row=1, column=0, padx=5, pady=5)
-        self.password_entry = Entry(
-            self, textvariable=self._password_var, show="*").grid(row=1, column=1, padx=5, pady=5)
+        self.password_entry = Entry(self, textvariable=self._password_var, show="*")
+        self.password_entry.grid(row=1, column=1, padx=5, pady=5)
 
         self.login = Button(self, text="Login",
                             command=self._presenter.on_login_button_clicked)
@@ -83,9 +83,13 @@ class LoginView(Frame):
         return self._password_var.get()
 
     def login_failed(self) -> None:
-        self.username_entry.delete(0, "end")
-        self.password_entry.delete(0, "end")
-        self.username_entry.insert(0, "Invalid credentials. Try again.")
+        # Fix the UI issue where entry widgets were None due to grid() returning None
+        # Also handle the case for automatic login in development
+        if hasattr(self, 'username_entry') and self.username_entry is not None:
+            self.username_entry.delete(0, "end")
+            self.username_entry.insert(0, "Invalid credentials. Try again.")
+        if hasattr(self, 'password_entry') and self.password_entry is not None:
+            self.password_entry.delete(0, "end")
 
     def show_error_message(self, message: str):
         messagebox.showerror("Error", message)

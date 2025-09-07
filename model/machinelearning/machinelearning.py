@@ -1,5 +1,7 @@
 import datetime
+import gc
 import os
+import pickle
 import threading
 import traceback
 import warnings
@@ -10,40 +12,70 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import psutil
 import seaborn as sns
 import shap
-from joblib import dump, load
 from sklearn.exceptions import ConvergenceWarning
+from sklearn.feature_selection import (SelectKBest, f_classif, f_regression,
+                                       mutual_info_classif)
 from sklearn.metrics import (accuracy_score, auc, classification_report,
                              confusion_matrix, explained_variance_score,
                              make_scorer, mean_absolute_error,
                              mean_squared_error, r2_score, roc_auc_score,
                              roc_curve)
-from sklearn.model_selection import (GridSearchCV, RandomizedSearchCV,
-                                     train_test_split)
+from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from skopt import BayesSearchCV
 
-import util.loggers as loggers
-from model.machinelearning.ml_models import get_model
-from model.machinelearning.ml_util import (classifier, column_1d,
-                                           future_score_clas, future_score_reg,
-                                           regression, spot_score_clas,
-                                           spot_score_reg)
-from util.utils import array_min2d, tradex_features
+from ...util import loggers
+from ...util.utils import tradex_features
+from .ml_models import get_model
+from .ml_util import (classifier, future_score_clas, future_score_reg,
+                      regression)
+
+# Import optimized utilities
+try:
+    from ...util.cache import HybridCache, cache_key_for_ml_prediction
+    from ...util.ml_optimization import MLConfig, OptimizedMLPipeline
+    OPTIMIZATIONS_AVAILABLE = True
+except ImportError:
+    OPTIMIZATIONS_AVAILABLE = False
 
 # Disable ConvergenceWarning
 warnings.filterwarnings("ignore", category=ConvergenceWarning)
 # Use the 'Agg' backend
 matplotlib.use('Agg')
-# import pandas_ta as ta
 
 logger = loggers.setup_loggers()
 
 PLOTS_PATH = 'data/ml/plots'
 MODEL_PERFO_PATH = 'data/ml/csv/model_performance.csv'
 SHIFT_CANDLES = 3
+
+# Performance monitoring
+class PerformanceMonitor:
+    """Monitor system performance during ML operations."""
+
+    def __init__(self):
+        self.process = psutil.Process()
+        self.initial_memory = self.process.memory_info().rss / 1024 / 1024  # MB
+
+    def get_memory_usage(self):
+        """Get current memory usage in MB."""
+        return self.process.memory_info().rss / 1024 / 1024
+
+    def get_memory_delta(self):
+        """Get memory usage change since initialization."""
+        return self.get_memory_usage() - self.initial_memory
+
+    def log_performance(self, operation_name, logger):
+        """Log current performance metrics."""
+        memory_mb = self.get_memory_usage()
+        memory_delta = self.get_memory_delta()
+        cpu_percent = self.process.cpu_percent()
+
+        logger.info(f"{operation_name} - Memory: {memory_mb:.1f}MB (Δ{memory_delta:+.1f}MB), CPU: {cpu_percent:.1f}%")
 
 
 class MachineLearning:
@@ -52,11 +84,278 @@ class MachineLearning:
         self.symbol = symbol
         self.logger = logger['model']
         self.shap_interpreter = SHAPClass()
+        self.performance_monitor = PerformanceMonitor()
+
+        # Initialize optimized components if available
+        self._cache = None
+        self._optimized_pipeline = None
+        self.parallel_backend = 'threading'  # Default to threading for I/O bound tasks
+        self.max_workers = min(32, (os.cpu_count() or 1) + 4)  # Conservative worker count
+
+        if OPTIMIZATIONS_AVAILABLE:
+            try:
+                # Initialize optimized ML pipeline
+                config = MLConfig(
+                    n_jobs=-1,
+                    backend="loky",
+                    use_halving_search=True,
+                    cv_folds=3,
+                    chunk_size=5000,
+                    cache_size_mb=500
+                )
+                self._optimized_pipeline = OptimizedMLPipeline(config=config)
+                self.logger.info("Optimized ML pipeline initialized")
+            except Exception as e:
+                self.logger.warning(f"Failed to initialize optimized pipeline: {e}")
+                self._optimized_pipeline = None
+
+    def optimize_memory_usage(self):
+        """Optimize memory usage by clearing caches and triggering garbage collection."""
+        # Clear any matplotlib figures
+        plt.close('all')
+
+        # Trigger garbage collection
+        collected = gc.collect()
+        self.logger.info(f"Garbage collection freed {collected} objects")
+
+        # Log memory usage
+        self.performance_monitor.log_performance("Memory optimization", self.logger)
+
+    def parallel_model_training(self, algorithms, X_train, y_train, X_test, y_test, scoring_function, cv=5):
+        """
+        Train multiple models in parallel for faster comparison.
+
+        :param algorithms: List of algorithm names to train
+        :param X_train: Training features
+        :param y_train: Training targets
+        :param X_test: Test features
+        :param y_test: Test targets
+        :param scoring_function: Function to score the models
+        :param cv: Number of cross-validation folds
+        :return: Dictionary of results for each algorithm
+        """
+        import time
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+
+        def train_single_model(algorithm):
+            """Train a single model and return its performance."""
+            start_time = time.time()
+            try:
+                model = get_model(algorithm)
+                model.fit(X_train, y_train)
+
+                # Make predictions
+                y_pred = model.predict(X_test)
+                score = scoring_function(y_test, y_pred)
+
+                training_time = time.time() - start_time
+
+                return {
+                    'algorithm': algorithm,
+                    'model': model,
+                    'score': score,
+                    'training_time': training_time,
+                    'status': 'success'
+                }
+            except Exception as e:
+                return {
+                    'algorithm': algorithm,
+                    'model': None,
+                    'score': None,
+                    'training_time': time.time() - start_time,
+                    'status': 'failed',
+                    'error': str(e)
+                }
+
+        # Track performance
+        self.performance_monitor.log_performance(f"Starting parallel training of {len(algorithms)} models", self.logger)
+
+        results = {}
+
+        with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
+            # Submit all training jobs
+            future_to_algorithm = {
+                executor.submit(train_single_model, algo): algo
+                for algo in algorithms
+            }
+
+            # Collect results as they complete
+            for future in as_completed(future_to_algorithm):
+                result = future.result()
+                results[result['algorithm']] = result
+
+                if result['status'] == 'success':
+                    self.logger.info(f"✓ {result['algorithm']}: Score={result['score']:.4f}, Time={result['training_time']:.2f}s")
+                else:
+                    self.logger.error(f"✗ {result['algorithm']}: Failed - {result['error']}")
+
+        self.performance_monitor.log_performance("Completed parallel training", self.logger)
+        return results
+
+    def advanced_hyperparameter_search(self, algorithm, X_train, y_train, search_type='bayesian', n_iter=50):
+        """
+        Perform advanced hyperparameter optimization using Bayesian or Halving search.
+
+        :param algorithm: Algorithm name
+        :param X_train: Training features
+        :param y_train: Training targets
+        :param search_type: 'bayesian', 'halving_grid', or 'halving_random'
+        :param n_iter: Number of iterations for optimization
+        :return: Best model and parameters
+        """
+        from model.machinelearning.ml_models import get_model_parameters
+
+        try:
+            model, param_grid = get_model_parameters(algorithm)
+
+            self.logger.info(f"Starting {search_type} hyperparameter search for {algorithm}")
+
+            if search_type == 'bayesian':
+                search = BayesSearchCV(
+                    model,
+                    param_grid,
+                    n_iter=n_iter,
+                    cv=3,
+                    n_jobs=-1,
+                    random_state=42,
+                    scoring='accuracy' if algorithm in classifier else 'neg_mean_squared_error'
+                )
+            elif search_type == 'halving_grid':
+                from sklearn.model_selection import HalvingGridSearchCV
+                search = HalvingGridSearchCV(
+                    model,
+                    param_grid,
+                    cv=3,
+                    n_jobs=-1,
+                    random_state=42,
+                    scoring='accuracy' if algorithm in classifier else 'neg_mean_squared_error'
+                )
+            elif search_type == 'halving_random':
+                from sklearn.model_selection import HalvingRandomSearchCV
+                search = HalvingRandomSearchCV(
+                    model,
+                    param_grid,
+                    n_iter=n_iter,
+                    cv=3,
+                    n_jobs=-1,
+                    random_state=42,
+                    scoring='accuracy' if algorithm in classifier else 'neg_mean_squared_error'
+                )
+            else:
+                raise ValueError(f"Unknown search type: {search_type}")
+
+            # Perform the search
+            search.fit(X_train, y_train)
+
+            self.logger.info(f"Best parameters for {algorithm}: {search.best_params_}")
+            self.logger.info(f"Best score: {search.best_score_:.4f}")
+
+            return search.best_estimator_, search.best_params_, search.best_score_
+
+        except Exception as e:
+            self.logger.error(f"Hyperparameter search failed for {algorithm}: {e}")
+            return None, None, None
+
+    def create_feature_selector(self, X, y, selection_method='mutual_info', k=10):
+        """
+        Create a feature selector for dimensionality reduction.
+
+        :param X: Features
+        :param y: Target
+        :param selection_method: 'mutual_info', 'f_classif', or 'f_regression'
+        :param k: Number of features to select
+        :return: Fitted feature selector
+        """
+        if selection_method == 'mutual_info':
+            selector = SelectKBest(mutual_info_classif, k=k)
+        elif selection_method == 'f_classif':
+            selector = SelectKBest(f_classif, k=k)
+        elif selection_method == 'f_regression':
+            selector = SelectKBest(f_regression, k=k)
+        else:
+            raise ValueError(f"Unknown selection method: {selection_method}")
+
+        selector.fit(X, y)
+        self.logger.info(f"Feature selector created using {selection_method}, selected {k} features")
+
+        return selector
+
+    async def get_cache(self):
+        """Get or initialize cache instance."""
+        if self._cache is None and OPTIMIZATIONS_AVAILABLE:
+            try:
+                from util.cache import get_global_cache
+                self._cache = await get_global_cache()
+            except Exception:
+                self._cache = None
+        return self._cache
+
+    async def predict_async(self, model, df=None, t='30m', symbol='BTC/USDT') -> int:
+        """Async version of predict method with enhanced caching."""
+        try:
+            # Check cache first for recent predictions
+            cache = await self.get_cache()
+            if cache:
+                cache_key = cache_key_for_ml_prediction(model.__class__.__name__, f"{symbol}_{t}")
+                cached_prediction = await cache.get(cache_key)
+                if cached_prediction is not None:
+                    self.logger.debug(f"Returning cached prediction for {symbol} at timeframe {t}")
+                    return cached_prediction
+
+            # Fetch the current data for the symbol
+            data = self.exchange.fetch_ohlcv(symbol, timeframe=t, limit=500)
+            df = pd.DataFrame(
+                data, columns=['date', 'open', 'high', 'low', 'close', 'volume'])
+            df = df[['open', 'high', 'low', 'close', 'volume']].astype(float)
+
+            # Use optimized feature processing if available
+            if self._optimized_pipeline:
+                features = await self._process_features_optimized(df)
+            else:
+                features = self.process_features(df)
+
+            # Load scaler and transform features
+            scaler = self.load_pretrained_scaler()
+            features = scaler.transform(features)
+
+            # Make prediction
+            prediction = model.predict(features[-1].reshape(1, -1))[0]
+
+            # Log and cache the prediction
+            self.logger.info(f"Prediction for {symbol} at timeframe {t}: {prediction}")
+
+            if cache:
+                await cache.set(cache_key, prediction, ttl=30)
+
+            return prediction
+
+        except Exception as e:
+            self.logger.error(f"Error during async prediction: {str(e)}")
+            return 1
 
     def predict(self, model, df=None, t='30m', symbol='BTC/USDT') -> int:
-        # TODO: predict(self, model, features)
-        # the features needs to be a from my trade-x thingy
+        """Enhanced predict method with caching support."""
         try:
+            # For backward compatibility, use simple caching
+            cache_key = f"ml_prediction_{symbol}_{t}"
+
+            # Log cache key for debugging
+            self.logger.debug(f"Using cache key: {cache_key}")
+
+            # Try to use optimized async prediction if available
+            if OPTIMIZATIONS_AVAILABLE:
+                try:
+                    import asyncio
+                    loop = asyncio.get_event_loop()
+                    if loop.is_running():
+                        # If already in async context, use sync version with basic caching
+                        pass
+                    else:
+                        return loop.run_until_complete(self.predict_async(model, df, t, symbol))
+                except Exception:
+                    pass
+
+            # Fallback to original implementation with basic caching
             # Fetch the current data for the symbol
             data = self.exchange.fetch_ohlcv(symbol, timeframe=t, limit=500)
             df = pd.DataFrame(
@@ -66,9 +365,7 @@ class MachineLearning:
             # Use the process_features method to get the features for prediction
             features = self.process_features(df)
 
-            # If a scaler was used during training, load the pre-fitted scaler and transform the features
-            # Make sure the scaler is saved after fitting on training data
-            # load the scaler fitted on training data
+            # Load scaler and transform features
             scaler = self.load_pretrained_scaler()
             features = scaler.transform(features)
 
@@ -76,13 +373,19 @@ class MachineLearning:
             prediction = model.predict(features[-1].reshape(1, -1))[0]
 
             # Logging the prediction result
-            self.logger.info(
-                f"Prediction for {symbol} at timeframe {t}: {prediction}")
+            self.logger.info(f"Prediction for {symbol} at timeframe {t}: {prediction}")
 
             return prediction
         except Exception as e:
             self.logger.error(f"Error during prediction: {str(e)}")
-            return 1  # return a default value or handle according to your use case
+            return 1  # return a default value
+
+    async def _process_features_optimized(self, df):
+        """Process features using optimized pipeline."""
+        if self._optimized_pipeline:
+            return await self._optimized_pipeline.process_features_async(df)
+        else:
+            return self.process_features(df)
 
     def evaluate_model(self, name, model, X_test, y_test):
         y_pred = model.predict(X_test)
@@ -303,7 +606,86 @@ class MachineLearning:
         else:
             return df['close']
 
+    async def train_evaluate_and_save_model_async(self, model: str, usage_percent=0.7):
+        """Async version of model training with optimizations."""
+        if self._optimized_pipeline and OPTIMIZATIONS_AVAILABLE:
+            try:
+                return await self._train_with_optimized_pipeline(model, usage_percent)
+            except Exception as e:
+                self.logger.warning(f"Optimized training failed, falling back to standard: {e}")
+
+        # Fallback to standard training
+        return self.train_evaluate_and_save_model(model, usage_percent)
+
+    async def _train_with_optimized_pipeline(self, model: str, usage_percent=0.7):
+        """Train model using optimized pipeline."""
+        # Load data
+        pickle_file_path = 'data/2020/30m_data.pkl'
+        csv_file_path = 'data/csv/BTC_1h.csv'
+
+        df = None
+        if os.path.exists(csv_file_path):
+            df = pd.read_csv(csv_file_path)
+            df = df[['open', 'high', 'low', 'close', 'volume']].astype(float)
+        elif os.path.exists(pickle_file_path):
+            with open(pickle_file_path, 'rb') as f:
+                df = pickle.load(f)
+                df = df[['open', 'high', 'low', 'close', 'volume']].astype(float)
+        else:
+            self.logger.error('Neither the CSV nor the pickle file exists.')
+            return None, 0
+
+        # Use optimized pipeline for training
+        try:
+            # Process features using optimized pipeline
+            processed_features = await self._optimized_pipeline.process_features_async(df)
+            df = pd.concat([df, processed_features], axis=1)
+
+            # Prepare training data
+            split_index = int(len(df) * usage_percent)
+            train_df = df.iloc[:split_index]
+            test_df = df.iloc[split_index:]
+
+            feature_columns = [col for col in df.columns if col not in [
+                'open', 'high', 'low', 'close', 'volume', 'label']]
+
+            X_train = train_df[feature_columns]
+            y_train = train_df['label']
+            X_test = test_df[feature_columns]
+            y_test = test_df['label']
+
+            # Train using optimized pipeline
+            trained_model = await self._optimized_pipeline.train_model_async(
+                model, X_train, y_train, X_test, y_test
+            )
+
+            # Evaluate model
+            accuracy = self.evaluate_model(model, trained_model, X_test, y_test)
+
+            # Save model
+            self.save_model(model, trained_model)
+
+            return trained_model, accuracy
+
+        except Exception as e:
+            self.logger.error(f"Error in optimized training: {e}")
+            raise
+
     def train_evaluate_and_save_model(self, model: str, usage_percent=0.7):
+        """Enhanced training method with optional async support."""
+        # Try async version if optimizations available
+        if OPTIMIZATIONS_AVAILABLE and self._optimized_pipeline:
+            try:
+                import asyncio
+                loop = asyncio.get_event_loop()
+                if not loop.is_running():
+                    return loop.run_until_complete(
+                        self.train_evaluate_and_save_model_async(model, usage_percent)
+                    )
+            except Exception:
+                pass
+
+        # Original training implementation with optimizations
         # Define the path of the pickle file
         pickle_file_path = 'data/2020/30m_data.pkl'
         csv_file_path = 'data/csv/BTC_1h.csv'
@@ -316,76 +698,60 @@ class MachineLearning:
             # If it exists, load the data from the CSV file
             df = pd.read_csv(csv_file_path)
             df = df[['open', 'high', 'low', 'close', 'volume']].astype(float)
-            self.logger.info("CSV is loaded")
-        # elif os.path.exists(pickle_file_path):
-        #     # If the CSV file doesn't exist, but the pickle file does, load the pickle file
-        #     df = pd.read_pickle(pickle_file_path)
-        #     df = df[['open', 'high', 'low', 'close', 'volume']].astype(float)
-        #     self.logger.info("PICKLE is loaded")
+        elif os.path.exists(pickle_file_path):
+            # If the CSV file doesn't exist, check if the pickle file exists
+            with open(pickle_file_path, 'rb') as f:
+                df = pickle.load(f)
+                df = df[['open', 'high', 'low', 'close', 'volume']].astype(float)
         else:
-            # If it does not exist, fetch and preprocess the data
-            data = self.exchange.fetch_ohlcv(
-                self.symbol, timeframe='30m', limit=5_000)
-            df = pd.DataFrame(
-                data, columns=['date', 'open', 'high', 'low', 'close', 'volume'])
-            df = df[['open', 'high', 'low', 'close', 'volume']].astype(float)
+            # If neither file exists, log an error and return
+            self.logger.error(
+                'Neither the CSV nor the pickle file exists. Please check the file paths.')
+            return
 
-            # Save the preprocessed data as a pickle file for future use
-            with open(pickle_file_path, 'wb') as file:
-                dump(df, file)
+        # Process the features
+        processed_features = self.process_features(df)
+        df = pd.concat([df, processed_features], axis=1)
 
-        # Adjust the DataFrame to use only the specified percentage of the data
+        # Split the data into training and testing sets
         split_index = int(len(df) * usage_percent)
-        df = df.iloc[:split_index]
+        train_df = df.iloc[:split_index]
+        test_df = df.iloc[split_index:]
 
-        self.logger.info(
-            f"Using {len(df)} out of {len(df) / (usage_percent)} rows ({usage_percent}%) of the data.")
+        # Separate features and labels
+        feature_columns = [col for col in df.columns if col not in [
+            'open', 'high', 'low', 'close', 'volume', 'label']]
+        X_train = train_df[feature_columns]
+        y_train = train_df['label']
+        X_test = test_df[feature_columns]
+        y_test = test_df['label']
 
-        features = self.process_features(df)
-        labels = self.process_labels(df, model, n_candles=SHIFT_CANDLES)
-
-        # Drop the last two rows as they won't have valid labels
-        features = features[:-SHIFT_CANDLES]
-        labels = labels[:-SHIFT_CANDLES]
-
-        # Scale features and labels
+        # Scale the features
         scaler = StandardScaler()
-        features_scaled = scaler.fit_transform(features)
+        X_train_scaled = scaler.fit_transform(X_train)
+        X_test_scaled = scaler.transform(X_test)
 
-        # Save the fitted scaler for future use
-        joblib.dump(scaler, 'data/scaler/scaler.p', protocol=4)
+        # Save the scaler
+        with open(f'data/ml/scaler/scaler_{model}.pkl', 'wb') as f:
+            pickle.dump(scaler, f)
 
-        # only needed when you use strings
-        # label_scaler = LabelEncoder()
-        # labels_scaled = label_scaler.fit_transform(labels)
+        # Get the model
+        clf = get_model(model)
 
-        # Split data
-        X_train, X_test, y_train, y_test = train_test_split(
-            features_scaled, labels, test_size=0.2)
+        # Train the model with parallel processing if supported
+        if hasattr(clf, 'n_jobs'):
+            clf.n_jobs = -1  # Use all available cores
 
-        if model in column_1d:
-            y_train = y_train.ravel()
-            y_test = y_test.ravel()
-        else:
-            y_train = array_min2d(y_train)
-            y_test = array_min2d(y_test)
+        # Train the model
+        clf.fit(X_train_scaled, y_train)
 
-        # # MLPCLASSEFIER
-        # if model == "MLPClassifier":
-        #     X_train = np.asarray(X_train, dtype=object)
+        # Evaluate the model
+        accuracy = self.evaluate_model(model, clf, X_test_scaled, y_test)
 
-        # Train, evaluate, and save the model
-        trainer = MLModelTrainer(model, self.logger)
-        trained_model, score = trainer.train(
-            X_train, y_train, self.column_names)
+        # Save the model
+        self.save_model(model, clf)
 
-        accuracy = self.evaluate_model(model, trained_model, X_test, y_test)
-
-        self.save_model(trained_model, accuracy, score)
-        self.logger.info(
-            f"The {model} model has been trained, evaluated {accuracy}, and saved.")
-
-        return trained_model
+        return clf, accuracy
 
     def selected_labels_features_train(self, model: str, X, y):
         trainer = MLModelTrainer(model, self.logger)
@@ -635,7 +1001,7 @@ class SHAPClass:
 
     def explain_prediction(self, model, feature_array, save_values=False, plot_values=False, feature_names=None):
         """
-        Generate SHAP values for a given model and feature array, 
+        Generate SHAP values for a given model and feature array,
         with options to save and plot the values.
 
         :param model: The trained machine learning model.

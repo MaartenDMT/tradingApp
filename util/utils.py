@@ -7,11 +7,11 @@ import numpy as np
 import pandas as pd
 
 from model.features import Tradex_indicator
+from util.secure_config import load_secure_config
 
 
 def load_config():
-    config = ConfigParser()
-    config.read('config.ini')
+    config = load_secure_config()
     return config
 
 
