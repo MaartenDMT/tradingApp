@@ -3,56 +3,13 @@ import numpy as np
 from model.reinforcement.utils.rl_utilities import sigmoid
 
 
-def get_conditions(df_row, bar, original_data):
-    """Helper method to centralize the conditions logic."""
-    current_bar_index = bar
-
-    # Adjusting to use original_data
-    super_buy: bool = (df_row['dots'] == 1) & [df_row['l_wave'] >= -50]
-    super_sell: bool = (df_row['dots'] == -1) & [df_row['l_wave'] >= 50]
-    low_volatility: bool = (df_row['rsi14'] >= 45) & (
-        df_row['rsi14'] <= 55)
-
-    going_up_condition: bool = (df_row['rsi14'] >= 55) & (
-        df_row['rsi14'] <= 70) & (df_row['stochk'] >= 50) & (df_row['stochk'] <= 80)
-    going_down_condition: bool = (df_row['rsi14'] >= 30) & (
-        df_row['rsi14'] <= 45) & (df_row['stochk'] >= 20) & (df_row['stochk'] <= 50)
-
-    strong_buy_signal: bool = (df_row['rsi14'] >= 70) & (
-        df_row['stochk'] >= 80) & (df_row['macd'] > df_row['macdsignal'])
-    strong_sell_signal: bool = (df_row['rsi14'] <= 30) & (
-        df_row['stochk'] <= 20) & (df_row['macd'] < df_row['macdsignal'])
-
-    short_stochastic_signal = ~short_stochastic_condition(
-        original_data, current_bar_index)
-    short_bollinger_outside = ~short_bollinger_condition(
-        original_data, current_bar_index)
-    long_stochastic_signal = ~long_stochastic_condition(
-        original_data, current_bar_index)
-    long_bollinger_outside = ~long_bollinger_condition(
-        original_data, current_bar_index)
-    macd_buy = ~macd_condition(original_data, current_bar_index)
-    high_volatility = ~atr_condition(
-        original_data, current_bar_index)
-    adx_signal = ~adx_condition(original_data, current_bar_index)
-    psar_signal = ~parabolic_sar_condition(
-        original_data, current_bar_index)
-    cdl_pattern_signal = ~cdl_pattern(original_data, current_bar_index)
-    volume_break = ~volume_breakout(
-        original_data, current_bar_index)
-    resistance_break_signal = ~resistance_break(
-        original_data, current_bar_index)
-
-    return short_stochastic_signal, short_bollinger_outside, long_stochastic_signal, long_bollinger_outside, low_volatility, going_up_condition, going_down_condition, strong_buy_signal, strong_sell_signal, super_buy, super_sell, macd_buy, high_volatility, adx_signal, psar_signal, cdl_pattern_signal, volume_break, resistance_break_signal
-
-
 def compute_market_condition_reward(action, df_row, bar, data):
     """Compute and return the reward based on the current action, data row, and current price."""
-    short_stochastic_signal, short_bollinger_outside, long_stochastic_signal, long_bollinger_outside, low_volatility, going_up_condition, going_down_condition, strong_buy_signal, strong_sell_signal, super_buy, super_sell, macd_buy, high_volatility, adx_signal, psar_signal, cdl_pattern_signal, volume_break, resistance_break_signal = get_conditions(
+    short_stochastic_signal, short_bollinger_outside, long_stochastic_signal, long_bollinger_outside, low_volatility, going_up_condition, going_down_condition, strong_buy_signal, strong_sell_signal, super_buy, super_sell, macd_buy, high_volatility, adx_signal, psar_signal, cdl_pattern, volume_break, resistance_break_signal = get_conditions(
         df_row, bar, data)
 
     bullish_conditions = [strong_buy_signal, super_buy, macd_buy, long_stochastic_signal, long_bollinger_outside,
-                          high_volatility, adx_signal, psar_signal, cdl_pattern_signal, volume_break, resistance_break_signal]
+                          high_volatility, adx_signal, psar_signal, cdl_pattern, volume_break, resistance_break_signal]
     bearish_conditions = [strong_sell_signal, super_sell,
                           short_stochastic_signal, short_bollinger_outside]
     neutral_conditions = [going_up_condition,
@@ -77,6 +34,51 @@ def compute_market_condition_reward(action, df_row, bar, data):
             return 0.5
     else:
         return -0.2  # Penalize when no specific condition is met
+
+    def get_conditions(df_row, bar, original_data):
+        """Helper method to centralize the conditions logic."""
+        current_bar_index = bar
+
+        # Adjusting to use original_data
+        super_buy: bool = (df_row['dots'] == 1) & [df_row['l_wave'] >= -50]
+        super_sell: bool = (df_row['dots'] == -1) & [df_row['l_wave'] >= 50]
+        low_volatility: bool = (df_row['rsi14'] >= 45) & (
+            df_row['rsi14'] <= 55)
+        strong_upward_movement: bool = df_row['rsi14'] > 70
+        strong_downward_movement: bool = df_row['rsi14'] < 30
+        going_up_condition: bool = (df_row['close'] > df_row['last_price']) & (
+            df_row['close'] > df_row['ema_200']) & (df_row['rsi40'] > 50)
+        going_down_condition: bool = (df_row['close'] < df_row['last_price']) & (
+            df_row['close'] < df_row['ema_200']) & (df_row['rsi40'] < 50)
+
+        strong_buy_signal = strong_upward_movement & ~is_increasing_trend(original_data,
+                                                                          current_bar_index)
+        strong_sell_signal = strong_downward_movement & ~is_increasing_trend(original_data,
+                                                                             current_bar_index)  # ~ is the element-wise logical NOT
+
+        # SHORT
+        short_stochastic_signal = ~short_stochastic_condition(
+            original_data, current_bar_index)
+        short_bollinger_outside = ~short_bollinger_condition(
+            original_data, current_bar_index)
+        # LONG ONlY
+        long_stochastic_signal = ~long_stochastic_condition(
+            original_data, current_bar_index)
+        long_bollinger_outside = ~long_bollinger_condition(
+            original_data, current_bar_index)
+        macd_buy = ~macd_condition(original_data, current_bar_index)
+        high_volatility = ~atr_condition(
+            original_data, current_bar_index)
+        adx_signal = ~adx_condition(original_data, current_bar_index)
+        psar_signal = ~parabolic_sar_condition(
+            original_data, current_bar_index)
+        cdl_pattern = ~cdl_pattern(original_data, current_bar_index)
+        volume_break = ~volume_breakout(
+            original_data, current_bar_index)
+        resistance_break_signal = ~resistance_break(
+            original_data, current_bar_index)
+
+        return short_stochastic_signal, short_bollinger_outside, long_stochastic_signal, long_bollinger_outside, low_volatility, going_up_condition, going_down_condition, strong_buy_signal, strong_sell_signal, super_buy, super_sell, macd_buy, high_volatility, adx_signal, psar_signal, cdl_pattern, volume_break, resistance_break_signal
 
 
 # SHORT ACTION

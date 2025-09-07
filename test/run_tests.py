@@ -1,5 +1,6 @@
 """
 Comprehensive test runner for the ML trading system.
+Enhanced to include RL algorithm testing.
 """
 import sys
 import time
@@ -10,13 +11,30 @@ from pathlib import Path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
-from test.test_autobot import (TestAutoBot, TestAutoBotIntegration,
-                               TestConnectionManager, TestRiskManager)
+from test.test_autobot import (
+    TestAutoBot,
+    TestAutoBotIntegration,
+    TestConnectionManager,
+    TestRiskManager,
+)
+
 # Import test modules
 from test.test_ml_models import TestMLModels, TestMLModelsPerformance
-from test.test_performance import (TestMachineLearningPerformance,
-                                   TestMLModelPerformance,
-                                   TestOverallSystemPerformance)
+from test.test_performance import (
+    TestMachineLearningPerformance,
+    TestMLModelPerformance,
+    TestOverallSystemPerformance,
+)
+
+# Check if RL tests are available
+try:
+    import test.test_rl_algorithms  # noqa: F401
+    import test.test_rl_training  # noqa: F401
+    RL_TESTS_AVAILABLE = True
+    print("✅ RL tests loaded successfully")
+except ImportError as e:
+    print(f"⚠️ RL tests not available: {e}")
+    RL_TESTS_AVAILABLE = False
 
 
 def create_test_suite():
@@ -40,6 +58,44 @@ def create_test_suite():
     test_suite.addTest(unittest.makeSuite(TestMLModelPerformance))
     test_suite.addTest(unittest.makeSuite(TestMachineLearningPerformance))
     test_suite.addTest(unittest.makeSuite(TestOverallSystemPerformance))
+
+    # Add RL tests if available
+    if RL_TESTS_AVAILABLE:
+        print("🤖 Adding RL algorithm tests...")
+        try:
+            from test.test_rl_algorithms import (
+                TestA3CAlgorithm,
+                TestICMModule,
+                TestPPOAlgorithm,
+                TestRLIntegration,
+                TestRLPerformanceBenchmarks,
+                TestSACAlgorithm,
+            )
+            test_suite.addTest(unittest.makeSuite(TestPPOAlgorithm))
+            test_suite.addTest(unittest.makeSuite(TestSACAlgorithm))
+            test_suite.addTest(unittest.makeSuite(TestA3CAlgorithm))
+            test_suite.addTest(unittest.makeSuite(TestICMModule))
+            test_suite.addTest(unittest.makeSuite(TestRLIntegration))
+            test_suite.addTest(unittest.makeSuite(TestRLPerformanceBenchmarks))
+        except ImportError:
+            print("⚠️ Could not load RL algorithm tests")
+
+        print("🏋️ Adding RL training tests...")
+        try:
+            from test.test_rl_training import (
+                TestAlgorithmConfigs,
+                TestMetricsTracker,
+                TestRLTrainer,
+                TestTrainingConfig,
+                TestTrainingVisualizer,
+            )
+            test_suite.addTest(unittest.makeSuite(TestTrainingConfig))
+            test_suite.addTest(unittest.makeSuite(TestRLTrainer))
+            test_suite.addTest(unittest.makeSuite(TestMetricsTracker))
+            test_suite.addTest(unittest.makeSuite(TestTrainingVisualizer))
+            test_suite.addTest(unittest.makeSuite(TestAlgorithmConfigs))
+        except ImportError:
+            print("⚠️ Could not load RL training tests")
 
     return test_suite
 

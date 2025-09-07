@@ -1,6 +1,6 @@
 """
 Core Environment for the trading reinforcement learning system.
-This is the main unified environment that consolidates functionality from multiple files.
+Enhanced with Context7 best practices for professional trading RL.
 """
 
 from typing import Dict, List, Tuple
@@ -13,10 +13,16 @@ import util.loggers as loggers
 from util.utils import load_config
 
 from .data_manager import DataManager
+
 # Import our new modular components
-from .environment_utils import (ActionSpace, DynamicFeatureSelector,
-                                ObservationSpace, PerformanceTracker,
-                                StateNormalizer, validate_price)
+from .environment_utils import (
+    ActionSpace,
+    DynamicFeatureSelector,
+    ObservationSpace,
+    PerformanceTracker,
+    StateNormalizer,
+    validate_price,
+)
 from .reward_calculator import RewardCalculator
 from .trading_engine import TradingEngine
 
@@ -31,6 +37,31 @@ DEFAULT_FEATURES = [
     'macd', 'macd_signal', 'macd_histogram', 'bb_upper', 'bb_lower', 'bb_middle',
     'atr', 'adx', 'stoch_k', 'stoch_d', 'williams_r', 'cci'
 ]
+
+# Context7 Enhanced Constants
+DEFAULT_TRADING_DAYS = 252  # Standard trading year
+TRADING_COST_BPS = 1e-3     # 0.1% trading cost (Context7 standard)
+TIME_COST_BPS = 1e-4        # 0.01% time cost per period
+MAX_EPISODE_STEPS = 1000    # Professional episode length
+
+# Context7 Trading Cost Structure
+class TradingCosts:
+    """Professional trading cost structure following Context7 patterns."""
+
+    def __init__(self, trading_cost_bps: float = TRADING_COST_BPS,
+                 time_cost_bps: float = TIME_COST_BPS):
+        self.trading_cost_bps = trading_cost_bps
+        self.time_cost_bps = time_cost_bps
+
+    def calculate_trading_cost(self, action: int, position_size: float, price: float) -> float:
+        """Calculate trading costs based on Context7 patterns."""
+        if action != 1:  # Not holding (action 1 = hold)
+            return self.trading_cost_bps * position_size * price
+        return self.time_cost_bps * position_size * price
+
+    def get_cost_summary(self) -> str:
+        """Get formatted cost summary."""
+        return f'Trading costs: {self.trading_cost_bps:.2%} | Time costs: {self.time_cost_bps:.2%}'
 
 
 class MultiAgentEnvironment:
@@ -89,36 +120,44 @@ class MultiAgentEnvironment:
 
 class TradingEnvironment:
     """
-    Main unified trading environment with enhanced performance and modularity.
+    Enhanced trading environment following Context7 best practices.
+
+    Implements professional trading patterns with:
+    - Standardized state normalization
+    - Professional cost structure
+    - Enhanced performance tracking
+    - Context7 observation/action spaces
     """
 
     def __init__(self,
                  symbol: str = 'BTC',
                  features: List[str] = None,
-                 limit: int = 1000,
+                 limit: int = MAX_EPISODE_STEPS,
                  time: str = '30m',
                  actions: int = 3,
                  min_accuracy: float = 0.6,
                  initial_balance: float = 10000.0,
                  trading_mode: str = 'spot',
                  leverage: float = 1.0,
-                 transaction_costs: float = 0.001,
-                 config: Dict = None):
+                 transaction_costs: float = TRADING_COST_BPS,
+                 config: Dict = None,
+                 trading_days: int = DEFAULT_TRADING_DAYS):
         """
-        Initialize the trading environment.
+        Initialize the enhanced trading environment with Context7 patterns.
 
         Args:
             symbol: Trading symbol
             features: List of feature names to use
-            limit: Maximum number of steps
+            limit: Maximum number of steps (Context7 default: 1000)
             time: Time frame
             actions: Number of possible actions
             min_accuracy: Minimum accuracy threshold
             initial_balance: Starting balance
             trading_mode: 'spot' or 'futures'
             leverage: Leverage for futures trading
-            transaction_costs: Transaction cost ratio
+            transaction_costs: Transaction cost ratio (Context7 default: 1e-3)
             config: Configuration dictionary
+            trading_days: Number of trading days (Context7 default: 252)
         """
         self.config = config or load_config()
         self.symbol = symbol
@@ -126,8 +165,9 @@ class TradingEnvironment:
         self.limit = limit
         self.time = time
         self.min_accuracy = min_accuracy
+        self.trading_days = trading_days
 
-        # Initialize components
+        # Context7 Enhanced Components
         self.action_space = ActionSpace(actions)
         self.data_manager = DataManager(self.config, symbol)
         self.trading_engine = TradingEngine(
@@ -141,28 +181,38 @@ class TradingEnvironment:
         self.feature_selector = None
         self.state_normalizer = StateNormalizer()
 
-        # Environment state
+        # Context7 Trading Costs
+        self.trading_costs = TradingCosts(transaction_costs, TIME_COST_BPS)
+
+        # Environment state tracking (Context7 enhanced)
         self.current_step = 0
         self.current_price = 0.0
         self.done = False
         self.episode_data = None
         self.observation_space = None
 
-        # Enhanced state tracking
+        # Enhanced state tracking with Context7 patterns
         self.recent_actions = []
         self.recent_rewards = []
         self.recent_trade_results = [0] * 5
         self.action_history = []
 
-        # Performance metrics
+        # Context7 Performance metrics
         self.episode_start_balance = initial_balance
         self.max_episode_steps = limit
+        self.nav_history = []  # Net Asset Value tracking
+        self.market_nav_history = []  # Market comparison
+        self.episode_returns = []
+
+        # Context7 State dimensions (for compatibility)
+        self.state_dim = None
+        self.num_actions = actions
 
         # Initialize environment
         self._initialize_environment()
 
     def _initialize_environment(self):
-        """Initialize the trading environment with data and features."""
+        """Initialize the trading environment with Context7 enhanced patterns."""
         try:
             # Load and process data
             raw_data = self.data_manager.load_data()
@@ -181,23 +231,28 @@ class TradingEnvironment:
             available_features = [f for f in self.features if f in processed_data.columns]
             self.features = available_features  # Update to only available features
 
-            # Enhanced observation space includes additional state information
+            # Context7 Enhanced observation space with professional state information
             feature_count = len(self.features)
-            additional_info_count = 7  # recent trades, volatility, etc.
-            total_obs_size = feature_count + additional_info_count
+            # Additional Context7 state info: position, cash, nav, recent_performance, volatility, momentum, trend
+            context7_info_count = 10
+            total_obs_size = feature_count + context7_info_count
 
             self.observation_space = ObservationSpace((total_obs_size,))
+            self.state_dim = total_obs_size  # Context7 compatibility
 
-            # Normalize features
+            # Normalize features using Context7 patterns
             self.episode_data = self.data_manager.normalize_features(self.features)
 
-            # Fit state normalizer
+            # Fit state normalizer with Context7 enhanced normalization
             feature_data = self.episode_data[self.features].values
             self.state_normalizer.fit(feature_data)
 
-            env_logger.info(f"Environment initialized: {self.symbol}, "
-                          f"Features: {len(self.features)}, "
-                          f"Data shape: {self.episode_data.shape}")
+            # Context7 logging with cost information
+            env_logger.info(f"Context7 Environment initialized: {self.symbol}")
+            env_logger.info(f"Features: {len(self.features)}, Data shape: {self.episode_data.shape}")
+            env_logger.info(f"State dimension: {self.state_dim}, Actions: {self.num_actions}")
+            env_logger.info(f"Max episode steps: {self.max_episode_steps}")
+            env_logger.info(self.trading_costs.get_cost_summary())
 
         except Exception as e:
             env_logger.error(f"Failed to initialize environment: {e}")
@@ -562,6 +617,114 @@ class TradingEnvironment:
             # Adjust feature list
             self.features = self.feature_selector.adjust_features()
             env_logger.info(f"Features updated. Active features: {len(self.features)}")
+
+    # Context7 Enhanced Methods
+    def get_episode_result(self) -> Dict:
+        """
+        Get episode results in Context7 format for professional analysis.
+
+        Returns:
+            Dictionary with episode performance metrics following Context7 patterns
+        """
+        portfolio_metrics = self.trading_engine.get_metrics()
+
+        # Calculate Context7 standard metrics
+        nav = portfolio_metrics['total_value'] / self.episode_start_balance
+        market_nav = self.current_price / self.episode_data['close'].iloc[0] if len(self.episode_data) > 0 else 1.0
+        strategy_return = (nav - 1.0) * 100
+        market_return = (market_nav - 1.0) * 100
+
+        result = {
+            'nav': nav,
+            'market_nav': market_nav,
+            'strategy_return': strategy_return,
+            'market_return': market_return,
+            'difference': strategy_return - market_return,
+            'total_value': portfolio_metrics['total_value'],
+            'balance': portfolio_metrics['portfolio_balance'],
+            'current_price': self.current_price,
+            'current_position': portfolio_metrics.get('current_position', 0),
+            'current_total_worth': portfolio_metrics['total_value'],
+            'episode_steps': self.current_step,
+            'trading_costs_paid': self._calculate_total_trading_costs()
+        }
+
+        return result
+
+    def _calculate_total_trading_costs(self) -> float:
+        """Calculate total trading costs paid during episode."""
+        return sum([
+            self.trading_costs.calculate_trading_cost(action, 1.0, price)
+            for action, price in zip(self.action_history, self.nav_history)
+        ])
+
+    def seed(self, seed_value: int = 42):
+        """Set random seed for reproducibility (Context7 standard)."""
+        np.random.seed(seed_value)
+        env_logger.info(f"Environment seed set to: {seed_value}")
+
+    def get_state_dimensions(self) -> Tuple[int, int]:
+        """
+        Get state and action dimensions in Context7 format.
+
+        Returns:
+            Tuple of (state_dim, num_actions)
+        """
+        return self.state_dim, self.num_actions
+
+    def get_max_episode_steps(self) -> int:
+        """Get maximum episode steps (Context7 compatibility)."""
+        return self.max_episode_steps
+
+    def render(self, mode: str = 'human'):
+        """
+        Render environment state (Context7 compatible).
+
+        Args:
+            mode: Rendering mode ('human', 'rgb_array', etc.)
+        """
+        if mode == 'human':
+            result = self.get_episode_result()
+            print(f"Step: {self.current_step}/{self.max_episode_steps}")
+            print(f"NAV: {result['nav']:.4f} | Market NAV: {result['market_nav']:.4f}")
+            print(f"Strategy Return: {result['strategy_return']:.2f}% | Market Return: {result['market_return']:.2f}%")
+            print(f"Balance: ${result['balance']:.2f} | Total Worth: ${result['current_total_worth']:.2f}")
+            print(f"Current Price: ${result['current_price']:.2f}")
+            print("-" * 50)
+
+
+# Context7 Environment Registration
+def register_trading_environment():
+    """Register the trading environment with OpenAI Gym following Context7 patterns."""
+    try:
+        from gym.envs.registration import register
+
+        register(
+            id='trading-v2',
+            entry_point='model.reinforcement.environments.trading_environment:TradingEnvironment',
+            max_episode_steps=MAX_EPISODE_STEPS
+        )
+
+        # Also register with standard trading days
+        register(
+            id='trading-professional-v2',
+            entry_point='model.reinforcement.environments.trading_environment:TradingEnvironment',
+            max_episode_steps=DEFAULT_TRADING_DAYS,
+            kwargs={'trading_days': DEFAULT_TRADING_DAYS}
+        )
+
+        env_logger.info("Context7 trading environments registered successfully")
+        env_logger.info(f"Available: trading-v2 (max_steps={MAX_EPISODE_STEPS})")
+        env_logger.info(f"Available: trading-professional-v2 (max_steps={DEFAULT_TRADING_DAYS})")
+
+    except ImportError:
+        env_logger.warning("OpenAI Gym not available. Environment registration skipped.")
+    except Exception as e:
+        env_logger.warning(f"Environment registration failed: {e}")
+
+
+# Initialize Context7 registration on module import
+register_trading_environment()
 
 
 # Alias for backward compatibility
