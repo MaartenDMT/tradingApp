@@ -2,7 +2,7 @@
 Advanced Algorithm Factory and Integration System.
 
 This module provides a comprehensive factory pattern for creating and managing
-RL algorithms with enhanced integration capabilities, Context7 optimizations,
+RL algorithms with enhanced integration capabilities, professional optimizations,
 and seamless algorithm switching.
 """
 
@@ -14,21 +14,18 @@ from typing import Any, Dict, List, Optional, Type, Union
 
 import numpy as np
 
-from ..actor_critic.a3c import A3CAgent
-from ..actor_critic.continuous_control import DDPGAgent, TD3Agent
-from ..actor_critic.ppo import PPOAgent
-from ..actor_critic.sac import SACAgent
-from ..config.optimal_hyperparameters import AlgorithmConfig, get_optimal_config
-from ..exploration.icm import create_curiosity_driven_agent
-from ..policy_based.policy_gradients import A2CAgent, REINFORCEAgent
-
+from ..algorithms.actor_critic.a3c import A3CAgent
+from ..algorithms.actor_critic.continuous_control import DDPGAgent, TD3Agent
+from ..algorithms.actor_critic.sac import SACAgent
+from ..algorithms.exploration.icm import create_curiosity_driven_agent
+from ..algorithms.policy_based.policy_gradients import A2CAgent, REINFORCEAgent
+from ..algorithms.policy_based.ppo import PPOAgent
 # Import all algorithm types
-from ..value_based.dqn_family import (
-    DoubleDQNAgent,
-    DQNAgent,
-    DuelingDQNAgent,
-    RainbowDQNAgent,
-)
+from ..algorithms.value_based.dqn_family import (DoubleDQNAgent, DQNAgent,
+                                                 DuelingDQNAgent,
+                                                 RainbowDQNAgent)
+from ..config.optimal_hyperparameters import (AlgorithmConfig,
+                                              get_optimal_config)
 
 logger = logging.getLogger(__name__)
 
@@ -630,6 +627,22 @@ def get_algorithm_recommendations(environment_type: str = "discrete",
     return [rec.value for rec in recommendations]
 
 
+def list_available_algorithms() -> List[str]:
+    """List all available algorithm types."""
+    return [alg.value for alg in AlgorithmRegistry.list_algorithms()]
+    recommendations = algorithm_factory.get_recommendations(environment_type, complexity)
+    return [rec.value for rec in recommendations]
+
+
+def list_available_algorithms() -> List[str]:
+    """List all available algorithm types."""
+    return [alg.value for alg in AlgorithmRegistry.list_algorithms()]
+    return [rec.value for rec in recommendations]
+
+
+def list_available_algorithms() -> List[str]:
+    """List all available algorithm types."""
+    return [alg.value for alg in AlgorithmRegistry.list_algorithms()]
 def list_available_algorithms() -> List[str]:
     """List all available algorithm types."""
     return [alg.value for alg in AlgorithmRegistry.list_algorithms()]

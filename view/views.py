@@ -1,8 +1,16 @@
 
 from tkinter import Listbox, messagebox
 
-from ttkbootstrap import (END, Button, Entry, Frame, Label, Menu, Notebook,
-                          StringVar, Style, Treeview, Window)
+try:
+    from ttkbootstrap import (END, Button, Entry, Frame, Label, Menu, Notebook,
+                              StringVar, Style, Treeview, Window)
+    HAS_TTKBOOTSTRAP = True
+except ImportError:
+    # Fallback to tkinter equivalents
+    from tkinter import END, Button, Entry, Frame, Label, Menu, StringVar
+    from tkinter import Tk as Window
+    from tkinter.ttk import Notebook, Style
+    HAS_TTKBOOTSTRAP = False
 
 from view.bottab import BotTab
 from view.charttab import ChartTab
@@ -144,6 +152,17 @@ class MainView(Frame):
         self.notebook.add(self.rl_tab, text="Reinforcement Learning")
 
         # Tkinter App main page ----------------------------------------------
+        self.notebook.grid(row=1, column=0, padx=5, sticky='nsew')
+        self.history_list.grid(row=2, column=0, padx=5, pady=2, sticky='nsew')
+
+    def changer(self, theme) -> None:
+        Style().theme_use(theme)
+
+    def list_box(self, text):
+        if self.history_list.size() >= 10:
+            self.history_list.delete(0)
+
+        self.history_list.insert(END, text)
         self.notebook.grid(row=1, column=0, padx=5, sticky='nsew')
         self.history_list.grid(row=2, column=0, padx=5, pady=2, sticky='nsew')
 

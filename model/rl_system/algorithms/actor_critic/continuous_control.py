@@ -20,7 +20,7 @@ from torch.distributions import Normal
 
 import util.loggers as loggers
 
-from ..core.base_agents import ActorCriticAgent, AgentConfig, ReplayBuffer
+from ...core.base_agents import ActorCriticAgent, AgentConfig, ReplayBuffer
 
 logger = loggers.setup_loggers()
 rl_logger = logger['rl']

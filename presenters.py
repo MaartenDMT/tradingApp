@@ -4,7 +4,13 @@ import threading
 import traceback
 from tkinter import messagebox
 
-from ttkbootstrap import Frame
+try:
+    from ttkbootstrap import Frame
+    HAS_TTKBOOTSTRAP = True
+except Exception:
+    # Fallback to tkinter Frame if ttkbootstrap is not installed (tests / headless env)
+    from tkinter import Frame
+    HAS_TTKBOOTSTRAP = False
 
 import util.loggers as loggers
 
@@ -286,11 +292,10 @@ class TradePresenter:
     def calculate_stop_loss(self, trade_tab, price):
         # Validate inputs
         from util.validation import validate_number, validate_percentage
-        from util.error_handling import handle_exception
-        
+
         if not validate_number(price, min_value=0):
             raise ValueError(f"Invalid price: {price}")
-        
+
         stop_loss_percentage = float(trade_tab.stoploss_slider.get())
 
         # Validate that the stop loss percentage is between 0 and 100 using our utility
@@ -306,11 +311,10 @@ class TradePresenter:
     def calculate_take_profit(self, trade_tab, price):
         # Validate inputs
         from util.validation import validate_number, validate_percentage
-        from util.error_handling import handle_exception
-        
+
         if not validate_number(price, min_value=0):
             raise ValueError(f"Invalid price: {price}")
-        
+
         take_profit_percentage = float(trade_tab.takeprofit_slider.get())
 
         # Validate that the take profit percentage is between 0 and 100 using our utility
@@ -380,7 +384,7 @@ class TradePresenter:
             self.update_open_trades()
             self.update_ticker_price()
             self.update_balance()
-            self.presenter.main_listbox.set_text(f"refreshing the data")
+            self.presenter.main_listbox.set_text("refreshing the data")
         except Exception as e:
             app_logger.error(f"Error refreshing data: {e}")
             self.presenter.main_listbox.set_text(f"Error refreshing data: {str(e)}")
@@ -760,7 +764,7 @@ class RLPresenter:
 
     def start_rlmodel(self) -> None:
         self.presenter.main_listbox.set_text(
-            f"Starting the DQRL Model")
+            "Starting the DQRL Model")
         self._model.rltab_model.start()
         score = self._model.rltab_model.result
         app_logger.info(score)

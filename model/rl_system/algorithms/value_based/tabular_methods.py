@@ -14,7 +14,7 @@ import numpy as np
 
 import util.loggers as loggers
 
-from ..core.base_agents import AgentConfig, BaseRLAgent
+from ...core.base_agents import AgentConfig, BaseRLAgent
 
 logger = loggers.setup_loggers()
 rl_logger = logger['rl']

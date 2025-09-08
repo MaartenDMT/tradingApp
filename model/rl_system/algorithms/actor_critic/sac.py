@@ -16,9 +16,34 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.distributions import Normal
 
-from ..core.base_agents import ActorCriticAgent, ReplayBuffer
+from ...core.base_agents import ActorCriticAgent, ReplayBuffer
 
 logger = logging.getLogger(__name__)
+
+
+from dataclasses import dataclass
+
+
+@dataclass
+class SACConfig:
+    state_dim: int
+    action_dim: int
+    actor_lr: float = 3e-4
+    critic_lr: float = 3e-4
+    alpha_lr: float = 3e-4
+    gamma: float = 0.99
+    tau: float = 0.005
+    alpha: float = 0.2
+    automatic_entropy_tuning: bool = True
+    target_entropy: Optional[float] = None
+    max_action: float = 1.0
+    replay_buffer_size: int = 1000000
+    batch_size: int = 256
+    hidden_dims: List[int] = None
+
+
+# Ensure SACConfig is available for import by tests
+__all__ = ['SACAgent', 'SACConfig', 'create_sac_agent']
 
 
 class GaussianActor(nn.Module):

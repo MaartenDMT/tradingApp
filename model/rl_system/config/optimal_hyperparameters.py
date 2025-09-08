@@ -9,7 +9,7 @@ These configurations are based on extensive research and empirical testing.
 from dataclasses import dataclass
 from typing import Any, Dict
 
-# Context7 Optimal Hyperparameters from Legacy Research
+# Professional Optimal Hyperparameters from Research
 # These were derived from extensive empirical testing and research
 
 # TD3 Optimal Hyperparameters
@@ -104,7 +104,7 @@ OPTIMAL_TD3_CONFIG = AlgorithmConfig(
         'warmup_steps': OPTIMAL_TD3_WARMUP,
         'hidden_dims': [OPTIMAL_TD3_LAYER1_SIZE, OPTIMAL_TD3_LAYER2_SIZE]
     },
-    description="Optimal TD3 configuration for financial trading based on Context7 research"
+    description="Optimal TD3 configuration for financial trading based on research"
 )
 
 # Optimal SAC Configuration

@@ -2,7 +2,7 @@
 Comprehensive Integration Manager.
 
 This module provides a unified interface for managing the entire RL system
-with enhanced integration capabilities, Context7 optimizations, and seamless
+with enhanced integration capabilities, professional optimizations, and seamless
 coordination between all components.
 """
 
@@ -15,14 +15,9 @@ from typing import Any, Dict, List, Optional, Union
 import numpy as np
 
 from ..utils.visualization.curiosity_analysis import CuriosityVisualizer
-from ..utils.visualization.training_visualization import TrainingVisualizer
-from .algorithm_factory import (
-    AgentWrapper,
-    AlgorithmSpec,
-    AlgorithmType,
-    EnsembleAgent,
-    algorithm_factory,
-)
+from ..utils.visualization.training_plots import TrainingVisualizer
+from .algorithm_factory import (AgentWrapper, AlgorithmSpec, AlgorithmType,
+                                EnsembleAgent, algorithm_factory)
 from .algorithm_switching import AlgorithmSwitcher
 
 logger = logging.getLogger(__name__)

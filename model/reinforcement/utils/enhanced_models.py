@@ -8,12 +8,19 @@ and model management utilities based on latest research.
 import os
 from typing import Dict, List, Optional
 
-import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
-from tensorflow.keras.layers import BatchNormalization, Dense, Dropout
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.regularizers import l2
+try:
+    import tensorflow as tf
+    from tensorflow import keras
+    from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
+    from tensorflow.keras.layers import BatchNormalization, Dense, Dropout
+    from tensorflow.keras.optimizers import Adam
+    from tensorflow.keras.regularizers import l2
+    HAS_TENSORFLOW = True
+except ImportError:
+    # TensorFlow not available - define placeholder classes
+    tf = keras = EarlyStopping = ReduceLROnPlateau = object
+    BatchNormalization = Dense = Dropout = Adam = l2 = object
+    HAS_TENSORFLOW = False
 
 import util.loggers as loggers
 

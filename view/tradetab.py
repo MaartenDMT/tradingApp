@@ -1,8 +1,15 @@
 from tkinter import Listbox
 
-from ttkbootstrap import (BooleanVar, Button, Checkbutton, Entry, Frame,
-                          IntVar, Label, OptionMenu, Scale, StringVar)
-from ttkbootstrap.constants import *
+try:
+    from ttkbootstrap import (BooleanVar, Button, Checkbutton, Entry, Frame,
+                              IntVar, Label, OptionMenu, Scale, StringVar)
+    from ttkbootstrap.constants import *
+    HAS_TTKBOOTSTRAP = True
+except Exception:
+    # Fallback to tkinter widgets when ttkbootstrap is not available
+    from tkinter import (BooleanVar, Button, Checkbutton, Entry, Frame, IntVar,
+                         Label, OptionMenu, Scale, StringVar)
+    HAS_TTKBOOTSTRAP = False
 
 from util.utils import validate_float
 

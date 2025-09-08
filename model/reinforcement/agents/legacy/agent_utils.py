@@ -2,9 +2,18 @@ import os
 from typing import List, Optional
 
 import pandas as pd
-from tensorflow.keras import Model
-from tensorflow.keras.layers import (Dense, Dropout, Input, LayerNormalization,
-                                     MultiHeadAttention)
+
+try:
+    from tensorflow.keras import Model
+    from tensorflow.keras.layers import (Dense, Dropout, Input,
+                                         LayerNormalization,
+                                         MultiHeadAttention)
+    HAS_TENSORFLOW = True
+except ImportError:
+    # TensorFlow not available - define placeholder classes
+    Model = object
+    Dense = Dropout = Input = LayerNormalization = MultiHeadAttention = object
+    HAS_TENSORFLOW = False
 
 MODEL_PATH = 'data/saved_model'
 CSV_PATH = "data/best_model/best_model.csv"
@@ -99,6 +108,11 @@ def transformer_block(d_model, num_heads, dropout):
     attention_output = Dropout(dropout)(attention_output)
     out1 = LayerNormalization()(inputs + attention_output)
 
+    ffn_output = Dense(d_model, activation='relu')(out1)
+    ffn_output = Dense(d_model)(ffn_output)
+    out2 = LayerNormalization()(out1 + ffn_output)
+
+    return Model(inputs=inputs, outputs=out2)
     ffn_output = Dense(d_model, activation='relu')(out1)
     ffn_output = Dense(d_model)(ffn_output)
     out2 = LayerNormalization()(out1 + ffn_output)

@@ -83,7 +83,7 @@ def validate_test_structure():
     # Test runner validation
     print("\n🏃 Test Runner Validation:")
     try:
-        from test.run_tests import create_test_suite, RL_TESTS_AVAILABLE
+        from test.run_tests import RL_TESTS_AVAILABLE, create_test_suite
         suite = create_test_suite()
         test_count = suite.countTestCases()
         print("  ✅ Main test runner functional")

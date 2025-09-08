@@ -19,7 +19,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.distributions import Categorical, Normal
 
-from ..core.base_agents import ActorCriticAgent
+from ...core.base_agents import ActorCriticAgent
 
 logger = logging.getLogger(__name__)
 

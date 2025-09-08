@@ -26,7 +26,14 @@ from sklearn.metrics import (accuracy_score, auc, classification_report,
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
-from skopt import BayesSearchCV
+
+try:
+    from skopt import BayesSearchCV
+    HAS_SKOPT = True
+except ImportError:
+    # skopt not available - define placeholder
+    BayesSearchCV = object
+    HAS_SKOPT = False
 
 from ...util import loggers
 from ...util.utils import tradex_features

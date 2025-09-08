@@ -7,10 +7,11 @@ import traceback
 import pandas as pd
 import websocket
 
-from ...model.features import Tradex_indicator
-from ...util import loggers
-from ...util.candlestick_parser import (decode_json_message, parse_candlestick,
-                                        validate_message_data)
+from model.features import Tradex_indicator
+from util import loggers
+from util.candlestick_parser import (decode_json_message, parse_candlestick,
+                                     validate_message_data)
+
 from .ml_util import classifier, regression
 
 # Import optimized utilities - only import what we actually use
@@ -794,12 +795,6 @@ class Indicator:
         return combined_df
 
     def update_data(self, new_data):
-        if new_data is not None:
-            self.instance = Tradex_indicator(
-                self.instance.symbol, self.instance.timeframe, None, False, new_data)
-        if new_data is not None:
-            self.instance = Tradex_indicator(
-                self.instance.symbol, self.instance.timeframe, None, False, new_data)
         if new_data is not None:
             self.instance = Tradex_indicator(
                 self.instance.symbol, self.instance.timeframe, None, False, new_data)

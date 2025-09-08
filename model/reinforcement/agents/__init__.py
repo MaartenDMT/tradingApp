@@ -1,15 +1,11 @@
-"""
-Agent Management Module
+"""Agent Management Module.
 
-This module contains all agent-related functionality for reinforcement learning.
-
-Components:
-- AgentManager: Main agent management and training
-- AgentUtils: Utility functions for agent operations
-- Custom agents: Custom implementations in the custom/ subdirectory
+This package exposes agent manager helpers and legacy utilities.
 """
 
-from .agent_manager import *
-from .agent_utils import *
+from .legacy.agent_utils import *
+# The repository keeps manager implementations under the `managers` subpackage
+# and some legacy utilities under `legacy`.
+from .managers.agent_manager import *
 
 __all__ = []

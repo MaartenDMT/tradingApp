@@ -8,6 +8,7 @@ policy updates and stability.
 """
 
 import logging
+from dataclasses import dataclass
 from typing import Dict, List, Optional
 
 import numpy as np
@@ -16,9 +17,29 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.distributions import Categorical, Normal
 
-from ..core.base_agents import PolicyBasedAgent
+from ...core.base_agents import PolicyBasedAgent
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class PPOConfig:
+    """Configuration for PPO agent."""
+    state_dim: int
+    action_dim: int
+    lr: float = 3e-4
+    gamma: float = 0.99
+    gae_lambda: float = 0.95
+    clip_ratio: float = 0.2
+    clip_value: float = 0.5
+    entropy_coeff: float = 0.01
+    value_coeff: float = 0.5
+    max_grad_norm: float = 0.5
+    ppo_epochs: int = 10
+    batch_size: int = 64
+    hidden_dim: int = 64
+    action_std: float = 0.1
+    device: str = "cpu"
 
 
 class PPOMemory:

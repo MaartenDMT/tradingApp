@@ -17,12 +17,8 @@ import torch.optim as optim
 
 import util.loggers as loggers
 
-from ..core.base_agents import (
-    AgentConfig,
-    EpsilonGreedyExploration,
-    ReplayBuffer,
-    ValueBasedAgent,
-)
+from ...core.base_agents import (AgentConfig, EpsilonGreedyExploration,
+                                 ReplayBuffer, ValueBasedAgent)
 
 logger = loggers.setup_loggers()
 rl_logger = logger['rl']
@@ -494,6 +490,201 @@ class RainbowDQNAgent(BaseDQNAgent):
         rl_logger.info("Initialized Rainbow DQN with Double DQN and Dueling architecture")
 
 
+@dataclass
+class EnhancedDDQNConfig(DQNConfig):
+    """Enhanced DDQN configuration with optimized hyperparameters for trading."""
+    learning_rate: float = 0.0001  # Optimized for trading
+    gamma: float = 0.99
+    batch_size: int = 4096  # Larger batch size for stability
+    memory_size: int = 1000000  # Larger replay buffer
+    target_update_frequency: int = 100  # More frequent updates
+    epsilon_start: float = 1.0
+    epsilon_end: float = 0.01
+    epsilon_decay_steps: int = 250
+    epsilon_exponential_decay: float = 0.99
+    hidden_dims: list = None
+    l2_reg: float = 1e-6  # L2 regularization
+    dropout: float = 0.1  # Dropout for regularization
+    double_dqn: bool = True
+    dueling_dqn: bool = True
+
+    def __post_init__(self):
+        if self.hidden_dims is None:
+            self.hidden_dims = [256, 256]  # Professional layer sizes
+
+
+class EnhancedDDQNAgent(BaseDQNAgent):
+    """
+    Enhanced DDQN Agent with optimized hyperparameters for trading applications.
+
+    Improvements from the TF implementation:
+    - Professional hyperparameter defaults
+    - Enhanced epsilon scheduling
+    - Improved performance tracking
+    - Better batch management
+    """
+
+    def __init__(self,
+                 state_dim: int,
+                 num_actions: int,
+                 config: EnhancedDDQNConfig = None):
+
+        if config is None:
+            config = EnhancedDDQNConfig()
+
+        super().__init__(state_dim, num_actions, config, "EnhancedDDQNAgent")
+
+        # Enhanced tracking
+        self.epsilon_history = []
+        self.performance_metrics = {}
+        self.episode_rewards = []
+        self.episode_lengths = []
+        self.current_episode_reward = 0.0
+        self.current_episode_length = 0
+
+        rl_logger.info("Initialized Enhanced DDQN with advanced features:")
+        rl_logger.info(f"  Batch size: {config.batch_size}")
+        rl_logger.info(f"  Memory size: {config.memory_size:,}")
+        rl_logger.info(f"  Learning rate: {config.learning_rate}")
+
+    def _initialize_agent(self) -> None:
+        """Initialize enhanced components."""
+        super()._initialize_agent()
+
+        # Add L2 regularization to the optimizer if specified
+        if hasattr(self.config, 'l2_reg') and self.config.l2_reg > 0:
+            # Reinitialize optimizer with weight decay
+            self.optimizer = optim.AdamW(
+                self.q_network.parameters(),
+                lr=self.config.learning_rate,
+                weight_decay=self.config.l2_reg
+            )
+
+    def select_action(self, state: np.ndarray, training: bool = True) -> int:
+        """Enhanced action selection with epsilon tracking."""
+        action = super().select_action(state, training)
+
+        # Track epsilon for analysis
+        if training:
+            current_epsilon = self.exploration_strategy.get_epsilon()
+            self.epsilon_history.append(current_epsilon)
+
+        return action
+
+    def update(self,
+               state: np.ndarray,
+               action: int,
+               reward: float,
+               next_state: np.ndarray,
+               done: bool) -> Dict[str, float]:
+        """Enhanced update with episode tracking."""
+
+        # Update episode tracking
+        self.current_episode_reward += reward
+        self.current_episode_length += 1
+
+        if done:
+            # Episode completed - record metrics
+            self.episode_rewards.append(self.current_episode_reward)
+            self.episode_lengths.append(self.current_episode_length)
+            self.current_episode_reward = 0.0
+            self.current_episode_length = 0
+
+            # Keep only recent episodes for memory efficiency
+            if len(self.episode_rewards) > 1000:
+                self.episode_rewards = self.episode_rewards[-1000:]
+                self.episode_lengths = self.episode_lengths[-1000:]
+
+        # Standard update
+        metrics = super().update(state, action, reward, next_state, done)
+
+        return metrics
+
+    def _update_network(self) -> float:
+        """Enhanced network update with optimization strategies."""
+        # Use larger batch size if available
+        batch_size = min(self.config.batch_size, self.replay_buffer.size)
+
+        if batch_size < self.config.batch_size:
+            # Use smaller batch if we don't have enough samples
+            batch_size = max(32, batch_size)  # Minimum reasonable batch size
+
+        # Sample batch from replay buffer
+        states, actions, rewards, next_states, dones = self.replay_buffer.sample(batch_size)
+
+        # Convert to tensors
+        states = torch.FloatTensor(states).to(self.device)
+        actions = torch.LongTensor(actions.flatten()).to(self.device)
+        rewards = torch.FloatTensor(rewards).to(self.device)
+        next_states = torch.FloatTensor(next_states).to(self.device)
+        dones = torch.BoolTensor(dones).to(self.device)
+
+        # Current Q-values
+        current_q_values = self.q_network(states).gather(1, actions.unsqueeze(1)).squeeze(1)
+
+        # Enhanced target computation (always use double DQN for enhanced agent)
+        with torch.no_grad():
+            # Double DQN: use main network to select actions, target network to evaluate
+            next_actions = self.q_network(next_states).argmax(1)
+            next_q_values = self.target_network(next_states).gather(1, next_actions.unsqueeze(1)).squeeze(1)
+            target_q_values = rewards + (self.config.gamma * next_q_values * ~dones)
+
+        # Compute loss with enhanced stability
+        loss = F.smooth_l1_loss(current_q_values, target_q_values)  # Huber loss for stability
+
+        # Optimize
+        self.optimizer.zero_grad()
+        loss.backward()
+
+        # Enhanced gradient clipping
+        torch.nn.utils.clip_grad_norm_(self.q_network.parameters(), max_norm=1.0)
+
+        self.optimizer.step()
+
+        # Record loss
+        loss_value = loss.item()
+        self.loss_history.append(loss_value)
+
+        return loss_value
+
+    def get_enhanced_metrics(self) -> Dict[str, Any]:
+        """Get enhanced performance metrics."""
+        base_metrics = self.get_metrics()
+
+        enhanced_metrics = {
+            'avg_reward_100': np.mean(self.episode_rewards[-100:]) if self.episode_rewards else 0,
+            'avg_reward_10': np.mean(self.episode_rewards[-10:]) if self.episode_rewards else 0,
+            'avg_episode_length': np.mean(self.episode_lengths[-100:]) if self.episode_lengths else 0,
+            'total_episodes': len(self.episode_rewards),
+            'epsilon_trend': np.mean(self.epsilon_history[-100:]) if self.epsilon_history else 0,
+            'recent_loss': np.mean(self.loss_history[-100:]) if self.loss_history else 0,
+            'replay_utilization': self.replay_buffer.size / self.replay_buffer.capacity,
+            'performance_score': self._calculate_performance_score()
+        }
+
+        base_metrics.update(enhanced_metrics)
+        return base_metrics
+
+    def _calculate_performance_score(self) -> float:
+        """Calculate enhanced performance score."""
+        if not self.episode_rewards:
+            return 0.0
+
+        # Simple performance score based on recent performance
+        recent_rewards = self.episode_rewards[-50:] if len(self.episode_rewards) >= 50 else self.episode_rewards
+
+        if not recent_rewards:
+            return 0.0
+
+        avg_reward = np.mean(recent_rewards)
+        reward_stability = 1.0 / (1.0 + np.std(recent_rewards)) if len(recent_rewards) > 1 else 1.0
+
+        # Combine average reward and stability
+        performance_score = avg_reward * reward_stability
+
+        return float(performance_score)
+
+
 def create_dqn_agent(agent_type: str,
                      state_dim: int,
                      num_actions: int,
@@ -502,7 +693,7 @@ def create_dqn_agent(agent_type: str,
     Factory function to create DQN agents.
 
     Args:
-        agent_type: Type of DQN agent ('dqn', 'double_dqn', 'dueling_dqn', 'rainbow')
+        agent_type: Type of DQN agent ('dqn', 'double_dqn', 'dueling_dqn', 'rainbow', 'enhanced')
         state_dim: State space dimension
         num_actions: Number of actions
         config: Agent configuration
@@ -522,5 +713,17 @@ def create_dqn_agent(agent_type: str,
         return DuelingDoubleDQNAgent(state_dim, num_actions, config)
     elif agent_type == 'rainbow':
         return RainbowDQNAgent(state_dim, num_actions, config)
+    elif agent_type == 'enhanced' or agent_type == 'enhanced_ddqn':
+        # Use EnhancedDDQNConfig if no config provided
+        if config is None or not isinstance(config, EnhancedDDQNConfig):
+            enhanced_config = EnhancedDDQNConfig()
+            if config is not None:
+                # Copy over any provided parameters
+                for key, value in config.__dict__.items():
+                    if hasattr(enhanced_config, key):
+                        setattr(enhanced_config, key, value)
+            config = enhanced_config
+        return EnhancedDDQNAgent(state_dim, num_actions, config)
     else:
-        raise ValueError(f"Unknown DQN agent type: {agent_type}")
+        raise ValueError(f"Unknown DQN agent type: {agent_type}. "
+                        f"Available types: dqn, double_dqn, dueling_dqn, dueling_double_dqn, rainbow, enhanced")

@@ -11,6 +11,7 @@ The ICM consists of:
 """
 
 import logging
+from dataclasses import dataclass
 from typing import Dict
 
 import numpy as np
@@ -20,6 +21,18 @@ import torch.nn.functional as F
 import torch.optim as optim
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class ICMConfig:
+    """Configuration for ICM module."""
+    state_dim: int
+    action_dim: int
+    feature_dim: int = 512
+    learning_rate: float = 1e-3
+    beta: float = 0.2
+    eta: float = 1.0
+    device: str = "cpu"
 
 
 class FeatureExtractor(nn.Module):

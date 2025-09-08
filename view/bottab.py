@@ -1,6 +1,12 @@
 from tkinter import messagebox
 
-from ttkbootstrap import Button, Frame, Label, OptionMenu, Scale, StringVar
+try:
+    from ttkbootstrap import Button, Frame, Label, OptionMenu, Scale, StringVar
+    HAS_TTKBOOTSTRAP = True
+except ImportError:
+    # Fallback to tkinter equivalents
+    from tkinter import Button, Frame, Label, OptionMenu, Scale, StringVar
+    HAS_TTKBOOTSTRAP = False
 
 
 class BotTab(Frame):
