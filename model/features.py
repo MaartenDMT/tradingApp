@@ -12,7 +12,18 @@ import ccxt
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import pandas_ta as ta
+
+# Try importing pandas_ta_classic, fall back to pandas_ta if not available
+try:
+    import pandas_ta_classic as ta
+    TA_AVAILABLE = True
+except ImportError:
+    try:
+        import pandas_ta as ta
+        TA_AVAILABLE = True
+    except ImportError:
+        TA_AVAILABLE = False
+        ta = None
 
 import util.loggers as loggers
 

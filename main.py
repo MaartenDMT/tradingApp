@@ -41,9 +41,9 @@ sys.path.insert(0, str(project_root))
 
 # Import application components
 try:
-    from model.models import Models
-    from presenters import Presenter
-    from view.views import WindowView
+    from model.models import OptimizedModels as Models
+    from presenters import OptimizedPresenter as Presenter
+    from view.views import OptimizedWindowView as WindowView
 except ImportError as e:
     print(f"Error importing modules: {e}")
     print("Please make sure all dependencies are installed.")

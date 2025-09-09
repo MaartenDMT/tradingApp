@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
 
-from model.reinforcement.TF.AC.network import ActorCriticNetwork
+from model.reinforcement.algorithms.tensorflow.TF.AC.network import ActorCriticNetwork
 
 
 class Agent:

@@ -3,7 +3,7 @@ import tensorflow as tf
 import tensorflow_probability as tfp
 from tensorflow.keras.optimizers import Adam
 
-from model.reinforcement.TF.PG.network import PolicyGradientNetwork
+from model.reinforcement.algorithms.tensorflow.TF.PG.network import PolicyGradientNetwork
 
 
 class Agent:

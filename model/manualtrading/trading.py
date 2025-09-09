@@ -3,7 +3,15 @@ import traceback
 from pprint import pprint
 
 import numpy as np
-import pandas_ta as ta
+# Try importing pandas_ta_classic, fall back to pandas_ta if not available
+try:
+    import pandas_ta_classic as ta
+except ImportError:
+    try:
+        import pandas_ta as ta
+    except ImportError:
+        ta = None
+
 import yfinance as yf
 from textblob import TextBlob
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer

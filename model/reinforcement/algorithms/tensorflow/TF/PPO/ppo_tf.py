@@ -4,8 +4,8 @@ import tensorflow.keras as keras
 import tensorflow_probability as tfp
 from tensorflow.keras.optimizers import Adam
 
-from model.reinforcement.TF.PPO.memory import PPOMemory
-from model.reinforcement.TF.PPO.networks import ActorNetwork, CriticNetwork
+from model.reinforcement.algorithms.tensorflow.TF.PPO.memory import PPOMemory
+from model.reinforcement.algorithms.tensorflow.TF.PPO.networks import ActorNetwork, CriticNetwork
 
 
 class Agent:

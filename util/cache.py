@@ -321,7 +321,15 @@ class HybridCache:
         enable_redis: bool = True
     ):
         self.memory_cache = LRUCache(max_size=memory_cache_size, default_ttl=memory_ttl)
-        self.redis_cache = RedisCache(redis_url=redis_url, default_ttl=redis_ttl) if enable_redis else None
+        
+        # Only create RedisCache if Redis is available and enabled
+        if enable_redis and REDIS_AVAILABLE:
+            self.redis_cache = RedisCache(redis_url=redis_url, default_ttl=redis_ttl)
+        else:
+            self.redis_cache = None
+            if enable_redis and not REDIS_AVAILABLE:
+                logger.info("Redis not available. Using memory-only cache.")
+        
         self._stats = CacheStats()
 
     async def connect(self) -> None:

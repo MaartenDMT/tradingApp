@@ -1,0 +1,108 @@
+{
+  "experiment_config": {
+    "agent": {
+      "type": "dqn",
+      "config": {}
+    },
+    "environment": {},
+    "training": {
+      "max_episodes": 10,
+      "eval_frequency": 10,
+      "save_frequency": 20
+    },
+    "data_path": null
+  },
+  "training_results": {
+    "total_episodes": 10,
+    "total_training_time": 68.38434219360352,
+    "best_reward": -24.10054517258645,
+    "best_eval_score": 0.18980000000000335,
+    "final_performance": {
+      "mean_reward": -105.86755201608769,
+      "std_reward": 124.37892044096611,
+      "min_reward": -472.4600371858057,
+      "max_reward": -24.10054517258645,
+      "best_reward": -24.10054517258645
+    },
+    "total_reward": -1058.6755201608769,
+    "mean_episode_reward": -105.86755201608769,
+    "std_episode_reward": 124.37892044096611,
+    "mean_episode_length": 949.0,
+    "mean_episode_time": 4.754584717750549,
+    "training_config": {
+      "max_episodes": 10,
+      "max_steps_per_episode": 1000,
+      "eval_frequency": 10,
+      "save_frequency": 20,
+      "early_stopping": true,
+      "patience": 50,
+      "min_improvement": 0.01,
+      "use_lr_scheduler": true,
+      "lr_decay_factor": 0.95,
+      "lr_decay_frequency": 100,
+      "min_lr": 1e-06,
+      "performance_window": 100,
+      "target_reward": null,
+      "log_level": "INFO",
+      "save_best_only": true,
+      "checkpoint_dir": "rl_experiments\\DQNAgent_20250909_235622",
+      "tensorboard_dir": null,
+      "eval_episodes": 10,
+      "render_eval": false
+    },
+    "agent_config": {
+      "learning_rate": 0.001,
+      "gamma": 0.99,
+      "batch_size": 32,
+      "memory_size": 50000,
+      "random_seed": null,
+      "save_frequency": 1000,
+      "device": "cpu",
+      "target_update_frequency": 1000,
+      "epsilon_start": 1.0,
+      "epsilon_end": 0.01,
+      "epsilon_decay": 0.995,
+      "hidden_dims": [
+        256,
+        256
+      ],
+      "activation": "relu",
+      "dropout": 0.0,
+      "double_dqn": false,
+      "dueling_dqn": false,
+      "prioritized_replay": false,
+      "noisy_networks": false
+    },
+    "timestamp": "2025-09-09T23:57:30.534355"
+  },
+  "evaluation_results": {
+    "num_episodes": 10,
+    "mean_reward": 0.18980000000000335,
+    "std_reward": 2.7755575615628914e-17,
+    "min_reward": 0.18980000000000338,
+    "max_reward": 0.18980000000000338,
+    "mean_episode_length": 949.0,
+    "episode_rewards": [
+      0.18980000000000338,
+      0.18980000000000338,
+      0.18980000000000338,
+      0.18980000000000338,
+      0.18980000000000338,
+      0.18980000000000338,
+      0.18980000000000338,
+      0.18980000000000338,
+      0.18980000000000338,
+      0.18980000000000338
+    ],
+    "mean_portfolio_value": 10000.0,
+    "mean_total_return": 0.0,
+    "std_total_return": 0.0,
+    "sharpe_ratio": 0.0
+  },
+  "agent_info": {
+    "name": "DQNAgent",
+    "type": "dqn",
+    "state_dim": 1056,
+    "action_dim": 5
+  }
+}

@@ -314,3 +314,45 @@ class MLConfig:
             early_stopping=False,
             n_jobs=1
         )
+
+    @classmethod
+    def from_dict(cls, config_dict: Dict[str, Any]) -> 'MLConfig':
+        """
+        Create MLConfig instance from dictionary.
+
+        Args:
+            config_dict: Dictionary containing configuration parameters
+
+        Returns:
+            MLConfig instance with specified parameters
+        """
+        # Filter out keys that are not valid MLConfig fields
+        valid_fields = {f.name for f in cls.__dataclass_fields__.values()}
+        filtered_dict = {}
+        
+        for k, v in config_dict.items():
+            if k in valid_fields:
+                # Convert string paths back to Path objects
+                if k == 'model_save_dir' and isinstance(v, str):
+                    filtered_dict[k] = Path(v)
+                else:
+                    filtered_dict[k] = v
+        
+        return cls(**filtered_dict)
+
+    def to_dict(self) -> Dict[str, Any]:
+        """
+        Convert MLConfig instance to dictionary.
+
+        Returns:
+            Dictionary representation of the configuration
+        """
+        result = {}
+        for field_name, field_obj in self.__dataclass_fields__.items():
+            value = getattr(self, field_name)
+            # Convert Path objects to strings for serialization
+            if isinstance(value, Path):
+                result[field_name] = str(value)
+            else:
+                result[field_name] = value
+        return result

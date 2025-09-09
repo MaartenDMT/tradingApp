@@ -37,9 +37,9 @@ except ImportError as e:
 
 # Pytorch models - with error handling
 try:
-    import model.reinforcement.algorithms.pytorch.TORCH.A3C.a3c_torch as A3C_torch
-    import model.reinforcement.algorithms.pytorch.TORCH.DDG.ddg_torch as DDG_torch
-    import model.reinforcement.algorithms.pytorch.TORCH.PPO.ppo_torch as PPO_torch
+    import model.reinforcement.algorithms.pytorch.legacy.A3C.a3c_torch as A3C_torch
+    import model.reinforcement.algorithms.pytorch.legacy.DDG.ddg_torch as DDG_torch
+    import model.reinforcement.algorithms.pytorch.legacy.PPO.ppo_torch as PPO_torch
     PYTORCH_MODELS_AVAILABLE = True
 except ImportError as e:
     print(f"Warning: PyTorch models import failed: {e}")
