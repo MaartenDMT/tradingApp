@@ -28,9 +28,20 @@ class Trading:
         self.symbol = symbol
         self.trade_type = trade_type
         self.manual_logger = logger['manual']
-        self.balance = self.get_balance()  # Store the balance
+        
+        # Handle potential None exchange gracefully
+        try:
+            self.balance = self.get_balance() if self.exchange else 0.0
+        except Exception as e:
+            self.manual_logger.error(f"Error getting balance: {e}")
+            self.balance = 0.0
+            
         self.analyzer = SentimentIntensityAnalyzer()
         self.leverage = None
+        
+        # Log initialization status
+        if not self.exchange:
+            self.manual_logger.warning("Trading initialized with None exchange - some features may be limited")
 
     # Utility Methods
     @staticmethod
@@ -50,10 +61,22 @@ class Trading:
         return 0.001  # Example default value, adjust as needed
 
     def is_order_value_sufficient(self, amount, price):
-        min_cost = self.exchange.market(self.symbol).get(
-            'limits', {}).get('cost', {}).get('min', 0)
-        order_cost = self.calculate_order_cost(amount, price)
-        return order_cost >= min_cost
+        try:
+            if not self.exchange:
+                self.manual_logger.warning("Exchange not available for order validation")
+                return True  # Allow order to proceed if we can't validate
+                
+            market = self.exchange.market(self.symbol)
+            if not market:
+                self.manual_logger.warning(f"Market data not available for {self.symbol}")
+                return True  # Allow order to proceed if we can't validate
+                
+            min_cost = market.get('limits', {}).get('cost', {}).get('min', 0)
+            order_cost = self.calculate_order_cost(amount, price)
+            return order_cost >= min_cost
+        except Exception as e:
+            self.manual_logger.error(f"Error checking order value sufficiency: {e}")
+            return True  # Allow order to proceed if validation fails
 
     def update_settings(self, settings):
         """
@@ -85,26 +108,30 @@ class Trading:
         self.symbol = symbol
 
     def set_leverage(self, leverage):
+        if not self.exchange:
+            self.manual_logger.warning("Exchange not available for leverage setting")
+            return False
+            
         # Check if leverage setting is supported by the exchange
         if not hasattr(self.exchange, 'set_leverage'):
             self.manual_logger.info(
                 "Leverage setting not supported for this exchange.")
             return False
 
-        # Check if the desired leverage is within the allowed limits
-        leverage_limits = self.exchange.market(
-            self.symbol).get('limits', {}).get('leverage', {})
-        min_leverage = leverage_limits.get('min', 0)
-        max_leverage = leverage_limits.get('max', float('inf'))
-
-        if min_leverage is not None and max_leverage is not None:
-            if not (min_leverage <= leverage <= max_leverage):
-                self.manual_logger.error(
-                    f"Leverage value {leverage} is not within allowed limits.")
-                return False
-
-        # Set the leverage
         try:
+            # Check if the desired leverage is within the allowed limits
+            leverage_limits = self.exchange.market(
+                self.symbol).get('limits', {}).get('leverage', {})
+            min_leverage = leverage_limits.get('min', 0)
+            max_leverage = leverage_limits.get('max', float('inf'))
+
+            if min_leverage is not None and max_leverage is not None:
+                if not (min_leverage <= leverage <= max_leverage):
+                    self.manual_logger.error(
+                        f"Leverage value {leverage} is not within allowed limits.")
+                    return False
+
+            # Set the leverage
             self.exchange.set_leverage(leverage, self.symbol)
             self.leverage = leverage
             self.manual_logger.info(
@@ -158,28 +185,59 @@ class Trading:
             return None
 
     def modify_takeprofit_stoploss(self, trade_id, take_profit=None, stop_loss=None):
-        ticker = self.exchange.fetch_ticker(self.symbol)
-        last_price = ticker['last']
-        # Method to modify take profit and stop loss
-        order_params = {}
-        if take_profit:
-            order_params['takeProfitPrice'] = take_profit / last_price
-        if stop_loss:
-            order_params['stopLossPrice'] = stop_loss / last_price
-        return self.exchange.edit_order(trade_id, **order_params)
+        if not self.exchange:
+            self.manual_logger.warning("Exchange not available for modify TP/SL")
+            return None
+        
+        try:
+            ticker = self.exchange.fetch_ticker(self.symbol)
+            last_price = ticker['last']
+            # Method to modify take profit and stop loss
+            order_params = {}
+            if take_profit:
+                order_params['takeProfitPrice'] = take_profit / last_price
+            if stop_loss:
+                order_params['stopLossPrice'] = stop_loss / last_price
+            return self.exchange.edit_order(trade_id, **order_params)
+        except Exception as e:
+            self.manual_logger.error(f"Error modifying TP/SL: {e}")
+            return None
 
     def scale_in_out(self, amount) -> None:
+        if not self.exchange:
+            self.manual_logger.warning("Exchange not available for scale in/out")
+            return
+        
         # Check if we are in a trade
         if self.check_trade_status():
             # If we are, update the size of the trade
-            self.exchange.update_order(self.trade_id, {'amount': amount})
+            try:
+                self.exchange.update_order(self.trade_id, {'amount': amount})
+            except Exception as e:
+                self.manual_logger.error(f"Error scaling position: {e}")
 
     def check_order_status(self, order_id):
-        return self.exchange.fetch_order(order_id, self.symbol)
+        if not self.exchange:
+            self.manual_logger.warning("Exchange not available for order status check")
+            return None
+            
+        try:
+            return self.exchange.fetch_order(order_id, self.symbol)
+        except Exception as e:
+            self.manual_logger.error(f"Error checking order status: {e}")
+            return None
 
     def get_position_info(self):
+        if not self.exchange:
+            self.manual_logger.warning("Exchange not available for position info")
+            return None
+            
         # This method depends on the specific API provided by the exchange
-        return self.exchange.private_get_position({'symbol': self.symbol})
+        try:
+            return self.exchange.private_get_position({'symbol': self.symbol})
+        except Exception as e:
+            self.manual_logger.error(f"Error getting position info: {e}")
+            return None
 
     # 3. Risk Management and Analysis
     def calculate_drawdown(self, peak_balance, current_balance):
@@ -239,24 +297,43 @@ class Trading:
         return balance / (position_size * leverage)
 
     def check_risk_limits(self, position_size):
-        risk_limits = self.exchange.market(self.symbol).get(
-            'info', {}).get('riskLimits', [])
-        for limit in risk_limits:
-            if position_size <= float(limit.get('limit', '0')):
-                return limit
-        return None
+        try:
+            if not self.exchange:
+                self.manual_logger.warning("Exchange not available for risk limit check")
+                return None
+                
+            market = self.exchange.market(self.symbol)
+            if not market:
+                self.manual_logger.warning(f"Market data not available for {self.symbol}")
+                return None
+                
+            risk_limits = market.get('info', {}).get('riskLimits', [])
+            for limit in risk_limits:
+                if position_size <= float(limit.get('limit', '0')):
+                    return limit
+            return None
+        except Exception as e:
+            self.manual_logger.error(f"Error checking risk limits: {e}")
+            return None
 
     # 4. Advanced Trading Strategies
 
     def execute_twap_order(self, symbol, total_amount, duration, side):
-        start_time = self.exchange.milliseconds()
-        end_time = start_time + duration
-        total_slices = duration / (60 * 1000)  # Example: slice every minute
+        if not self.exchange:
+            self.manual_logger.warning("Exchange not available for TWAP order")
+            return
+            
+        try:
+            start_time = self.exchange.milliseconds()
+            end_time = start_time + duration
+            total_slices = duration / (60 * 1000)  # Example: slice every minute
 
-        while self.exchange.milliseconds() < end_time:
-            slice_size = total_amount / total_slices
-            self.place_trade(symbol, side, 'market', slice_size)
-            time.sleep(duration / total_slices)  # Wait for the next slice
+            while self.exchange.milliseconds() < end_time:
+                slice_size = total_amount / total_slices
+                self.place_trade(symbol, side, 'market', slice_size)
+                time.sleep(duration / total_slices)  # Wait for the next slice
+        except Exception as e:
+            self.manual_logger.error(f"Error executing TWAP order: {e}")
 
     # 5. Market Data and Analysis
 
@@ -267,6 +344,10 @@ class Trading:
         :param depth: Used for order book depth, default is 5.
         :return: The requested market data or None in case of an error.
         """
+        if not self.exchange:
+            self.manual_logger.warning("Exchange not available for market data")
+            return None
+            
         try:
             if data_type == 'ticker':
                 # Fetch and return ticker data
@@ -303,11 +384,27 @@ class Trading:
             return None
 
     def fetch_open_trades(self, symbol):
+        if not self.exchange:
+            self.manual_logger.warning("Exchange not available for fetching open trades")
+            return []
+            
         # Method to fetch open trades
-        return self.exchange.fetch_open_orders(symbol)
+        try:
+            return self.exchange.fetch_open_orders(symbol)
+        except Exception as e:
+            self.manual_logger.error(f"Error fetching open trades: {e}")
+            return []
 
     def fetch_historical_data(self, timeframe='1d', since=None, limit=100):
-        return self.exchange.fetch_ohlcv(self.symbol, timeframe, since, limit)
+        if not self.exchange:
+            self.manual_logger.warning("Exchange not available for historical data")
+            return []
+            
+        try:
+            return self.exchange.fetch_ohlcv(self.symbol, timeframe, since, limit)
+        except Exception as e:
+            self.manual_logger.error(f"Error fetching historical data: {e}")
+            return []
 
     def calculate_pnl(self, entry_price, exit_price, contract_quantity, is_long):
         contract_value = self.contract_to_underlying(contract_quantity)
@@ -320,21 +417,71 @@ class Trading:
         return entry_price + breakeven_move if is_long else entry_price - breakeven_move
 
     def calculate_order_cost(self, amount, price):
-        contract_size = self.exchange.market(
-            self.symbol).get('contractSize', 1)
-        return amount * price * contract_size
+        try:
+            if not self.exchange:
+                self.manual_logger.warning("Exchange not available for order cost calculation")
+                return amount * price  # Use simple calculation as fallback
+                
+            market = self.exchange.market(self.symbol)
+            if not market:
+                self.manual_logger.warning(f"Market data not available for {self.symbol}")
+                return amount * price  # Use simple calculation as fallback
+                
+            contract_size = market.get('contractSize', 1)
+            return amount * price * contract_size
+        except Exception as e:
+            self.manual_logger.error(f"Error calculating order cost: {e}")
+            return amount * price  # Use simple calculation as fallback
 
     def get_funding_rate(self):
-        info = self.exchange.market(self.symbol).get('info', {})
-        return info.get('fundingRateSymbol')
+        try:
+            if not self.exchange:
+                self.manual_logger.warning("Exchange not available for funding rate")
+                return None
+                
+            market = self.exchange.market(self.symbol)
+            if not market:
+                self.manual_logger.warning(f"Market data not available for {self.symbol}")
+                return None
+                
+            info = market.get('info', {})
+            return info.get('fundingRateSymbol')
+        except Exception as e:
+            self.manual_logger.error(f"Error getting funding rate: {e}")
+            return None
 
     def get_tick_size(self):
-        return self.exchange.market(self.symbol).get('precision', {}).get('price')
+        try:
+            if not self.exchange:
+                self.manual_logger.warning("Exchange not available for tick size")
+                return None
+                
+            market = self.exchange.market(self.symbol)
+            if not market:
+                self.manual_logger.warning(f"Market data not available for {self.symbol}")
+                return None
+                
+            return market.get('precision', {}).get('price')
+        except Exception as e:
+            self.manual_logger.error(f"Error getting tick size: {e}")
+            return None
 
     def contract_to_underlying(self, contract_quantity):
-        contract_size = self.exchange.market(
-            self.symbol).get('contractSize', 1)
-        return contract_quantity * contract_size
+        try:
+            if not self.exchange:
+                self.manual_logger.warning("Exchange not available for contract conversion")
+                return contract_quantity  # Return as-is if we can't convert
+                
+            market = self.exchange.market(self.symbol)
+            if not market:
+                self.manual_logger.warning(f"Market data not available for {self.symbol}")
+                return contract_quantity  # Return as-is if we can't convert
+                
+            contract_size = market.get('contractSize', 1)
+            return contract_quantity * contract_size
+        except Exception as e:
+            self.manual_logger.error(f"Error converting contract to underlying: {e}")
+            return contract_quantity  # Return as-is if conversion fails
 
     # Additional utility and helper methods can be added as needed
 

@@ -10,6 +10,7 @@ The model layer contains all business logic and data handling:
 - `machinelearning/`: Implementation of machine learning trading strategies
 - `manualtrading/`: Implementation of manual trading functionality
 - `reinforcement/`: Implementation of reinforcement learning trading strategies
+- `refactored_models.py`: Enhanced model layer with improved organization (optional)
 
 ### Views
 The view layer handles the user interface:
@@ -20,10 +21,12 @@ The view layer handles the user interface:
 - `exchangetab.py`: Exchange management interface
 - `mltab.py`: Machine learning interface
 - `rltab.py`: Reinforcement learning interface
+- `refactored_views.py`: Enhanced view layer with better feedback and styling (optional)
 
 ### Presenters
 The presenter layer acts as an intermediary between models and views:
 - `presenters.py`: Contains all presenter classes that handle the logic between models and views
+- `refactored_presenters.py`: Simplified presenter layer with improved logic (optional)
 
 ## Component Details
 
@@ -48,6 +51,22 @@ Lists all Python packages required for the application to run.
 2. View sends user actions to the Presenter
 3. Presenter processes the action and updates the Model
 4. Model updates its state and notifies the Presenter
+5. Presenter updates the View with new data
+
+## Utility Modules
+
+The application includes a comprehensive set of utility modules in the `util/` directory that provide common functionality:
+
+- **Configuration Management**: Centralized configuration handling
+- **Security**: Secure credential storage and encryption
+- **Caching**: Multi-layer cache system with Redis integration
+- **Asynchronous Operations**: Async client and trading operations
+- **Error Handling**: Standardized error management
+- **Logging**: Enhanced logging with standardized formatting
+- **Validation**: Data validation and sanitization
+- **WebSocket Utilities**: WebSocket connection management
+
+For detailed information about utility modules, see `docs/utilities.md`.
 5. Presenter updates the View with new data
 6. View displays updated information to the user
 

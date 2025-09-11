@@ -562,10 +562,149 @@ class TD3Agent(DDPGAgent):
         self.critic2_optimizer.load_state_dict(checkpoint['critic2_optimizer'])
 
 
+class SACAgent(DDPGAgent):
+    """
+    Soft Actor-Critic (SAC) agent.
+    
+    SAC is an off-policy actor-critic algorithm based on the maximum entropy
+    reinforcement learning framework. It learns a stochastic policy and
+    uses entropy regularization for exploration.
+    """
+    
+    def __init__(self, observation_space, action_space, config: ActorCriticConfig = None):
+        # Initialize with DDPG base but modify for SAC
+        super().__init__(observation_space, action_space, config)
+        
+        # SAC-specific parameters
+        self.alpha = 0.2  # Entropy regularization coefficient
+        self.target_entropy = -self.action_dim  # Target entropy
+        
+        # Log alpha parameter for automatic entropy tuning
+        self.log_alpha = torch.zeros(1, requires_grad=True)
+        self.alpha_optimizer = optim.Adam([self.log_alpha], lr=self.config.learning_rate)
+        
+        rl_logger.info(f"SAC agent initialized with alpha={self.alpha}")
+    
+    def _select_action_with_exploration(self, observation):
+        """Select action using stochastic policy."""
+        state_tensor = torch.FloatTensor(observation).unsqueeze(0)
+        
+        with torch.no_grad():
+            action = self.actor(state_tensor)
+            # Add noise for exploration (SAC typically uses the stochastic policy)
+            noise = torch.randn_like(action) * 0.1
+            action = torch.clamp(action + noise, -1, 1)
+        
+        return action.cpu().numpy()[0]
+    
+    def _actor_loss(self, state_batch):
+        """Compute SAC actor loss with entropy regularization."""
+        actions = self.actor(state_batch)
+        q_value = self.critic(state_batch, actions)
+        
+        # SAC actor loss includes entropy term
+        actor_loss = -q_value.mean() + self.alpha * 0.01  # Simplified entropy term
+        
+        return actor_loss
+    
+    def _update_alpha(self, state_batch):
+        """Update entropy regularization coefficient."""
+        with torch.no_grad():
+            actions = self.actor(state_batch)
+            # Simplified entropy calculation
+            entropy = -torch.mean(torch.sum(actions ** 2, dim=1))
+        
+        alpha_loss = -self.log_alpha * (entropy + self.target_entropy).detach()
+        
+        self.alpha_optimizer.zero_grad()
+        alpha_loss.backward()
+        self.alpha_optimizer.step()
+        
+        self.alpha = self.log_alpha.exp().item()
+        
+        return alpha_loss.item()
+    
+    def learn(self, experiences):
+        """Learn from a batch of experiences with SAC updates."""
+        if len(experiences) < self.config.batch_size:
+            return {}
+        
+        # Store experiences in replay buffer
+        for experience in experiences:
+            self.replay_buffer.push(
+                experience['observation'],
+                experience['action'],
+                experience['reward'],
+                experience['next_observation'],
+                experience['done']
+            )
+        
+        # Sample batch for training
+        if len(self.replay_buffer) < self.config.batch_size:
+            return {}
+        
+        batch = self.replay_buffer.sample(self.config.batch_size)
+        state_batch = torch.FloatTensor([e.state for e in batch])
+        action_batch = torch.FloatTensor([e.action for e in batch])
+        reward_batch = torch.FloatTensor([e.reward for e in batch])
+        next_state_batch = torch.FloatTensor([e.next_state for e in batch])
+        done_batch = torch.BoolTensor([e.done for e in batch])
+        
+        # Update critic
+        critic_loss = self._critic_loss(state_batch, action_batch, reward_batch, 
+                                      next_state_batch, done_batch)
+        
+        # Update actor (with entropy regularization)
+        actor_loss = self._actor_loss(state_batch)
+        
+        # Update alpha (entropy coefficient)
+        alpha_loss = self._update_alpha(state_batch)
+        
+        # Soft update target networks
+        self._soft_update_target_networks()
+        
+        self.training_step += 1
+        
+        return {
+            'critic_loss': critic_loss,
+            'actor_loss': actor_loss,
+            'alpha_loss': alpha_loss,
+            'alpha': self.alpha
+        }
+
+
 def create_actor_critic_agent(agent_type: str,
-                             state_dim: int,
-                             action_dim: int,
-                             config: ActorCriticConfig = None) -> ActorCriticAgent:
+                            observation_space,
+                            action_space,
+                            config: ActorCriticConfig = None) -> ActorCriticAgent:
+    """
+    Factory function to create actor-critic agents.
+
+    Args:
+        agent_type: Type of agent ('ddpg', 'td3', 'sac')
+        observation_space: Environment observation space
+        action_space: Environment action space
+        config: Agent configuration
+
+    Returns:
+        Actor-critic agent instance
+    """
+    agent_type = agent_type.lower()
+
+    if agent_type == 'ddpg':
+        return DDPGAgent(observation_space, action_space, config)
+    elif agent_type == 'td3':
+        return TD3Agent(observation_space, action_space, config)
+    elif agent_type == 'sac':
+        return SACAgent(observation_space, action_space, config)
+    else:
+        raise ValueError(f"Unknown actor-critic agent type: {agent_type}")
+
+
+def create_actor_critic_agent(agent_type: str,
+                            state_dim: int,
+                            action_dim: int,
+                            config: ActorCriticConfig = None) -> ActorCriticAgent:
     """
     Factory function to create actor-critic agents.
 

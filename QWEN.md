@@ -32,12 +32,16 @@ tradingApp/
 ├── README.md                 # Project overview
 ├── USAGE.md                  # Usage guide
 ├── QWEN.md                   # This file
+├── VIEW_CLEANUP_SUMMARY.md   # View folder cleanup summary
+├── MODEL_CLEANUP_SUMMARY.md  # Model folder cleanup summary
 ├── docs/                     # Documentation
 │   ├── architecture.md       # Architecture details
 │   └── setup.md              # Setup instructions
 ├── data/                     # Data storage (git-ignored)
 ├── model/                    # Business logic
+│   ├── backup_unused/        # Backup of unused model files
 ├── view/                     # User interface
+│   ├── backup_unused/        # Backup of unused view files
 └── util/                     # Utility functions
 ```
 
@@ -48,19 +52,25 @@ The application follows the Model-View-Presenter (MVP) architectural pattern:
 ### Models
 The model layer contains all business logic and data handling:
 - `models.py`: Main model classes that coordinate different aspects of the application
-- `machinelearning/`: Implementation of machine learning trading strategies
+- `bot_system.py`: Bot system implementation
+- `features.py`: Trading features implementation
 - `manualtrading/`: Implementation of manual trading functionality
+- `ml_system/`: Machine learning system implementation
 - `reinforcement/`: Implementation of reinforcement learning trading strategies
+- `rl_system/`: Reinforcement learning system implementation
 
 ### Views
 The view layer handles the user interface:
 - `views.py`: Main application window and login view
 - `tradetab.py`: Manual trading interface
-- `bottab.py`: Bot management interface
+- `bottab_optimized.py`: Bot management interface
 - `charttab.py`: Charting interface
-- `exchangetab.py`: Exchange management interface
 - `mltab.py`: Machine learning interface
 - `rltab.py`: Reinforcement learning interface
+- `trading_system_tab.py`: Advanced trading system interface
+- `ml_system_tab.py`: Machine learning system interface
+- `rl_system_tab.py`: Reinforcement learning system interface
+- `advanced_rl_system_tab.py`: Advanced reinforcement learning system interface
 
 ### Presenters
 The presenter layer acts as an intermediary between models and views:
@@ -131,19 +141,44 @@ The application uses `config.ini` for various settings:
 Direct trade execution through the trading tab with real-time market data and risk management controls.
 
 ### 2. Machine Learning Trading
-Automated trading based on ML models, with support for training, testing, and prediction.
+Automated trading based on ML models, with support for training, testing, and prediction through the ML system tab.
 
 ### 3. Reinforcement Learning Trading
-Advanced DQL-based trading strategies with hyperparameter optimization using Optuna.
+Advanced DQL-based trading strategies with hyperparameter optimization using Optuna through the RL system tabs.
 
 ### 4. Bot Management
-Create and manage multiple trading bots with different strategies.
+Create and manage multiple trading bots with different strategies through the optimized bot tab.
 
 ### 5. Charting
-Visual market data analysis with real-time updates.
+Visual market data analysis with real-time updates through the chart tab.
 
 ### 6. Exchange Integration
-Connect to multiple cryptocurrency exchanges with sandbox mode support for testing.
+Connect to multiple cryptocurrency exchanges with sandbox mode support for testing through exchange integration in models.
+
+### 7. Advanced Trading Systems
+Integrated trading systems including ML System, RL System, and Advanced RL System through dedicated tabs.
+
+## Recent Cleanup Activities
+
+### View Folder Cleanup
+Unused view files have been moved to `view/backup_unused/` to maintain a cleaner codebase:
+- `bottab.py` (replaced by `bottab_optimized.py`)
+- `charttab_optimized.py` (replaced by `charttab.py`)
+- `exchangetab.py` and `exchangetab_optimized.py` (not used anywhere)
+- `mltab_optimized.py` (replaced by `mltab.py`)
+- `rltab_optimized.py` (replaced by `rltab.py`)
+- `tradetab_optimized.py` (replaced by `tradetab.py`)
+- `views_optimized.py` and `views_original_backup.py` (older versions)
+
+See `VIEW_CLEANUP_SUMMARY.md` for detailed information.
+
+### Model Folder Cleanup
+Unused model files have been moved to `model/backup_unused/`:
+- `models_optimized.py` (replaced by `models.py`)
+- `models_original_backup.py` (backup file)
+- `exampletab.py` (example file not used in production)
+
+See `MODEL_CLEANUP_SUMMARY.md` for detailed information.
 
 ## Development Guidelines
 
@@ -167,17 +202,23 @@ The application uses multiple loggers for different components:
 ### Adding a New Exchange
 1. Add API keys to .env file
 2. Update the exchange creation logic in models.py
-3. Add UI elements in the exchange tab
+3. Add UI elements in the exchange integration components
 
 ### Creating a New ML Model
-1. Implement in the machinelearning module
-2. Add UI elements in the ML tab
+1. Implement in the ml_system module
+2. Add UI elements in the ML system tab
 3. Connect through the presenter layer
 
 ### Implementing a New RL Strategy
-1. Create new agent or modify existing DQLAgent
+1. Create new agent or modify existing agents in rl_system
 2. Add hyperparameters to the optuna optimization
 3. Update the training and testing logic
+
+### Adding a New Trading Feature
+1. Implement model logic in the appropriate module under models/
+2. Create UI components in the view/ folder
+3. Connect through presenters in presenters.py
+4. Test with default credentials (username: test, password: t)
 
 ## Troubleshooting
 

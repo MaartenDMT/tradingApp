@@ -882,10 +882,175 @@ class EnhancedPolicyGradientAgent(PolicyBasedAgent):
         rl_logger.info(f"Enhanced Policy Gradient model loaded from {filepath}")
 
 
+class PPOAgent(A2CAgent):
+    """
+    Proximal Policy Optimization (PPO) agent.
+    
+    PPO is an improvement over A2C that uses a clipped objective function
+    to prevent large policy updates that could destabilize training.
+    """
+    
+    def __init__(self, observation_space, action_space, config: PolicyGradientConfig = None):
+        # Initialize with A2C base but modify for PPO
+        super().__init__(observation_space, action_space, config)
+        
+        # PPO-specific parameters
+        self.clip_ratio = getattr(config, 'clip_ratio', 0.2)
+        self.ppo_epochs = getattr(config, 'ppo_epochs', 4)
+        self.target_kl = getattr(config, 'target_kl', 0.01)
+        
+        rl_logger.info(f"PPO agent initialized with clip_ratio={self.clip_ratio}")
+    
+    def learn(self, experiences):
+        """Learn from experiences using PPO objective."""
+        if len(experiences) < self.config.batch_size:
+            return {}
+        
+        # Convert experiences to tensors
+        states = torch.FloatTensor([exp['observation'] for exp in experiences])
+        actions = torch.LongTensor([exp['action'] for exp in experiences])
+        rewards = torch.FloatTensor([exp['reward'] for exp in experiences])
+        next_states = torch.FloatTensor([exp['next_observation'] for exp in experiences])
+        dones = torch.BoolTensor([exp['done'] for exp in experiences])
+        old_log_probs = torch.FloatTensor([exp.get('log_prob', 0) for exp in experiences])
+        
+        # Compute advantages and returns
+        with torch.no_grad():
+            values = self.value_network(states).squeeze()
+            next_values = self.value_network(next_states).squeeze()
+            
+            advantages = torch.zeros_like(rewards)
+            returns = torch.zeros_like(rewards)
+            
+            gae = 0
+            for step in reversed(range(len(rewards))):
+                if step == len(rewards) - 1:
+                    next_non_terminal = 1.0 - dones[step].float()
+                    next_value = next_values[step]
+                else:
+                    next_non_terminal = 1.0 - dones[step].float()
+                    next_value = values[step + 1]
+                
+                delta = rewards[step] + self.config.gamma * next_value * next_non_terminal - values[step]
+                gae = delta + self.config.gamma * 0.95 * next_non_terminal * gae  # GAE lambda = 0.95
+                advantages[step] = gae
+                returns[step] = gae + values[step]
+            
+            # Normalize advantages
+            advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-8)
+        
+        total_policy_loss = 0
+        total_value_loss = 0
+        total_entropy_loss = 0
+        
+        # PPO epochs
+        for epoch in range(self.ppo_epochs):
+            # Get current policy outputs
+            policy_logits = self.policy_network(states)
+            current_values = self.value_network(states).squeeze()
+            
+            # Compute log probabilities
+            log_probs = F.log_softmax(policy_logits, dim=-1)
+            action_log_probs = log_probs.gather(1, actions.unsqueeze(1)).squeeze()
+            
+            # Compute probability ratio
+            ratio = torch.exp(action_log_probs - old_log_probs)
+            
+            # Clipped policy loss
+            surr1 = ratio * advantages
+            surr2 = torch.clamp(ratio, 1 - self.clip_ratio, 1 + self.clip_ratio) * advantages
+            policy_loss = -torch.min(surr1, surr2).mean()
+            
+            # Value loss
+            value_loss = F.mse_loss(current_values, returns)
+            
+            # Entropy loss
+            probs = F.softmax(policy_logits, dim=-1)
+            entropy = -(probs * log_probs).sum(dim=-1).mean()
+            entropy_loss = -entropy
+            
+            # Total loss
+            total_loss = (policy_loss + 
+                         self.config.value_loss_coef * value_loss + 
+                         self.config.entropy_coef * entropy_loss)
+            
+            # Update networks
+            self.policy_optimizer.zero_grad()
+            self.value_optimizer.zero_grad()
+            total_loss.backward()
+            
+            # Gradient clipping
+            torch.nn.utils.clip_grad_norm_(self.policy_network.parameters(), 0.5)
+            torch.nn.utils.clip_grad_norm_(self.value_network.parameters(), 0.5)
+            
+            self.policy_optimizer.step()
+            self.value_optimizer.step()
+            
+            total_policy_loss += policy_loss.item()
+            total_value_loss += value_loss.item()
+            total_entropy_loss += entropy_loss.item()
+            
+            # Early stopping based on KL divergence
+            with torch.no_grad():
+                kl_div = (old_log_probs - action_log_probs).mean()
+                if kl_div > self.target_kl:
+                    break
+        
+        self.training_step += 1
+        
+        return {
+            'policy_loss': total_policy_loss / self.ppo_epochs,
+            'value_loss': total_value_loss / self.ppo_epochs,
+            'entropy_loss': total_entropy_loss / self.ppo_epochs,
+            'kl_divergence': kl_div.item(),
+            'clip_fraction': ((ratio > 1 + self.clip_ratio) | (ratio < 1 - self.clip_ratio)).float().mean().item()
+        }
+
+
 def create_policy_gradient_agent(agent_type: str,
-                                state_dim: int,
-                                num_actions: int,
-                                config: PolicyGradientConfig = None) -> PolicyBasedAgent:
+                               observation_space,
+                               action_space,
+                               config: PolicyGradientConfig = None) -> PolicyBasedAgent:
+    """
+    Factory function to create policy gradient agents.
+
+    Args:
+        agent_type: Type of agent ('reinforce', 'a2c', 'ppo', 'enhanced')
+        observation_space: Environment observation space
+        action_space: Environment action space
+        config: Agent configuration
+
+    Returns:
+        Policy gradient agent instance
+    """
+    agent_type = agent_type.lower()
+
+    if agent_type == 'reinforce':
+        return REINFORCEAgent(observation_space, action_space, config)
+    elif agent_type == 'a2c':
+        return A2CAgent(observation_space, action_space, config)
+    elif agent_type == 'ppo':
+        return PPOAgent(observation_space, action_space, config)
+    elif agent_type == 'enhanced' or agent_type == 'enhanced_pg':
+        # Use Enhanced config if no config provided
+        if config is None or not isinstance(config, EnhancedPolicyGradientConfig):
+            enhanced_config = EnhancedPolicyGradientConfig()
+            if config is not None:
+                # Copy over any provided parameters
+                for key, value in config.__dict__.items():
+                    if hasattr(enhanced_config, key):
+                        setattr(enhanced_config, key, value)
+            config = enhanced_config
+        return EnhancedPolicyGradientAgent(observation_space, action_space, config)
+    else:
+        raise ValueError(f"Unknown policy gradient agent type: {agent_type}. "
+                        f"Available types: reinforce, a2c, ppo, enhanced")
+
+
+def create_policy_gradient_agent(agent_type: str,
+                               state_dim: int,
+                               num_actions: int,
+                               config: PolicyGradientConfig = None) -> PolicyBasedAgent:
     """
     Factory function to create policy gradient agents.
 

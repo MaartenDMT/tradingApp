@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  trading-app:
+    build: .
+    container_name: trading-application
+    ports:
+      - "8080:8080"
+    environment:
+      - DEV_MODE=true
+      - LOG_LEVEL=INFO
+    volumes:
+      - ./data:/app/data
+      - ./model_saves:/app/model_saves
+      - ./tournament_results:/app/tournament_results
+    env_file:
+      - .env
+    restart: unless-stopped
+    depends_on:
+      - postgres
+      - redis
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: trading-postgres
+    environment:
+      POSTGRES_DB: trading_app
+      POSTGRES_USER: trader
+      POSTGRES_PASSWORD: secure_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: trading-redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+
+volumes:
+  postgres_data:

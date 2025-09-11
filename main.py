@@ -13,6 +13,7 @@ import warnings
 from pathlib import Path
 
 import util.loggers as loggers
+from util.config_manager import get_config
 
 # Suppress pkg_resources deprecation warning
 warnings.filterwarnings("ignore", category=DeprecationWarning, module=".*pkg_resources")
@@ -39,6 +40,9 @@ warnings.filterwarnings("ignore", category=SyntaxWarning, module=".*pandas_ta.*"
 project_root = Path(__file__).parent
 sys.path.insert(0, str(project_root))
 
+# Load configuration
+config = get_config()
+
 # Import application components
 try:
     from model.models import OptimizedModels as Models
@@ -47,7 +51,7 @@ try:
 except ImportError as e:
     print(f"Error importing modules: {e}")
     print("Please make sure all dependencies are installed.")
-    print("Run 'python install_deps.py' or '.\\run.ps1 setup' to install dependencies.")
+    print("Run 'python install_deps.py' to install dependencies.")
     sys.exit(1)
 
 # Set up logging

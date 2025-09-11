@@ -48,6 +48,16 @@ dependencies = [
     "aiodns>=3.1.1",
     "websocket-client>=1.8.0",
     "pandas-ta-classic>=0.0.1",
+    # Advanced features dependencies
+    "websockets>=12.0",              # Real-time WebSocket connections
+    "requests>=2.31.0",              # HTTP requests for API calls
+    "psutil>=5.9.0",                 # System monitoring
+    "scipy>=1.11.0",                 # Statistical analysis
+    "asyncio-mqtt>=0.16.0",          # Async MQTT for real-time data
+    "pydantic>=2.0.0",               # Data validation
+    "typing-extensions>=4.7.0",      # Type hints support
+    "dataclasses-json>=0.6.0",       # JSON serialization
+    "python-multipart>=0.0.6",       # Multi-part form handling
     # Force a Python 3.12 compatible torch so uv does not pick 2.0.1 (no cp312 wheels).
     # This will install the CPU wheel first; we then overwrite with the CUDA build.
 ]

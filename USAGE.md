@@ -9,6 +9,7 @@ tradingApp/
 ├── init_app.py                # Initialization checker
 ├── install_deps.py            # Dependency installer
 ├── presenters.py              # Application presenters
+├── refactored_presenters.py   # Refactored application presenters
 ├── hyper.py                   # Hyperparameter optimization
 ├── predict_tester.py          # ML model tester
 ├── requirements.txt           # Python dependencies
@@ -24,8 +25,14 @@ tradingApp/
 │   └── setup.md              # Setup instructions
 ├── data/                     # Data storage (git-ignored)
 ├── model/                    # Business logic
+│   ├── refactored_models.py  # Refactored models
+│   └── base_model.py         # Base model class
 ├── view/                     # User interface
-└── util/                     # Utility functions
+│   └── refactored_views.py   # Refactored views
+├── util/                     # Utility functions
+│   └── standardized_loggers.py # Enhanced logging
+└── test/                     # Test suite
+    └── test_refactored_components.py # Tests for refactored components
 ```
 
 ## Setup Instructions

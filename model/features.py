@@ -824,12 +824,12 @@ class Trend:
 
         # Use caching for EMA calculations
         ema55H = cached_indicator(
-            lambda: ta.ema(self.data['high'], EMA_PERIODS["medium"]),
+            lambda **kwargs: ta.ema(self.data['high'], **kwargs),
             self.data, 'ema_high', length=EMA_PERIODS["medium"]
         )
 
         ema55L = cached_indicator(
-            lambda: ta.ema(self.data['low'], EMA_PERIODS["medium"]),
+            lambda **kwargs: ta.ema(self.data['low'], **kwargs),
             self.data, 'ema_low', length=EMA_PERIODS["medium"]
         )
 
@@ -841,12 +841,12 @@ class Trend:
 
         # Use caching for EMA calculations
         ema_200 = cached_indicator(
-            lambda: ta.ema(self.data['close'], EMA_PERIODS["trend"]),
+            lambda **kwargs: ta.ema(self.data['close'], **kwargs),
             self.data, 'ema_200', length=EMA_PERIODS["trend"]
         )
 
         ema_100 = cached_indicator(
-            lambda: ta.ema(self.data['close'], EMA_PERIODS["long"]),
+            lambda **kwargs: ta.ema(self.data['close'], **kwargs),
             self.data, 'ema_100', length=EMA_PERIODS["long"]
         )
 
@@ -857,12 +857,12 @@ class Trend:
         self.tradex_logger.info('- setting up LSMA with caching')
 
         lsma = cached_indicator(
-            lambda: ta.linreg(self.data['low'], 20, 8),
+            lambda **kwargs: ta.linreg(self.data['low'], **kwargs),
             self.data, 'lsma', length=20, offset=8
         )
 
         ema_10 = cached_indicator(
-            lambda: ta.ema(self.data['close'], EMA_PERIODS["short"]),
+            lambda **kwargs: ta.ema(self.data['close'], **kwargs),
             self.data, 'ema_10', length=EMA_PERIODS["short"]
         )
 
@@ -873,17 +873,17 @@ class Trend:
         self.tradex_logger.info('- setting up VWAP with caching')
 
         vwma = cached_indicator(
-            lambda: ta.vwma(self.data['close'], self.data['volume'], 14),
+            lambda **kwargs: ta.vwma(self.data['close'], self.data['volume'], **kwargs),
             self.data, 'vwma', length=14
         )
 
         wma = cached_indicator(
-            lambda: ta.wma(vwma, 21) if vwma is not None else None,
+            lambda **kwargs: ta.wma(vwma, **kwargs) if vwma is not None else None,
             self.data, 'wma', length=21
         )
 
         vwap = cached_indicator(
-            lambda: calculate_vwap(self.data['volume'], wma) if wma is not None else None,
+            lambda **kwargs: calculate_vwap(self.data['volume'], wma, **kwargs) if wma is not None else None,
             self.data, 'vwap_calc', wma_hash=hash(str(wma.values)) if wma is not None else 0
         )
 
@@ -894,7 +894,7 @@ class Trend:
         length = EMA_PERIODS["medium"]  # Use 55 from constants
 
         stop_loss = cached_indicator(
-            lambda: ta.high_low_range(self.data.close, length),
+            lambda **kwargs: ta.high_low_range(self.data.close, **kwargs),
             self.data, 'stop_loss', length=length
         )
 
@@ -983,17 +983,17 @@ class Screener:
 
         # Calculate with caching
         ap = cached_indicator(
-            lambda: ta.hlc3(df.high, df.low, df.close),
+            lambda **kwargs: ta.hlc3(df.high, df.low, df.close),
             df, 'hlc3_screener'
         )
 
         esa = cached_indicator(
-            lambda: ta.vwma(ap, df.volume, n1) if ap is not None else None,
+            lambda **kwargs: ta.vwma(ap, df.volume, **kwargs) if ap is not None else None,
             df, 'vwma_screener', length=n1
         )
 
         d = cached_indicator(
-            lambda: ta.ema(abs(ap - esa), n1) if ap is not None and esa is not None else None,
+            lambda **kwargs: ta.ema(abs(ap - esa), **kwargs) if ap is not None and esa is not None else None,
             df, 'ema_d_screener', length=n1
         )
 
@@ -1001,35 +1001,35 @@ class Screener:
             ci = (ap - esa) / (SCREENER_VWAP_MULTIPLIER * d)
 
             tci = cached_indicator(
-                lambda: ta.wma(ci, n2),
+                lambda **kwargs: ta.wma(ci, **kwargs),
                 df, 'wma_tci_screener', length=n2
             )
 
             wt2 = cached_indicator(
-                lambda: ta.ema(tci, 4) if tci is not None else None,
-                df, 'ema_wt2_screener', length=4
+                lambda **kwargs: ta.sma(tci, **kwargs),
+                df, 'sma_wt2_screener', length=4
             )
 
             s_vwap = cached_indicator(
-                lambda: calculate_vwap(df.volume, wt2) if wt2 is not None else None,
-                df, 'vwap_screener', wt2_hash=hash(str(wt2.values)) if wt2 is not None else 0
+                lambda **kwargs: ta.vwap(ap, df.volume, **kwargs),
+                df, 'vwap_screener', anchor='D'
             )
 
-            return tci, s_vwap
+            return tci, wt2
         else:
             self.tradex_logger.warning("Wave calculation failed due to missing intermediate results")
-            return pd.Series(index=df.index), pd.Series(index=df.index)
+            return None, None
 
     def moneyflow(self):
         self.tradex_logger.info('- getting the moneyflow with caching')
 
         mfi = cached_indicator(
-            lambda: ta.mfi(self.data['high'], self.data['low'], self.data['close'], self.data['volume']),
-            self.data, 'mfi'
+            lambda **kwargs: ta.mfi(self.data['high'], self.data['low'], self.data['close'], self.data['volume'], **kwargs),
+            self.data, 'mfi', length=14
         )
 
         hlc3 = cached_indicator(
-            lambda: ta.hlc3(self.data['high'], self.data['low'], self.data['close']),
+            lambda **kwargs: ta.hlc3(self.data['high'], self.data['low'], self.data['close'], **kwargs),
             self.data, 'hlc3_mfi'
         )
 

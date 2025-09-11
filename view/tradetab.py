@@ -67,7 +67,11 @@ class OptimizedTradeTab(Frame, ValidationMixin):
         self._trade_history = []
         
         # Exchange and market data
-        self.exchange = self._presenter.get_exchange() if self._presenter else None
+        try:
+            self.exchange = self._presenter.get_exchange() if self._presenter else None
+        except Exception as e:
+            app_logger.error(f"Error getting exchange: {e}")
+            self.exchange = None
         self.symbol = "BTC/USD:USD"
         self.leverage = 10
         
@@ -801,7 +805,7 @@ class OptimizedTradeTab(Frame, ValidationMixin):
             if hasattr(self._presenter.trading_presenter, 'get_real_time_data'):
                 data = self._presenter.trading_presenter.get_real_time_data()
                 
-                if data:
+                if data and isinstance(data, dict):
                     self._real_time_data = data
                     
                     # Update price labels

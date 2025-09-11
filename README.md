@@ -2,6 +2,10 @@
 
 A comprehensive trading application built with Python that provides multiple trading strategies including manual trading, machine learning-based trading, and reinforcement learning-based trading.
 
+## Recent Enhancements
+
+This application has undergone significant enhancements to improve its functionality, maintainability, security, and performance. See [ENHANCEMENT_SUMMARY.md](ENHANCEMENT_SUMMARY.md) for a complete overview of all improvements made.
+
 ## Table of Contents
 
 - [Overview](#overview)
@@ -133,6 +137,10 @@ If you prefer not to use UV, you can still use traditional pip-based setup:
 
 2. **Install dependencies**:
    ```bash
+   # Option 1: Using our custom install_deps.py script (recommended)
+   python install_deps.py
+   
+   # Option 2: Using pip directly
    pip install -r requirements.txt
    ```
 
@@ -168,6 +176,14 @@ The application uses `config.ini` for various settings:
 - Trading parameters
 - Model hyperparameters
 - Environment settings
+
+### Centralized Configuration Management
+The application now uses a centralized configuration management system (`util/config_manager.py`) that:
+- Consolidates settings from multiple sources (config.ini, .env, production_config.py)
+- Provides type-safe access to configuration values
+- Supports dynamic configuration reloading
+- Handles API key management securely
+- Integrates with the production configuration system
 
 ## Security
 
@@ -226,7 +242,7 @@ The project includes several helper scripts:
 - `run.ps1`: PowerShell script for Windows users
 - `setup.sh`: Shell script for Unix-like systems
 - `setup.bat`: Batch script for Windows command prompt
-- `install_deps.py`: Python script for dependency installation
+- `install_deps.py`: Python script for robust dependency installation using pyproject.toml
 - `init_app.py`: Application initialization checker
 - `test_uv_setup.py`: UV setup verification script
 
@@ -236,6 +252,27 @@ See the `docs/` directory for detailed documentation:
 - `architecture.md`: Detailed architecture information
 - `setup.md`: Extended setup instructions
 - `security.md`: Security best practices and implementation details
+
+### Utility Modules
+
+The `util/` directory contains various utility modules that provide common functionality:
+
+- `async_client.py`: Async CCXT client with WebSocket support and connection optimization
+- `async_trading.py`: Asynchronous trading operations and order management
+- `cache.py`: Enhanced multi-layer cache system with Redis integration
+- `candlestick_parser.py`: Candlestick pattern recognition and analysis
+- `config_manager.py`: Centralized configuration management system
+- `db_pool.py`: Database connection pooling and management
+- `error_handling.py`: Standardized error handling and exception management
+- `loggers.py`: Logging configuration and management
+- `ml_optimization.py`: Machine learning model optimization utilities
+- `parallel.py`: Parallel processing and concurrency utilities
+- `secure_config.py`: Secure configuration handling and encryption
+- `secure_credentials.py`: Secure credential storage and retrieval
+- `standardized_loggers.py`: Enhanced logging with standardized formatting
+- `utils.py`: General utility functions
+- `validation.py`: Data validation and sanitization utilities
+- `websocket_util.py`: WebSocket connection management and utilities
 
 ## Components
 
@@ -256,6 +293,12 @@ Visual market data analysis with real-time updates.
 
 ### 6. Exchange Integration
 Connect to multiple cryptocurrency exchanges with sandbox mode support for testing.
+
+### 7. Refactored Components
+The application includes refactored versions of core components for improved maintainability:
+- `model/refactored_models.py`: Enhanced model layer with better organization
+- `refactored_presenters.py`: Simplified presenter layer with improved logic
+- `view/refactored_views.py`: Enhanced view layer with better feedback and styling
 
 ## Dependencies
 

@@ -33,9 +33,8 @@ except ImportError:
 
 # Import tab views (now using the optimized versions as standard)
 from view.tradetab import OptimizedTradeTab
-from view.bottab import OptimizedBotTab
+from view.bottab_optimized import OptimizedBotTab
 from view.charttab import OptimizedChartTab
-from view.exchangetab import OptimizedExchangeTab
 from view.mltab import OptimizedMLTab
 from view.rltab import OptimizedRLTab
 
@@ -43,6 +42,9 @@ from view.rltab import OptimizedRLTab
 from view.trading_system_tab import TradingSystemTab
 from view.ml_system_tab import MLSystemTab
 from view.rl_system_tab import RLSystemTab
+
+# Import advanced features tabs
+from view.advanced_rl_system_tab import AdvancedRLSystemTab
 
 # Import view utilities
 from view.utils import UIThemeManager, ValidationMixin, StatusIndicator
@@ -720,11 +722,14 @@ class OptimizedMainView(Frame):
     def _initialize_tabs(self):
         """Initialize all tabs with lazy loading capability."""
         try:
-            # Core working tabs (keeping only the functional ones)
-            # self._add_tab('chart', "📊 Charts", OptimizedChartTab)
+            # Core trading tabs
+            self._add_tab('trade', "💰 Trading", OptimizedTradeTab)
+            self._add_tab('bot', "🤖 Bot", OptimizedBotTab)
             
-            # Advanced system tabs (these work better)
+            # Advanced system tabs
+            self._add_tab('trading_system', "⚡ Trading System", TradingSystemTab)
             self._add_tab('ml_system', "🧠 ML System", MLSystemTab)
+            self._add_tab('advanced_rl_system', "🚀 Advanced RL System", AdvancedRLSystemTab)
             self._add_tab('rl_system', "� RL System", RLSystemTab)
             
         except Exception as e:

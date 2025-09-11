@@ -1,34 +1,38 @@
 """
-Optimized Bot Tab
+Advanced Bot Tab
 
-Enhanced version of the bot tab with:
-- Advanced bot management and configuration
+Enhanced bot management system with:
+- Integration with ML and RL trained models
+- Advanced bot configuration and management
 - Real-time performance monitoring
-- Enhanced error handling and logging
-- Bot lifecycle management
-- Strategy assignment and optimization
-- Portfolio allocation per bot
+- Multi-strategy bot deployment
+- Portfolio allocation and risk management
 """
 
 import threading
+import time
 from datetime import datetime, timedelta
-from tkinter import messagebox
+from tkinter import messagebox, filedialog
 from typing import Any, Dict, List, Optional
 
 try:
     from ttkbootstrap import (
         Button, Entry, Frame, Label, OptionMenu, Scale, StringVar, 
-        BooleanVar, IntVar, Notebook, Progressbar, Separator, Treeview
+        BooleanVar, IntVar, DoubleVar, Notebook, Progressbar, Separator, Treeview,
+        Combobox
     )
     from ttkbootstrap.constants import *
     HAS_TTKBOOTSTRAP = True
 except ImportError:
     from tkinter import (
         Button, Entry, Frame, Label, OptionMenu, Scale, StringVar,
-        BooleanVar, IntVar
+        BooleanVar, IntVar, DoubleVar
     )
-    from tkinter.ttk import Notebook, Progressbar, Separator, Treeview
+    from tkinter.ttk import Notebook, Progressbar, Separator, Treeview, Combobox
     HAS_TTKBOOTSTRAP = False
+
+# Import the new bot system
+from model.bot_system import BotManager, BotType, BotStatus, RiskLevel, bot_manager
 
 from view.utils import (
     ValidationMixin, StatusIndicator, LoadingIndicator, FormValidator,
@@ -41,35 +45,35 @@ logger_dict = loggers.setup_loggers()
 app_logger = logger_dict['app']
 
 
-class OptimizedBotTab(Frame, ValidationMixin):
+class AdvancedBotTab(Frame, ValidationMixin):
     """
-    Enhanced bot management interface with advanced monitoring and control.
+    Advanced bot management interface with ML/RL integration.
     """
-    
-    # Bot configuration constants
-    BOT_STRATEGIES = ['scalping', 'swing', 'dca', 'grid', 'arbitrage', 'momentum', 'mean_reversion']
-    TIME_FRAMES = ['1m', '5m', '15m', '30m', '1h', '4h', '1d']
-    RISK_LEVELS = ['conservative', 'moderate', 'aggressive']
-    BOT_STATES = ['stopped', 'starting', 'running', 'paused', 'stopping', 'error']
     
     def __init__(self, parent, presenter):
         super().__init__(parent)
         self._parent = parent
         self._presenter = presenter
         
-        # Bot management state
-        self._bots = {}
-        self._bot_counter = 0
-        self._active_bots = {}
-        self._bot_performance = {}
+        # Bot system integration
+        self.bot_manager = bot_manager
         
         # UI state
         self._is_loading = False
         self._last_update = None
-        self._selected_bot = None
+        self._selected_bot_id = None
+        self._update_thread = None
+        self._stop_updates = threading.Event()
         
-        # Exchange reference
-        self.exchange = self._presenter.get_exchange() if self._presenter else None
+        # Form variables
+        self.bot_name_var = StringVar()
+        self.bot_type_var = StringVar(value=BotType.ML_BASED.value)
+        self.symbol_var = StringVar(value="BTC/USD:USD")
+        self.risk_level_var = StringVar(value=RiskLevel.MODERATE.value)
+        self.ml_model_path_var = StringVar()
+        self.rl_model_path_var = StringVar()
+        self.min_confidence_var = DoubleVar(value=0.6)
+        self.sleep_interval_var = IntVar(value=60)
         
         # Form validator
         self.form_validator = FormValidator()
@@ -83,14 +87,13 @@ class OptimizedBotTab(Frame, ValidationMixin):
         # Start data updates
         self._start_updates()
         
-        app_logger.info("OptimizedBotTab initialized")
+        app_logger.info("AdvancedBotTab initialized")
 
     def _setup_validation_rules(self):
         """Setup form validation rules."""
         try:
-            self.form_validator.add_field_rule('amount_percentage', 'numeric_range', min=0.1, max=100)
-            self.form_validator.add_field_rule('profit_target', 'numeric_range', min=0.1, max=100)
-            self.form_validator.add_field_rule('stop_loss', 'numeric_range', min=0.1, max=50)
+            self.form_validator.add_field_rule('min_confidence', 'numeric_range', min=0.1, max=1.0)
+            self.form_validator.add_field_rule('sleep_interval', 'numeric_range', min=10, max=3600)
             
         except Exception as e:
             app_logger.error(f"Error setting up validation rules: {e}")
@@ -100,83 +103,168 @@ class OptimizedBotTab(Frame, ValidationMixin):
         try:
             # Create main sections
             self._create_header_section()
+            self._create_bot_creation_section()
             self._create_bot_management_section()
-            self._create_configuration_section()
-            self._create_monitoring_section()
-            self._create_control_section()
+            self._create_performance_section()
+            self._create_model_management_section()
             
         except Exception as e:
             app_logger.error(f"Error creating widgets: {e}")
 
     def _create_header_section(self):
-        """Create header with bot status and quick controls."""
+        """Create header with system status."""
         header_frame = Frame(self)
         header_frame.grid(row=0, column=0, columnspan=3, sticky='ew', padx=5, pady=5)
         header_frame.grid_columnconfigure(2, weight=1)
         
-        # Title and status
-        Label(header_frame, text="Trading Bots", font=('Arial', 16, 'bold')).grid(
-            row=0, column=0, padx=5
-        )
+        # Title
+        Label(header_frame, text="🤖 Advanced Trading Bot System", 
+              font=('Arial', 16, 'bold')).grid(row=0, column=0, padx=5)
         
-        self.bot_status_label = Label(
-            header_frame, text="Active: 0 | Running: 0", 
-            font=('Arial', 12, 'bold'), foreground='#17a2b8'
+        # System status
+        self.system_status_label = Label(
+            header_frame, text="Total: 0 | Running: 0 | Profit: $0.00", 
+            font=('Arial', 11, 'bold'), foreground='#17a2b8'
         )
-        self.bot_status_label.grid(row=0, column=1, padx=20)
+        self.system_status_label.grid(row=0, column=1, padx=20)
         
         # Quick controls
         control_frame = Frame(header_frame)
         control_frame.grid(row=0, column=3, padx=5)
         
         Button(
-            control_frame, text="Create Bot", command=self._create_bot,
+            control_frame, text="⚡ Start All", command=self._start_all_bots,
             style='success.TButton', width=12
         ).grid(row=0, column=0, padx=2)
         
         Button(
-            control_frame, text="Start All", command=self._start_all_bots,
-            style='info.TButton', width=12
-        ).grid(row=0, column=1, padx=2)
-        
-        Button(
-            control_frame, text="Stop All", command=self._stop_all_bots,
+            control_frame, text="⏹ Stop All", command=self._stop_all_bots,
             style='danger.TButton', width=12
-        ).grid(row=0, column=2, padx=2)
+        ).grid(row=0, column=1, padx=2)
+
+    def _create_bot_creation_section(self):
+        """Create bot creation and configuration section."""
+        creation_frame = Frame(self)
+        creation_frame.grid(row=1, column=0, sticky='nsew', padx=5, pady=5)
+        creation_frame.grid_columnconfigure(1, weight=1)
         
-        # Performance summary
-        self.performance_summary = Label(
-            header_frame, text="Total P&L: $0.00 | Best Bot: N/A | Win Rate: 0%",
-            font=('Arial', 10), foreground='#888888'
-        )
-        self.performance_summary.grid(row=1, column=0, columnspan=4, pady=5)
+        Label(creation_frame, text="🚀 Create New Bot", 
+              font=('Arial', 12, 'bold')).grid(row=0, column=0, columnspan=2, pady=(0, 10))
+        
+        # Bot configuration form
+        config_notebook = Notebook(creation_frame)
+        config_notebook.grid(row=1, column=0, columnspan=2, sticky='ew', pady=5)
+        
+        # Basic configuration tab
+        basic_frame = Frame(config_notebook)
+        config_notebook.add(basic_frame, text="Basic Config")
+        
+        # Bot name
+        Label(basic_frame, text="Bot Name:").grid(row=0, column=0, sticky='w', padx=5, pady=2)
+        Entry(basic_frame, textvariable=self.bot_name_var, width=20).grid(
+            row=0, column=1, sticky='ew', padx=5, pady=2)
+        
+        # Bot type
+        Label(basic_frame, text="Bot Type:").grid(row=1, column=0, sticky='w', padx=5, pady=2)
+        bot_type_combo = Combobox(basic_frame, textvariable=self.bot_type_var, width=18)
+        bot_type_combo['values'] = [bt.value for bt in BotType]
+        bot_type_combo.grid(row=1, column=1, sticky='ew', padx=5, pady=2)
+        
+        # Symbol
+        Label(basic_frame, text="Symbol:").grid(row=2, column=0, sticky='w', padx=5, pady=2)
+        symbol_combo = Combobox(basic_frame, textvariable=self.symbol_var, width=18)
+        symbol_combo['values'] = ["BTC/USD:USD", "ETH/USD:USD", "SOL/USD:USD", "DOGE/USD:USD"]
+        symbol_combo.grid(row=2, column=1, sticky='ew', padx=5, pady=2)
+        
+        # Risk level
+        Label(basic_frame, text="Risk Level:").grid(row=3, column=0, sticky='w', padx=5, pady=2)
+        risk_combo = Combobox(basic_frame, textvariable=self.risk_level_var, width=18)
+        risk_combo['values'] = [rl.value for rl in RiskLevel]
+        risk_combo.grid(row=3, column=1, sticky='ew', padx=5, pady=2)
+        
+        basic_frame.grid_columnconfigure(1, weight=1)
+        
+        # AI Models configuration tab
+        models_frame = Frame(config_notebook)
+        config_notebook.add(models_frame, text="AI Models")
+        
+        # ML Model
+        Label(models_frame, text="ML Model Path:").grid(row=0, column=0, sticky='w', padx=5, pady=2)
+        ml_path_frame = Frame(models_frame)
+        ml_path_frame.grid(row=0, column=1, sticky='ew', padx=5, pady=2)
+        ml_path_frame.grid_columnconfigure(0, weight=1)
+        
+        Entry(ml_path_frame, textvariable=self.ml_model_path_var).grid(
+            row=0, column=0, sticky='ew', padx=(0, 5))
+        Button(ml_path_frame, text="📁", command=self._browse_ml_model, width=3).grid(
+            row=0, column=1)
+        
+        # RL Model
+        Label(models_frame, text="RL Model Path:").grid(row=1, column=0, sticky='w', padx=5, pady=2)
+        rl_path_frame = Frame(models_frame)
+        rl_path_frame.grid(row=1, column=1, sticky='ew', padx=5, pady=2)
+        rl_path_frame.grid_columnconfigure(0, weight=1)
+        
+        Entry(rl_path_frame, textvariable=self.rl_model_path_var).grid(
+            row=0, column=0, sticky='ew', padx=(0, 5))
+        Button(rl_path_frame, text="📁", command=self._browse_rl_model, width=3).grid(
+            row=0, column=1)
+        
+        models_frame.grid_columnconfigure(1, weight=1)
+        
+        # Advanced configuration tab
+        advanced_frame = Frame(config_notebook)
+        config_notebook.add(advanced_frame, text="Advanced")
+        
+        # Min confidence
+        Label(advanced_frame, text="Min Confidence:").grid(row=0, column=0, sticky='w', padx=5, pady=2)
+        confidence_frame = Frame(advanced_frame)
+        confidence_frame.grid(row=0, column=1, sticky='ew', padx=5, pady=2)
+        
+        Scale(confidence_frame, from_=0.1, to=1.0, orient='horizontal',
+              variable=self.min_confidence_var, length=150).grid(row=0, column=0)
+        Label(confidence_frame, textvariable=self.min_confidence_var).grid(row=0, column=1, padx=5)
+        
+        # Sleep interval
+        Label(advanced_frame, text="Update Interval (s):").grid(row=1, column=0, sticky='w', padx=5, pady=2)
+        interval_frame = Frame(advanced_frame)
+        interval_frame.grid(row=1, column=1, sticky='ew', padx=5, pady=2)
+        
+        Scale(interval_frame, from_=10, to=300, orient='horizontal',
+              variable=self.sleep_interval_var, length=150).grid(row=0, column=0)
+        Label(interval_frame, textvariable=self.sleep_interval_var).grid(row=0, column=1, padx=5)
+        
+        # Create bot button
+        Button(
+            creation_frame, text="🤖 Create Bot", command=self._create_bot,
+            style='success.TButton', width=20
+        ).grid(row=2, column=0, columnspan=2, pady=10)
 
     def _create_bot_management_section(self):
         """Create bot management interface."""
-        bot_frame = Frame(self)
-        bot_frame.grid(row=1, column=0, columnspan=2, sticky='nsew', padx=5, pady=5)
-        bot_frame.grid_rowconfigure(1, weight=1)
+        management_frame = Frame(self)
+        management_frame.grid(row=1, column=1, sticky='nsew', padx=5, pady=5)
+        management_frame.grid_rowconfigure(1, weight=1)
         
-        Label(bot_frame, text="Bot Management", font=('Arial', 12, 'bold')).grid(
-            row=0, column=0, pady=(0, 10)
-        )
+        Label(management_frame, text="🛠 Bot Management", 
+              font=('Arial', 12, 'bold')).grid(row=0, column=0, pady=(0, 10))
         
-        # Bot list with details
+        # Bot list
         self.bot_tree = Treeview(
-            bot_frame,
-            columns=('ID', 'Strategy', 'Symbol', 'Status', 'P&L', 'Trades', 'Uptime'),
-            show='headings', height=12
+            management_frame,
+            columns=('ID', 'Name', 'Type', 'Symbol', 'Status', 'Trades', 'Profit'),
+            show='headings', height=10
         )
         
         # Configure columns
         columns_config = {
-            'ID': 50,
-            'Strategy': 100,
+            'ID': 80,
+            'Name': 120,
+            'Type': 100,
             'Symbol': 100,
             'Status': 80,
-            'P&L': 80,
             'Trades': 60,
-            'Uptime': 80
+            'Profit': 80
         }
         
         for col, width in columns_config.items():
@@ -186,980 +274,408 @@ class OptimizedBotTab(Frame, ValidationMixin):
         self.bot_tree.grid(row=1, column=0, sticky='nsew', padx=5, pady=5)
         
         # Bot controls
-        bot_controls = Frame(bot_frame)
-        bot_controls.grid(row=2, column=0, sticky='ew', padx=5, pady=5)
+        controls_frame = Frame(management_frame)
+        controls_frame.grid(row=2, column=0, sticky='ew', padx=5, pady=5)
         
-        Button(
-            bot_controls, text="Start", command=self._start_selected_bot,
-            style='success.TButton', width=10
-        ).grid(row=0, column=0, padx=2)
+        Button(controls_frame, text="▶️ Start", command=self._start_selected_bot,
+               style='success.TButton', width=8).grid(row=0, column=0, padx=2)
         
-        Button(
-            bot_controls, text="Stop", command=self._stop_selected_bot,
-            style='danger.TButton', width=10
-        ).grid(row=0, column=1, padx=2)
+        Button(controls_frame, text="⏸ Pause", command=self._pause_selected_bot,
+               style='warning.TButton', width=8).grid(row=0, column=1, padx=2)
         
-        Button(
-            bot_controls, text="Pause", command=self._pause_selected_bot,
-            style='warning.TButton', width=10
-        ).grid(row=0, column=2, padx=2)
+        Button(controls_frame, text="⏹ Stop", command=self._stop_selected_bot,
+               style='danger.TButton', width=8).grid(row=0, column=2, padx=2)
         
-        Button(
-            bot_controls, text="Delete", command=self._delete_selected_bot,
-            style='outline.danger.TButton', width=10
-        ).grid(row=0, column=3, padx=2)
+        Button(controls_frame, text="🗑 Delete", command=self._delete_selected_bot,
+               style='danger.TButton', width=8).grid(row=0, column=3, padx=2)
 
-    def _create_configuration_section(self):
-        """Create bot configuration section."""
-        config_frame = Frame(self)
-        config_frame.grid(row=1, column=2, sticky='nsew', padx=5, pady=5)
-        config_frame.grid_rowconfigure(1, weight=1)
+    def _create_performance_section(self):
+        """Create performance monitoring section."""
+        perf_frame = Frame(self)
+        perf_frame.grid(row=2, column=0, columnspan=2, sticky='ew', padx=5, pady=5)
         
-        Label(config_frame, text="Bot Configuration", font=('Arial', 12, 'bold')).grid(
-            row=0, column=0, pady=(0, 10)
-        )
-        
-        # Configuration notebook
-        config_notebook = Notebook(config_frame)
-        config_notebook.grid(row=1, column=0, sticky='nsew')
-        
-        # Strategy Tab
-        strategy_tab = Frame(config_notebook)
-        config_notebook.add(strategy_tab, text="Strategy")
-        self._create_strategy_config(strategy_tab)
-        
-        # Risk Tab
-        risk_tab = Frame(config_notebook)
-        config_notebook.add(risk_tab, text="Risk Management")
-        self._create_risk_config(risk_tab)
-        
-        # Advanced Tab
-        advanced_tab = Frame(config_notebook)
-        config_notebook.add(advanced_tab, text="Advanced")
-        self._create_advanced_config(advanced_tab)
-
-    def _create_strategy_config(self, parent):
-        """Create strategy configuration interface."""
-        # Strategy selection
-        Label(parent, text="Strategy:", font=('Arial', 10, 'bold')).grid(
-            row=0, column=0, sticky='w', padx=5, pady=5
-        )
-        
-        self.strategy_var = StringVar(value='scalping')
-        self.strategy_select = OptionMenu(
-            parent, self.strategy_var, 'scalping', *self.BOT_STRATEGIES
-        )
-        self.strategy_select.grid(row=0, column=1, sticky='ew', padx=5, pady=5)
-        
-        # Symbol selection
-        Label(parent, text="Symbol:", font=('Arial', 10, 'bold')).grid(
-            row=1, column=0, sticky='w', padx=5, pady=5
-        )
-        
-        self.symbol_var = StringVar(value='BTC/USDT')
-        self.symbol_entry = Entry(parent, textvariable=self.symbol_var)
-        self.symbol_entry.grid(row=1, column=1, sticky='ew', padx=5, pady=5)
-        
-        # Timeframe
-        Label(parent, text="Timeframe:", font=('Arial', 10, 'bold')).grid(
-            row=2, column=0, sticky='w', padx=5, pady=5
-        )
-        
-        self.timeframe_var = StringVar(value='5m')
-        self.timeframe_select = OptionMenu(
-            parent, self.timeframe_var, '5m', *self.TIME_FRAMES
-        )
-        self.timeframe_select.grid(row=2, column=1, sticky='ew', padx=5, pady=5)
-        
-        # Amount percentage
-        Label(parent, text="Portfolio % (1-100):", font=('Arial', 10, 'bold')).grid(
-            row=3, column=0, sticky='w', padx=5, pady=5
-        )
-        
-        self.amount_percentage_var = StringVar(value='10')
-        self.amount_percentage_entry = Entry(parent, textvariable=self.amount_percentage_var, width=10)
-        self.amount_percentage_entry.grid(row=3, column=1, sticky='w', padx=5, pady=5)
-        
-        self.amount_slider = Scale(
-            parent, from_=1, to=100, orient='horizontal',
-            variable=self.amount_percentage_var
-        )
-        self.amount_slider.grid(row=4, column=0, columnspan=2, sticky='ew', padx=5, pady=5)
-        
-        parent.grid_columnconfigure(1, weight=1)
-
-    def _create_risk_config(self, parent):
-        """Create risk management configuration."""
-        # Profit target
-        Label(parent, text="Profit Target (%):", font=('Arial', 10, 'bold')).grid(
-            row=0, column=0, sticky='w', padx=5, pady=5
-        )
-        
-        self.profit_target_var = StringVar(value='5.0')
-        self.profit_target_entry = Entry(parent, textvariable=self.profit_target_var, width=10)
-        self.profit_target_entry.grid(row=0, column=1, padx=5, pady=5)
-        
-        self.profit_slider = Scale(
-            parent, from_=0.1, to=50, orient='horizontal',
-            variable=self.profit_target_var, resolution=0.1
-        )
-        self.profit_slider.grid(row=1, column=0, columnspan=2, sticky='ew', padx=5, pady=5)
-        
-        # Stop loss
-        Label(parent, text="Stop Loss (%):", font=('Arial', 10, 'bold')).grid(
-            row=2, column=0, sticky='w', padx=5, pady=5
-        )
-        
-        self.stop_loss_var = StringVar(value='3.0')
-        self.stop_loss_entry = Entry(parent, textvariable=self.stop_loss_var, width=10)
-        self.stop_loss_entry.grid(row=2, column=1, padx=5, pady=5)
-        
-        self.stop_loss_slider = Scale(
-            parent, from_=0.1, to=20, orient='horizontal',
-            variable=self.stop_loss_var, resolution=0.1
-        )
-        self.stop_loss_slider.grid(row=3, column=0, columnspan=2, sticky='ew', padx=5, pady=5)
-        
-        # Risk level
-        Label(parent, text="Risk Level:", font=('Arial', 10, 'bold')).grid(
-            row=4, column=0, sticky='w', padx=5, pady=5
-        )
-        
-        self.risk_level_var = StringVar(value='moderate')
-        self.risk_level_select = OptionMenu(
-            parent, self.risk_level_var, 'moderate', *self.RISK_LEVELS
-        )
-        self.risk_level_select.grid(row=4, column=1, sticky='ew', padx=5, pady=5)
-        
-        parent.grid_columnconfigure(1, weight=1)
-
-    def _create_advanced_config(self, parent):
-        """Create advanced configuration options."""
-        # Max concurrent trades
-        Label(parent, text="Max Concurrent Trades:", font=('Arial', 10, 'bold')).grid(
-            row=0, column=0, sticky='w', padx=5, pady=5
-        )
-        
-        self.max_trades_var = IntVar(value=3)
-        self.max_trades_scale = Scale(
-            parent, from_=1, to=10, orient='horizontal',
-            variable=self.max_trades_var
-        )
-        self.max_trades_scale.grid(row=0, column=1, sticky='ew', padx=5, pady=5)
-        
-        # Auto-restart
-        self.auto_restart_var = BooleanVar(value=True)
-        auto_restart_checkbox = Button(
-            parent, text="Auto-restart on Error",
-            command=self._toggle_auto_restart,
-            style='outline.TButton'
-        )
-        auto_restart_checkbox.grid(row=1, column=0, columnspan=2, sticky='ew', padx=5, pady=5)
-        
-        # Notifications
-        self.notifications_var = BooleanVar(value=True)
-        notifications_checkbox = Button(
-            parent, text="Enable Notifications",
-            command=self._toggle_notifications,
-            style='outline.TButton'
-        )
-        notifications_checkbox.grid(row=2, column=0, columnspan=2, sticky='ew', padx=5, pady=5)
-        
-        parent.grid_columnconfigure(1, weight=1)
-
-    def _create_monitoring_section(self):
-        """Create bot monitoring section."""
-        monitor_frame = Frame(self)
-        monitor_frame.grid(row=2, column=0, columnspan=3, sticky='nsew', padx=5, pady=5)
-        monitor_frame.grid_rowconfigure(1, weight=1)
-        
-        Label(monitor_frame, text="Bot Performance Monitor", font=('Arial', 12, 'bold')).grid(
-            row=0, column=0, pady=(0, 10)
-        )
-        
-        # Monitoring notebook
-        monitor_notebook = Notebook(monitor_frame)
-        monitor_notebook.grid(row=1, column=0, sticky='nsew')
-        
-        # Performance Tab
-        performance_tab = Frame(monitor_notebook)
-        monitor_notebook.add(performance_tab, text="Performance")
-        self._create_performance_monitor(performance_tab)
-        
-        # Logs Tab
-        logs_tab = Frame(monitor_notebook)
-        monitor_notebook.add(logs_tab, text="Bot Logs")
-        self._create_logs_monitor(logs_tab)
-        
-        # Analytics Tab
-        analytics_tab = Frame(monitor_notebook)
-        monitor_notebook.add(analytics_tab, text="Analytics")
-        self._create_analytics_monitor(analytics_tab)
-
-    def _create_performance_monitor(self, parent):
-        """Create performance monitoring display."""
-        perf_frame = Frame(parent)
-        perf_frame.grid(row=0, column=0, sticky='ew', padx=5, pady=5)
+        Label(perf_frame, text="📊 Performance Overview", 
+              font=('Arial', 12, 'bold')).grid(row=0, column=0, pady=(0, 10))
         
         # Performance metrics
-        self.total_pnl_label = Label(perf_frame, text="Total P&L: $0.00", font=('Arial', 10, 'bold'))
-        self.total_pnl_label.grid(row=0, column=0, sticky='w', pady=2)
+        metrics_frame = Frame(perf_frame)
+        metrics_frame.grid(row=1, column=0, sticky='ew', padx=5)
+        metrics_frame.grid_columnconfigure((0, 1, 2, 3), weight=1)
         
-        self.daily_pnl_label = Label(perf_frame, text="Daily P&L: $0.00", font=('Arial', 10))
-        self.daily_pnl_label.grid(row=0, column=1, sticky='w', padx=20, pady=2)
+        # Total profit
+        profit_frame = Frame(metrics_frame, relief='ridge', borderwidth=1)
+        profit_frame.grid(row=0, column=0, padx=5, pady=5, sticky='ew')
+        Label(profit_frame, text="Total Profit", font=('Arial', 10, 'bold')).pack()
+        self.total_profit_label = Label(profit_frame, text="$0.00", 
+                                       font=('Arial', 12), foreground='#28a745')
+        self.total_profit_label.pack()
         
-        self.total_trades_label = Label(perf_frame, text="Total Trades: 0", font=('Arial', 10))
-        self.total_trades_label.grid(row=1, column=0, sticky='w', pady=2)
+        # Total trades
+        trades_frame = Frame(metrics_frame, relief='ridge', borderwidth=1)
+        trades_frame.grid(row=0, column=1, padx=5, pady=5, sticky='ew')
+        Label(trades_frame, text="Total Trades", font=('Arial', 10, 'bold')).pack()
+        self.total_trades_label = Label(trades_frame, text="0", font=('Arial', 12))
+        self.total_trades_label.pack()
         
-        self.win_rate_label = Label(perf_frame, text="Win Rate: 0%", font=('Arial', 10))
-        self.win_rate_label.grid(row=1, column=1, sticky='w', padx=20, pady=2)
+        # Active bots
+        active_frame = Frame(metrics_frame, relief='ridge', borderwidth=1)
+        active_frame.grid(row=0, column=2, padx=5, pady=5, sticky='ew')
+        Label(active_frame, text="Active Bots", font=('Arial', 10, 'bold')).pack()
+        self.active_bots_label = Label(active_frame, text="0", font=('Arial', 12))
+        self.active_bots_label.pack()
         
-        # Individual bot performance
-        Label(parent, text="Individual Bot Performance:", font=('Arial', 10, 'bold')).grid(
-            row=1, column=0, sticky='w', padx=5, pady=(20, 5)
-        )
-        
-        self.performance_tree = Treeview(
-            parent,
-            columns=('Bot', 'Strategy', 'P&L', 'Trades', 'Win%', 'Avg_Trade', 'Status'),
-            show='headings', height=10
-        )
-        
-        for col in ('Bot', 'Strategy', 'P&L', 'Trades', 'Win%', 'Avg_Trade', 'Status'):
-            self.performance_tree.heading(col, text=col)
-            self.performance_tree.column(col, width=80)
-        
-        self.performance_tree.grid(row=2, column=0, sticky='nsew', padx=5, pady=5)
-        parent.grid_rowconfigure(2, weight=1)
-        parent.grid_columnconfigure(0, weight=1)
+        # System uptime
+        uptime_frame = Frame(metrics_frame, relief='ridge', borderwidth=1)
+        uptime_frame.grid(row=0, column=3, padx=5, pady=5, sticky='ew')
+        Label(uptime_frame, text="System Uptime", font=('Arial', 10, 'bold')).pack()
+        self.uptime_label = Label(uptime_frame, text="0h 0m", font=('Arial', 12))
+        self.uptime_label.pack()
 
-    def _create_logs_monitor(self, parent):
-        """Create bot logs monitoring display."""
-        from tkinter import Text, Scrollbar
+    def _create_model_management_section(self):
+        """Create AI model management section."""
+        model_frame = Frame(self)
+        model_frame.grid(row=3, column=0, columnspan=2, sticky='ew', padx=5, pady=5)
         
-        # Log display
-        log_frame = Frame(parent)
-        log_frame.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
-        log_frame.grid_rowconfigure(0, weight=1)
-        log_frame.grid_columnconfigure(0, weight=1)
+        Label(model_frame, text="🧠 AI Model Management", 
+              font=('Arial', 12, 'bold')).grid(row=0, column=0, pady=(0, 10))
         
-        self.log_text = Text(log_frame, height=15, font=('Courier', 9))
-        scrollbar = Scrollbar(log_frame, orient='vertical', command=self.log_text.yview)
-        self.log_text.configure(yscrollcommand=scrollbar.set)
+        # Model loading controls
+        load_frame = Frame(model_frame)
+        load_frame.grid(row=1, column=0, sticky='ew', padx=5)
         
-        self.log_text.grid(row=0, column=0, sticky='nsew')
-        scrollbar.grid(row=0, column=1, sticky='ns')
+        Button(load_frame, text="📥 Load ML Models", command=self._load_ml_models,
+               style='info.TButton', width=15).grid(row=0, column=0, padx=5)
         
-        # Log controls
-        log_controls = Frame(parent)
-        log_controls.grid(row=1, column=0, sticky='ew', padx=5, pady=5)
+        Button(load_frame, text="📥 Load RL Models", command=self._load_rl_models,
+               style='info.TButton', width=15).grid(row=0, column=1, padx=5)
         
-        Button(
-            log_controls, text="Clear Logs", command=self._clear_logs,
-            style='secondary.TButton', width=12
-        ).grid(row=0, column=0, padx=2)
-        
-        Button(
-            log_controls, text="Export Logs", command=self._export_logs,
-            style='info.TButton', width=12
-        ).grid(row=0, column=1, padx=2)
-        
-        # Auto-scroll checkbox
-        self.auto_scroll_var = BooleanVar(value=True)
-        Button(
-            log_controls, text="Auto-scroll",
-            command=self._toggle_auto_scroll,
-            style='outline.TButton', width=12
-        ).grid(row=0, column=2, padx=2)
-        
-        parent.grid_rowconfigure(0, weight=1)
-        parent.grid_columnconfigure(0, weight=1)
-
-    def _create_analytics_monitor(self, parent):
-        """Create analytics monitoring display."""
-        analytics_frame = Frame(parent)
-        analytics_frame.grid(row=0, column=0, sticky='ew', padx=5, pady=5)
-        
-        # Analytics metrics
-        self.avg_trade_duration_label = Label(analytics_frame, text="Avg Trade Duration: --", font=('Arial', 10))
-        self.avg_trade_duration_label.grid(row=0, column=0, sticky='w', pady=2)
-        
-        self.max_drawdown_label = Label(analytics_frame, text="Max Drawdown: 0%", font=('Arial', 10))
-        self.max_drawdown_label.grid(row=0, column=1, sticky='w', padx=20, pady=2)
-        
-        self.profit_factor_label = Label(analytics_frame, text="Profit Factor: --", font=('Arial', 10))
-        self.profit_factor_label.grid(row=1, column=0, sticky='w', pady=2)
-        
-        self.sharpe_ratio_label = Label(analytics_frame, text="Sharpe Ratio: --", font=('Arial', 10))
-        self.sharpe_ratio_label.grid(row=1, column=1, sticky='w', padx=20, pady=2)
-
-    def _create_control_section(self):
-        """Create control and status section."""
-        control_frame = Frame(self)
-        control_frame.grid(row=3, column=0, columnspan=3, sticky='ew', padx=5, pady=5)
-        control_frame.grid_columnconfigure(1, weight=1)
-        
-        # Control buttons
-        buttons_frame = Frame(control_frame)
-        buttons_frame.grid(row=0, column=0, padx=5)
-        
-        Button(
-            buttons_frame, text="Save Config", command=self._save_config,
-            style='success.TButton', width=12
-        ).grid(row=0, column=0, padx=2)
-        
-        Button(
-            buttons_frame, text="Load Config", command=self._load_config,
-            style='info.TButton', width=12
-        ).grid(row=0, column=1, padx=2)
-        
-        Button(
-            buttons_frame, text="Emergency Stop", command=self._emergency_stop,
-            style='danger.TButton', width=12
-        ).grid(row=0, column=2, padx=2)
-        
-        # Status indicator
-        self.status_indicator = StatusIndicator(control_frame)
-        self.status_indicator.grid(row=0, column=1, sticky='ew', padx=10)
-        
-        # Loading indicator
-        self.loading_indicator = LoadingIndicator(control_frame)
-        self.loading_indicator.grid(row=1, column=0, columnspan=2, sticky='ew', padx=5, pady=5)
+        Button(load_frame, text="🔄 Reload All", command=self._reload_all_models,
+               style='secondary.TButton', width=15).grid(row=0, column=2, padx=5)
 
     def _setup_layout(self):
-        """Configure grid layout weights."""
-        # Configure main grid
-        self.grid_columnconfigure(0, weight=1)
-        self.grid_columnconfigure(1, weight=1)
-        self.grid_columnconfigure(2, weight=1)
+        """Setup the layout configuration."""
         self.grid_rowconfigure(1, weight=1)
-        self.grid_rowconfigure(2, weight=1)
+        self.grid_columnconfigure(1, weight=1)
 
     def _bind_events(self):
         """Bind event handlers."""
-        # Bind tree selection
-        self.bot_tree.bind('<<TreeviewSelect>>', self._on_bot_selected)
-        
-        # Bind validation events
-        self.amount_percentage_entry.bind('<FocusOut>', self._validate_amount_percentage)
-        self.profit_target_entry.bind('<FocusOut>', self._validate_profit_target)
-        self.stop_loss_entry.bind('<FocusOut>', self._validate_stop_loss)
-
-    def _start_updates(self):
-        """Start periodic data updates."""
         try:
-            self._update_bot_status()
-            self._update_performance_metrics()
-            self._update_bot_display()
-            
-            # Schedule next update
-            self.after(5000, self._start_updates)  # Update every 5 seconds
+            self.bot_tree.bind('<<TreeviewSelect>>', self._on_bot_select)
             
         except Exception as e:
-            app_logger.error(f"Error in periodic updates: {e}")
+            app_logger.error(f"Error binding events: {e}")
+
+    def _start_updates(self):
+        """Start the update thread."""
+        try:
+            self._stop_updates.clear()
+            self._update_thread = threading.Thread(target=self._update_loop, daemon=True)
+            self._update_thread.start()
+            
+        except Exception as e:
+            app_logger.error(f"Error starting updates: {e}")
+
+    def _update_loop(self):
+        """Main update loop for refreshing bot data."""
+        while not self._stop_updates.is_set():
+            try:
+                self._update_bot_list()
+                self._update_performance_metrics()
+                self._update_system_status()
+                
+                # Update every 2 seconds
+                time.sleep(2)
+                
+            except Exception as e:
+                app_logger.error(f"Error in update loop: {e}")
+                time.sleep(5)
+
+    def _browse_ml_model(self):
+        """Browse for ML model file."""
+        try:
+            filename = filedialog.askopenfilename(
+                title="Select ML Model",
+                filetypes=[("Pickle files", "*.pkl"), ("All files", "*.*")]
+            )
+            if filename:
+                self.ml_model_path_var.set(filename)
+                
+        except Exception as e:
+            app_logger.error(f"Error browsing ML model: {e}")
+
+    def _browse_rl_model(self):
+        """Browse for RL model file."""
+        try:
+            filename = filedialog.askopenfilename(
+                title="Select RL Model",
+                filetypes=[("Model files", "*.pth *.h5 *.pkl"), ("All files", "*.*")]
+            )
+            if filename:
+                self.rl_model_path_var.set(filename)
+                
+        except Exception as e:
+            app_logger.error(f"Error browsing RL model: {e}")
 
     def _create_bot(self):
         """Create a new trading bot."""
         try:
-            # Validate configuration
-            validation_result = self._validate_bot_config()
-            if not validation_result['valid']:
-                self.status_indicator.set_status(f"Configuration error: {validation_result['message']}", 'error')
+            # Validate form
+            if not self.bot_name_var.get().strip():
+                messagebox.showerror("Error", "Bot name is required")
                 return
             
-            self.loading_indicator.show_loading("Creating new bot...")
+            # Get exchange from presenter (safely)
+            exchange = None
+            try:
+                if hasattr(self._presenter, 'get_exchange'):
+                    exchange = self._presenter.get_exchange()
+            except Exception as e:
+                app_logger.warning(f"Could not get exchange: {e}")
             
-            # Generate bot ID
-            self._bot_counter += 1
-            bot_id = f"bot_{self._bot_counter:03d}"
-            
-            # Create bot configuration
-            bot_config = {
-                'id': bot_id,
-                'strategy': self.strategy_var.get(),
-                'symbol': self.symbol_var.get(),
-                'timeframe': self.timeframe_var.get(),
-                'amount_percentage': float(self.amount_percentage_var.get()),
-                'profit_target': float(self.profit_target_var.get()),
-                'stop_loss': float(self.stop_loss_var.get()),
-                'risk_level': self.risk_level_var.get(),
-                'max_trades': self.max_trades_var.get(),
-                'auto_restart': self.auto_restart_var.get(),
-                'notifications': self.notifications_var.get(),
-                'created_at': datetime.now(),
-                'status': 'stopped',
-                'pnl': 0.0,
-                'trades': 0,
-                'wins': 0
+            # Prepare bot configuration
+            config = {
+                'risk_level': RiskLevel(self.risk_level_var.get()),
+                'min_confidence': self.min_confidence_var.get(),
+                'sleep_interval': self.sleep_interval_var.get(),
+                'ml_model_path': self.ml_model_path_var.get() if self.ml_model_path_var.get() else None,
+                'rl_model_path': self.rl_model_path_var.get() if self.rl_model_path_var.get() else None
             }
             
-            # Add to bots dictionary
-            self._bots[bot_id] = bot_config
-            
-            # Update displays
-            self._update_bot_display()
-            self._log_message(f"Bot {bot_id} created with {bot_config['strategy']} strategy")
-            
-            self.status_indicator.set_status(f"Bot {bot_id} created successfully", 'success')
-            
-            notification_system.show_success(
-                "Bot Created",
-                f"Trading bot {bot_id} created with {bot_config['strategy']} strategy"
+            # Create bot
+            bot_id = self.bot_manager.create_bot(
+                name=self.bot_name_var.get().strip(),
+                bot_type=BotType(self.bot_type_var.get()),
+                symbol=self.symbol_var.get(),
+                exchange=exchange,
+                config=config
             )
             
+            if bot_id:
+                # Load models if specified
+                bot = self.bot_manager.get_bot(bot_id)
+                if bot:
+                    if config['ml_model_path']:
+                        bot.load_ml_model(config['ml_model_path'])
+                    if config['rl_model_path']:
+                        bot.load_rl_model(config['rl_model_path'])
+                
+                messagebox.showinfo("Success", f"Bot '{self.bot_name_var.get()}' created successfully!")
+                self._clear_form()
+                
+            else:
+                messagebox.showerror("Error", "Failed to create bot")
+                
         except Exception as e:
             app_logger.error(f"Error creating bot: {e}")
-            self.status_indicator.set_status(f"Failed to create bot: {str(e)}", 'error')
-        finally:
-            self.loading_indicator.hide_loading()
+            messagebox.showerror("Error", f"Failed to create bot: {str(e)}")
 
-    def _start_selected_bot(self):
-        """Start the selected bot."""
-        try:
-            selected_item = self.bot_tree.selection()
-            if not selected_item:
-                self.status_indicator.set_status("No bot selected", 'warning')
-                return
-            
-            bot_data = self.bot_tree.item(selected_item[0], 'values')
-            bot_id = bot_data[0]
-            
-            self._start_bot(bot_id)
-            
-        except Exception as e:
-            app_logger.error(f"Error starting selected bot: {e}")
+    def _clear_form(self):
+        """Clear the bot creation form."""
+        self.bot_name_var.set("")
+        self.ml_model_path_var.set("")
+        self.rl_model_path_var.set("")
+        self.min_confidence_var.set(0.6)
+        self.sleep_interval_var.set(60)
 
-    def _start_bot(self, bot_id: str):
-        """Start a specific bot."""
+    def _on_bot_select(self, event):
+        """Handle bot selection in the tree."""
         try:
-            if bot_id not in self._bots:
-                return
-            
-            bot_config = self._bots[bot_id]
-            
-            if bot_config['status'] in ['running', 'starting']:
-                self.status_indicator.set_status(f"Bot {bot_id} is already running", 'warning')
-                return
-            
-            self.loading_indicator.show_loading(f"Starting bot {bot_id}...")
-            
-            # Update bot status
-            bot_config['status'] = 'starting'
-            bot_config['started_at'] = datetime.now()
-            
-            # Simulate bot startup process
-            def startup_worker():
-                try:
-                    # Simulate startup time
-                    import time
-                    time.sleep(2)
-                    
-                    # Update status to running
-                    bot_config['status'] = 'running'
-                    self._active_bots[bot_id] = bot_config
-                    
-                    # Update UI on main thread
-                    self.after(0, self._bot_started_successfully, bot_id)
-                    
-                except Exception as e:
-                    app_logger.error(f"Error in bot startup: {e}")
-                    bot_config['status'] = 'error'
-                    self.after(0, self._bot_startup_failed, bot_id, str(e))
-            
-            threading.Thread(target=startup_worker, daemon=True).start()
-            
-        except Exception as e:
-            app_logger.error(f"Error starting bot {bot_id}: {e}")
-            self.status_indicator.set_status(f"Failed to start bot {bot_id}: {str(e)}", 'error')
-
-    def _bot_started_successfully(self, bot_id: str):
-        """Handle successful bot startup."""
-        try:
-            self.loading_indicator.hide_loading()
-            self._update_bot_display()
-            self._log_message(f"Bot {bot_id} started successfully")
-            self.status_indicator.set_status(f"Bot {bot_id} started successfully", 'success')
-            
-        except Exception as e:
-            app_logger.error(f"Error handling bot startup success: {e}")
-
-    def _bot_startup_failed(self, bot_id: str, error_message: str):
-        """Handle failed bot startup."""
-        try:
-            self.loading_indicator.hide_loading()
-            self._update_bot_display()
-            self._log_message(f"Bot {bot_id} startup failed: {error_message}")
-            self.status_indicator.set_status(f"Bot {bot_id} startup failed", 'error')
-            
-        except Exception as e:
-            app_logger.error(f"Error handling bot startup failure: {e}")
-
-    def _stop_selected_bot(self):
-        """Stop the selected bot."""
-        try:
-            selected_item = self.bot_tree.selection()
-            if not selected_item:
-                self.status_indicator.set_status("No bot selected", 'warning')
-                return
-            
-            bot_data = self.bot_tree.item(selected_item[0], 'values')
-            bot_id = bot_data[0]
-            
-            self._stop_bot(bot_id)
-            
-        except Exception as e:
-            app_logger.error(f"Error stopping selected bot: {e}")
-
-    def _stop_bot(self, bot_id: str):
-        """Stop a specific bot."""
-        try:
-            if bot_id not in self._bots:
-                return
-            
-            bot_config = self._bots[bot_id]
-            
-            if bot_config['status'] == 'stopped':
-                self.status_indicator.set_status(f"Bot {bot_id} is already stopped", 'warning')
-                return
-            
-            # Update bot status
-            bot_config['status'] = 'stopping'
-            
-            # Simulate bot shutdown process
-            def shutdown_worker():
-                try:
-                    import time
-                    time.sleep(1)
-                    
-                    bot_config['status'] = 'stopped'
-                    if bot_id in self._active_bots:
-                        del self._active_bots[bot_id]
-                    
-                    self.after(0, self._bot_stopped_successfully, bot_id)
-                    
-                except Exception as e:
-                    app_logger.error(f"Error in bot shutdown: {e}")
-            
-            threading.Thread(target=shutdown_worker, daemon=True).start()
-            
-        except Exception as e:
-            app_logger.error(f"Error stopping bot {bot_id}: {e}")
-
-    def _bot_stopped_successfully(self, bot_id: str):
-        """Handle successful bot shutdown."""
-        try:
-            self._update_bot_display()
-            self._log_message(f"Bot {bot_id} stopped successfully")
-            self.status_indicator.set_status(f"Bot {bot_id} stopped successfully", 'success')
-            
-        except Exception as e:
-            app_logger.error(f"Error handling bot stop success: {e}")
-
-    def _pause_selected_bot(self):
-        """Pause the selected bot."""
-        try:
-            selected_item = self.bot_tree.selection()
-            if not selected_item:
-                self.status_indicator.set_status("No bot selected", 'warning')
-                return
-            
-            bot_data = self.bot_tree.item(selected_item[0], 'values')
-            bot_id = bot_data[0]
-            
-            if bot_id in self._bots:
-                bot_config = self._bots[bot_id]
-                if bot_config['status'] == 'running':
-                    bot_config['status'] = 'paused'
-                    self._update_bot_display()
-                    self._log_message(f"Bot {bot_id} paused")
-                    self.status_indicator.set_status(f"Bot {bot_id} paused", 'info')
-            
-        except Exception as e:
-            app_logger.error(f"Error pausing bot: {e}")
-
-    def _delete_selected_bot(self):
-        """Delete the selected bot."""
-        try:
-            selected_item = self.bot_tree.selection()
-            if not selected_item:
-                self.status_indicator.set_status("No bot selected", 'warning')
-                return
-            
-            bot_data = self.bot_tree.item(selected_item[0], 'values')
-            bot_id = bot_data[0]
-            
-            # Confirm deletion
-            if messagebox.askyesno("Confirm Delete", f"Are you sure you want to delete bot {bot_id}?"):
-                # Stop bot if running
-                if bot_id in self._active_bots:
-                    self._stop_bot(bot_id)
-                
-                # Remove from bots
-                if bot_id in self._bots:
-                    del self._bots[bot_id]
-                
-                self._update_bot_display()
-                self._log_message(f"Bot {bot_id} deleted")
-                self.status_indicator.set_status(f"Bot {bot_id} deleted", 'success')
-            
-        except Exception as e:
-            app_logger.error(f"Error deleting bot: {e}")
-
-    def _start_all_bots(self):
-        """Start all stopped bots."""
-        try:
-            started_count = 0
-            for bot_id, bot_config in self._bots.items():
-                if bot_config['status'] == 'stopped':
-                    self._start_bot(bot_id)
-                    started_count += 1
-            
-            if started_count > 0:
-                self.status_indicator.set_status(f"Starting {started_count} bots", 'info')
-            else:
-                self.status_indicator.set_status("No stopped bots to start", 'warning')
-                
-        except Exception as e:
-            app_logger.error(f"Error starting all bots: {e}")
-
-    def _stop_all_bots(self):
-        """Stop all running bots."""
-        try:
-            stopped_count = 0
-            for bot_id, bot_config in self._bots.items():
-                if bot_config['status'] in ['running', 'paused']:
-                    self._stop_bot(bot_id)
-                    stopped_count += 1
-            
-            if stopped_count > 0:
-                self.status_indicator.set_status(f"Stopping {stopped_count} bots", 'info')
-            else:
-                self.status_indicator.set_status("No running bots to stop", 'warning')
-                
-        except Exception as e:
-            app_logger.error(f"Error stopping all bots: {e}")
-
-    def _emergency_stop(self):
-        """Emergency stop all bots."""
-        try:
-            if messagebox.askyesno("Emergency Stop", "This will immediately stop ALL bots. Continue?"):
-                for bot_id in list(self._active_bots.keys()):
-                    bot_config = self._bots[bot_id]
-                    bot_config['status'] = 'stopped'
-                    del self._active_bots[bot_id]
-                
-                self._update_bot_display()
-                self._log_message("EMERGENCY STOP: All bots stopped")
-                self.status_indicator.set_status("Emergency stop completed", 'warning')
-                
-                notification_system.show_warning(
-                    "Emergency Stop",
-                    "All trading bots have been stopped"
-                )
-                
-        except Exception as e:
-            app_logger.error(f"Error in emergency stop: {e}")
-
-    def _on_bot_selected(self, event):
-        """Handle bot selection in tree view."""
-        try:
-            selected_item = self.bot_tree.selection()
-            if selected_item:
-                bot_data = self.bot_tree.item(selected_item[0], 'values')
-                self._selected_bot = bot_data[0]
+            selection = self.bot_tree.selection()
+            if selection:
+                item = self.bot_tree.item(selection[0])
+                self._selected_bot_id = item['values'][0]  # Bot ID is first column
                 
         except Exception as e:
             app_logger.error(f"Error handling bot selection: {e}")
 
-    def _validate_bot_config(self) -> Dict[str, Any]:
-        """Validate bot configuration."""
+    def _start_selected_bot(self):
+        """Start the selected bot."""
+        if self._selected_bot_id:
+            try:
+                success = self.bot_manager.start_bot(self._selected_bot_id)
+                if success:
+                    messagebox.showinfo("Success", "Bot started successfully")
+                else:
+                    messagebox.showerror("Error", "Failed to start bot")
+            except Exception as e:
+                app_logger.error(f"Error starting bot: {e}")
+                messagebox.showerror("Error", f"Failed to start bot: {str(e)}")
+        else:
+            messagebox.showwarning("Warning", "Please select a bot first")
+
+    def _pause_selected_bot(self):
+        """Pause the selected bot."""
+        if self._selected_bot_id:
+            try:
+                success = self.bot_manager.pause_bot(self._selected_bot_id)
+                if success:
+                    messagebox.showinfo("Success", "Bot paused successfully")
+                else:
+                    messagebox.showerror("Error", "Failed to pause bot")
+            except Exception as e:
+                app_logger.error(f"Error pausing bot: {e}")
+                messagebox.showerror("Error", f"Failed to pause bot: {str(e)}")
+        else:
+            messagebox.showwarning("Warning", "Please select a bot first")
+
+    def _stop_selected_bot(self):
+        """Stop the selected bot."""
+        if self._selected_bot_id:
+            try:
+                success = self.bot_manager.stop_bot(self._selected_bot_id)
+                if success:
+                    messagebox.showinfo("Success", "Bot stopped successfully")
+                else:
+                    messagebox.showerror("Error", "Failed to stop bot")
+            except Exception as e:
+                app_logger.error(f"Error stopping bot: {e}")
+                messagebox.showerror("Error", f"Failed to stop bot: {str(e)}")
+        else:
+            messagebox.showwarning("Warning", "Please select a bot first")
+
+    def _delete_selected_bot(self):
+        """Delete the selected bot."""
+        if self._selected_bot_id:
+            try:
+                result = messagebox.askyesno("Confirm", "Are you sure you want to delete this bot?")
+                if result:
+                    success = self.bot_manager.delete_bot(self._selected_bot_id)
+                    if success:
+                        messagebox.showinfo("Success", "Bot deleted successfully")
+                        self._selected_bot_id = None
+                    else:
+                        messagebox.showerror("Error", "Failed to delete bot")
+            except Exception as e:
+                app_logger.error(f"Error deleting bot: {e}")
+                messagebox.showerror("Error", f"Failed to delete bot: {str(e)}")
+        else:
+            messagebox.showwarning("Warning", "Please select a bot first")
+
+    def _start_all_bots(self):
+        """Start all bots."""
         try:
-            form_data = {
-                'amount_percentage': self.amount_percentage_var.get(),
-                'profit_target': self.profit_target_var.get(),
-                'stop_loss': self.stop_loss_var.get()
-            }
+            bots = self.bot_manager.list_bots()
+            started_count = 0
             
-            validation_result = self.form_validator.validate_form(form_data)
+            for bot_info in bots:
+                if bot_info['status'] != BotStatus.RUNNING.value:
+                    success = self.bot_manager.start_bot(bot_info['bot_id'])
+                    if success:
+                        started_count += 1
             
-            if not validation_result['valid']:
-                return {
-                    'valid': False,
-                    'message': '; '.join(validation_result['messages'])
-                }
-            
-            # Additional validation
-            if not self.symbol_var.get().strip():
-                return {'valid': False, 'message': 'Symbol is required'}
-            
-            return {'valid': True, 'message': 'Configuration is valid'}
+            messagebox.showinfo("Success", f"Started {started_count} bots")
             
         except Exception as e:
-            app_logger.error(f"Error validating bot config: {e}")
-            return {'valid': False, 'message': str(e)}
+            app_logger.error(f"Error starting all bots: {e}")
+            messagebox.showerror("Error", f"Failed to start bots: {str(e)}")
 
-    def _validate_amount_percentage(self, event=None):
-        """Validate amount percentage."""
+    def _stop_all_bots(self):
+        """Stop all bots."""
         try:
-            value = self.amount_percentage_var.get()
-            if not value:
-                return
-                
-            validation_result = self.form_validator.validate_field('amount_percentage', value)
-            
-            if not validation_result['valid']:
-                self.status_indicator.set_status(
-                    f"Invalid amount: {', '.join(validation_result['messages'])}", 'error'
-                )
-            else:
-                self.status_indicator.clear_status()
+            result = messagebox.askyesno("Confirm", "Are you sure you want to stop all bots?")
+            if result:
+                self.bot_manager.stop_all_bots()
+                messagebox.showinfo("Success", "All bots stopped")
                 
         except Exception as e:
-            app_logger.error(f"Error validating amount percentage: {e}")
+            app_logger.error(f"Error stopping all bots: {e}")
+            messagebox.showerror("Error", f"Failed to stop bots: {str(e)}")
 
-    def _validate_profit_target(self, event=None):
-        """Validate profit target."""
+    def _update_bot_list(self):
+        """Update the bot list display."""
         try:
-            value = self.profit_target_var.get()
-            if not value:
-                return
-                
-            validation_result = self.form_validator.validate_field('profit_target', value)
+            # Clear current items
+            for item in self.bot_tree.get_children():
+                self.bot_tree.delete(item)
             
-            if not validation_result['valid']:
-                self.status_indicator.set_status(
-                    f"Invalid profit target: {', '.join(validation_result['messages'])}", 'error'
-                )
-            else:
-                self.status_indicator.clear_status()
-                
-        except Exception as e:
-            app_logger.error(f"Error validating profit target: {e}")
-
-    def _validate_stop_loss(self, event=None):
-        """Validate stop loss."""
-        try:
-            value = self.stop_loss_var.get()
-            if not value:
-                return
-                
-            validation_result = self.form_validator.validate_field('stop_loss', value)
-            
-            if not validation_result['valid']:
-                self.status_indicator.set_status(
-                    f"Invalid stop loss: {', '.join(validation_result['messages'])}", 'error'
-                )
-            else:
-                self.status_indicator.clear_status()
-                
-        except Exception as e:
-            app_logger.error(f"Error validating stop loss: {e}")
-
-    def _toggle_auto_restart(self):
-        """Toggle auto-restart setting."""
-        enabled = self.auto_restart_var.get()
-        self.status_indicator.set_status(f"Auto-restart {'enabled' if enabled else 'disabled'}", 'info')
-
-    def _toggle_notifications(self):
-        """Toggle notifications setting."""
-        enabled = self.notifications_var.get()
-        self.status_indicator.set_status(f"Notifications {'enabled' if enabled else 'disabled'}", 'info')
-
-    def _toggle_auto_scroll(self):
-        """Toggle auto-scroll for logs."""
-        enabled = self.auto_scroll_var.get()
-        self.status_indicator.set_status(f"Log auto-scroll {'enabled' if enabled else 'disabled'}", 'info')
-
-    def _update_bot_display(self):
-        """Update bot display in tree view."""
-        try:
-            # Clear current display
-            self.bot_tree.delete(*self.bot_tree.get_children())
-            
-            # Add bots to display
-            for bot_id, bot_config in self._bots.items():
-                uptime = "--"
-                if 'started_at' in bot_config and bot_config['status'] == 'running':
-                    uptime_delta = datetime.now() - bot_config['started_at']
-                    uptime = str(uptime_delta).split('.')[0]  # Remove microseconds
-                
-                pnl_text = format_currency(bot_config.get('pnl', 0.0))
-                if bot_config.get('pnl', 0.0) > 0:
-                    pnl_text = f"+{pnl_text}"
-                
+            # Add current bots
+            bots = self.bot_manager.list_bots()
+            for bot_info in bots:
                 self.bot_tree.insert('', 'end', values=(
-                    bot_id,
-                    bot_config['strategy'].title(),
-                    bot_config['symbol'],
-                    bot_config['status'].title(),
-                    pnl_text,
-                    bot_config.get('trades', 0),
-                    uptime
+                    bot_info['bot_id'][:8],  # Shortened ID
+                    bot_info['name'],
+                    bot_info.get('bot_type', 'Unknown'),
+                    bot_info.get('symbol', 'N/A'),
+                    bot_info['status'],
+                    bot_info['trades_executed'],
+                    format_currency(bot_info['total_profit'])
                 ))
                 
         except Exception as e:
-            app_logger.error(f"Error updating bot display: {e}")
-
-    def _update_bot_status(self):
-        """Update bot status summary."""
-        try:
-            total_bots = len(self._bots)
-            running_bots = len(self._active_bots)
-            
-            self.bot_status_label.configure(
-                text=f"Active: {total_bots} | Running: {running_bots}"
-            )
-            
-        except Exception as e:
-            app_logger.error(f"Error updating bot status: {e}")
+            app_logger.error(f"Error updating bot list: {e}")
 
     def _update_performance_metrics(self):
         """Update performance metrics display."""
         try:
-            total_pnl = sum(bot.get('pnl', 0.0) for bot in self._bots.values())
-            total_trades = sum(bot.get('trades', 0) for bot in self._bots.values())
-            total_wins = sum(bot.get('wins', 0) for bot in self._bots.values())
+            perf = self.bot_manager.get_system_performance()
             
-            win_rate = (total_wins / max(total_trades, 1)) * 100
+            self.total_profit_label.config(text=format_currency(perf['total_profit']))
+            self.total_trades_label.config(text=str(perf['total_trades']))
+            self.active_bots_label.config(text=f"{perf['running_bots']}/{perf['total_bots']}")
             
-            # Update summary
-            best_bot = max(self._bots.values(), key=lambda b: b.get('pnl', 0.0), default=None)
-            best_bot_id = best_bot['id'] if best_bot else 'N/A'
-            
-            self.performance_summary.configure(
-                text=f"Total P&L: {format_currency(total_pnl)} | Best Bot: {best_bot_id} | Win Rate: {win_rate:.1f}%"
-            )
-            
-            # Update individual metrics
-            pnl_color = '#28a745' if total_pnl >= 0 else '#dc3545'
-            self.total_pnl_label.configure(
-                text=f"Total P&L: {format_currency(total_pnl)}",
-                foreground=pnl_color
-            )
-            
-            self.total_trades_label.configure(text=f"Total Trades: {total_trades}")
-            self.win_rate_label.configure(text=f"Win Rate: {win_rate:.1f}%")
-            
-            # Update performance tree
-            self._update_performance_tree()
-            
+            # Update profit color
+            if perf['total_profit'] > 0:
+                self.total_profit_label.config(foreground='#28a745')  # Green
+            elif perf['total_profit'] < 0:
+                self.total_profit_label.config(foreground='#dc3545')  # Red
+            else:
+                self.total_profit_label.config(foreground='#6c757d')  # Gray
+                
         except Exception as e:
             app_logger.error(f"Error updating performance metrics: {e}")
 
-    def _update_performance_tree(self):
-        """Update individual bot performance display."""
+    def _update_system_status(self):
+        """Update system status display."""
         try:
-            # Clear current display
-            self.performance_tree.delete(*self.performance_tree.get_children())
+            perf = self.bot_manager.get_system_performance()
             
-            # Add bot performance data
-            for bot_id, bot_config in self._bots.items():
-                pnl = bot_config.get('pnl', 0.0)
-                trades = bot_config.get('trades', 0)
-                wins = bot_config.get('wins', 0)
-                
-                win_rate = (wins / max(trades, 1)) * 100
-                avg_trade = pnl / max(trades, 1)
-                
-                pnl_text = f"+{format_currency(pnl)}" if pnl >= 0 else format_currency(pnl)
-                
-                self.performance_tree.insert('', 'end', values=(
-                    bot_id,
-                    bot_config['strategy'].title(),
-                    pnl_text,
-                    trades,
-                    f"{win_rate:.1f}%",
-                    format_currency(avg_trade),
-                    bot_config['status'].title()
-                ))
-                
+            status_text = f"Total: {perf['total_bots']} | Running: {perf['running_bots']} | Profit: {format_currency(perf['total_profit'])}"
+            self.system_status_label.config(text=status_text)
+            
         except Exception as e:
-            app_logger.error(f"Error updating performance tree: {e}")
+            app_logger.error(f"Error updating system status: {e}")
 
-    def _log_message(self, message: str):
-        """Add message to log display."""
+    def _load_ml_models(self):
+        """Load ML models for bots."""
         try:
-            timestamp = datetime.now().strftime("%H:%M:%S")
-            log_entry = f"[{timestamp}] {message}\n"
+            # This would implement bulk ML model loading
+            messagebox.showinfo("Info", "ML model loading feature coming soon")
             
-            self.log_text.insert('end', log_entry)
-            
-            # Auto-scroll if enabled
-            if self.auto_scroll_var.get():
-                self.log_text.see('end')
-                
         except Exception as e:
-            app_logger.error(f"Error logging message: {e}")
+            app_logger.error(f"Error loading ML models: {e}")
+            messagebox.showerror("Error", f"Failed to load ML models: {str(e)}")
 
-    def _clear_logs(self):
-        """Clear log display."""
+    def _load_rl_models(self):
+        """Load RL models for bots."""
         try:
-            self.log_text.delete('1.0', 'end')
-            self.status_indicator.set_status("Logs cleared", 'info')
+            # This would implement bulk RL model loading
+            messagebox.showinfo("Info", "RL model loading feature coming soon")
             
         except Exception as e:
-            app_logger.error(f"Error clearing logs: {e}")
+            app_logger.error(f"Error loading RL models: {e}")
+            messagebox.showerror("Error", f"Failed to load RL models: {str(e)}")
 
-    def _export_logs(self):
-        """Export logs to file."""
+    def _reload_all_models(self):
+        """Reload all models for all bots."""
         try:
-            from tkinter import filedialog
-            
-            filename = filedialog.asksaveasfilename(
-                defaultextension=".txt",
-                filetypes=[("Text files", "*.txt"), ("All files", "*.*")]
-            )
-            
-            if filename:
-                with open(filename, 'w') as f:
-                    f.write(self.log_text.get('1.0', 'end'))
-                
-                self.status_indicator.set_status("Logs exported successfully", 'success')
-                
-        except Exception as e:
-            app_logger.error(f"Error exporting logs: {e}")
-            self.status_indicator.set_status(f"Failed to export logs: {str(e)}", 'error')
-
-    def _save_config(self):
-        """Save bot configurations."""
-        try:
-            # Placeholder for configuration saving
-            self.status_indicator.set_status("Configuration saved successfully", 'success')
+            messagebox.showinfo("Info", "Model reloading feature coming soon")
             
         except Exception as e:
-            app_logger.error(f"Error saving config: {e}")
-
-    def _load_config(self):
-        """Load bot configurations."""
-        try:
-            # Placeholder for configuration loading
-            self.status_indicator.set_status("Configuration loaded successfully", 'success')
-            
-        except Exception as e:
-            app_logger.error(f"Error loading config: {e}")
+            app_logger.error(f"Error reloading models: {e}")
+            messagebox.showerror("Error", f"Failed to reload models: {str(e)}")
 
     def cleanup(self):
-        """Cleanup tab resources."""
+        """Cleanup resources when tab is destroyed."""
         try:
-            # Stop all active bots
-            for bot_id in list(self._active_bots.keys()):
-                self._stop_bot(bot_id)
-                
-            app_logger.info("OptimizedBotTab cleaned up")
+            self._stop_updates.set()
+            if self._update_thread and self._update_thread.is_alive():
+                self._update_thread.join(timeout=2)
+            
+            app_logger.info("AdvancedBotTab cleaned up")
             
         except Exception as e:
-            app_logger.error(f"Error during BotTab cleanup: {e}")
-
-    def refresh(self):
-        """Refresh tab content."""
-        try:
-            self._update_bot_display()
-            self._update_performance_metrics()
-            self.status_indicator.set_status("Data refreshed", 'success')
-            
-        except Exception as e:
-            app_logger.error(f"Error refreshing BotTab: {e}")
+            app_logger.error(f"Error during cleanup: {e}")
 
 
-# Backwards compatibility
-BotTab = OptimizedBotTab
+# Alias for compatibility
+OptimizedBotTab = AdvancedBotTab

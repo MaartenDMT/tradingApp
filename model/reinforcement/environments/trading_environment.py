@@ -697,7 +697,12 @@ class TradingEnvironment:
 def register_trading_environment():
     """Register the trading environment with OpenAI Gym following Context7 patterns."""
     try:
-        from gym.envs.registration import register
+        # Try gymnasium first (newer version)
+        try:
+            from gymnasium.envs.registration import register
+        except ImportError:
+            # Fall back to gym (older version)
+            from gym.envs.registration import register
 
         register(
             id='trading-v2',
